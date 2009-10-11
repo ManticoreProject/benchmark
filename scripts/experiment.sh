@@ -10,16 +10,16 @@ PROCS=""
 PARALLEL_BUILD_RULE=""
 SEQUENTIAL_BUILD_RULE=""
 BENCHMARK_PATH=""
-MAX_LEAF_SIZE=""
+MAX_LEAF_SIZE="128"
 EXPERIMENT_NAME="experiment"
-PMLC_FLAGS=""
 NUM_TRIALS="1"
 
 usage="See the README file for instructions"
 
-while getopts ":s:p:a:b:c:f:l:n:x" options; 
+while getopts ":t:s:p:a:c:f:l:n:x" options; 
 do
     case $options in
+	t ) NUM_TRIALS="$OPTARG";;
 	s ) SIZES="$SIZES $OPTARG";;
 	p ) PROCS="$PROCS $OPTARG";;
 	a ) PARALLEL_BUILD_RULE="$OPTARG";;
@@ -27,8 +27,6 @@ do
 	f ) BENCHMARK_PATH="$OPTARG";;
 	l ) MAX_LEAF_SIZE="$OPTARG";;
 	n ) EXPERIMENT_NAME="$OPTARG";;
-	x ) PMLC_FLAGS="$OPTARG";;
-	t ) NUM_TRIALS="$OPTARG";;
 	\? ) echo $usage
             exit 1;;
 	* ) echo $usage
@@ -42,13 +40,15 @@ if [ -z "$SIZES" ]; then
 elif [ -z "$PROCS" ]; then
     echo "Enter at least one choice for number of processors"
     exit 1
-elif [ -nd "$BENCHMARK_PATH" ]; then
+elif [ ! -d "$BENCHMARK_PATH" ]; then
     echo "Need a path to the benchmark directory (-f)"
 elif [ -z "$MC" ]; then
     echo "Need to set the environment variable MC to contain the path to the Manticore root directory"
 else
-    ;;;
+    :
 fi
+
+./set-max-leaf-size.sh $MAX_LEAF_SIZE
 
 # Gather metadata
 
@@ -66,28 +66,35 @@ function metadata_list {
 }
 
 DATETIME=$( date +"%F-%H-%M-%S" )
-LOG_FILE_NAME=$BENCHMARK_NAME-$DATETIME.sml
+LOG_FILE_NAME=$EXPERIMENT_NAME-$DATETIME.sml
 SCRIPT_SVN_REVISION=$( svn info | grep Revision )
+SCRIPT_SVN_REVISION=${SCRIPT_SVN_REVISION:10}
 SCRIPT_SVN_URL=$( svn info | grep URL )
+SCRIPT_SVN_URL=${SCRIPT_SVN_URL:5}
 
-cd $BENCHMARK_PATH
+pushd $BENCHMARK_PATH
 
 BENCHMARK_SVN_REVISION=$( svn info | grep Revision )
+BENCHMARK_SVN_REVISION=${BENCHMARK_SVN_REVISION:10}
 BENCHMARK_SVN_URL=$( svn info | grep URL )
+BENCHMARK_SVN_URL=${BENCHMARK_SVN_URL:5}
 EXPERIMENTOR=$( whoami )
 MACHINE=$( uname -n )
-( 
-    cd $MC
-    COMPILER_SVN_REVISION=$( svn info | grep Revision )
-    COMPILER_SVN_URL=$( svn info | grep URL )
-)
 
-metatata "benchmark" "\"$BENCHMARK_NAME\""
-metadata "compilerSVNRevision" "\"$COMPILER_SVN_REVISION\""
+pushd $MC
+    COMPILER_SVN_REVISION=$( svn info | grep Revision )
+    COMPILER_SVN_REVISION=${COMPILER_SVN_REVISION:10}
+    COMPILER_SVN_URL=$( svn info | grep URL )
+    COMPILER_SVN_URL=${COMPILER_SVN_URL:5}
+popd
+
+metadata "benchmark" "\"$EXPERIMENT_NAME\""
+metadata "nTrials" "$NUM_TRIALS"
+metadata "compilerSVNRevision" "$COMPILER_SVN_REVISION"
 metadata "compilerSVNURL" "\"$COMPILER_SVN_URL\""
-metadata "scriptSVNRevision" "\"$SCRIPT_SVN_REVISION\""
+metadata "scriptSVNRevision" "$SCRIPT_SVN_REVISION"
 metadata "scriptSVNURL" "\"$SCRIPT_SVN_URL\""
-metadata "benchmarkSVNRevision" "\"$BENCHMARK_SVN_REVISION\""
+metadata "benchmarkSVNRevision" "$BENCHMARK_SVN_REVISION"
 metadata "benchmarkSVNURL" "\"$BENCHMARK_SVN_URL\""
 metadata "datetime" "\"$DATETIME\""
 metadata "username" "\"$EXPERIMENTOR\""
@@ -100,29 +107,31 @@ metadata_list "$SIZES" "sizes"
 
 echo "Logging performance results to $LOG_FILE_NAME"
 
-./set-max-leaf-size.sh $MAX_LEAF_SIZE
-
 if [ -n "$SEQUENTIAL_BUILD_RULE" ]; then
     metadata "sequential" "true"
-    make $SEQUENTIAL_BUILD_RULE
+    make -s $SEQUENTIAL_BUILD_RULE
     SEQUENTIAL_EXE=$SEQUENTIAL_BUILD_RULE
+    echo "val results =" >> $LOG_FILE_NAME
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	for s in $SIZES; do
+	    echo "./$SEQUENTIAL_EXE $s"
 	    echo -n -e "\t\t{ nProcs=0,\t\tsize=$s,\t\ttime=" >> $LOG_FILE_NAME
-	    ./$SEQUENTIAL_EXE -i $s >> $LOG_FILE_NAME
+	    ./$SEQUENTIAL_EXE $s >> $LOG_FILE_NAME
 	    echo -e " } ::" >> $LOG_FILE_NAME
 	done
     done
     echo -e "\t\tnil" >> $LOG_FILE_NAME
 elif [ -n "$PARALLEL_BUILD_RULE" ]; then
     metadata "sequential" "false"
-    make $PARALLEL_BUILD_RULE
+    make -s $PARALLEL_BUILD_RULE
     PARALLEL_EXE=$PARALLEL_BUILD_RULE
+    echo "val results =" >> $LOG_FILE_NAME
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	for s in $SIZES; do
 	    for p in $PROCS; do
+		echo "./$PARALLEL_EXE -p $p $s"
 		echo -n -e "\t\t{ nProcs=$p,\t\tsize=$s,\t\ttime=" >> $LOG_FILE_NAME
-		./$PARALLEL_EXE -p $p -i $s >> $LOG_FILE_NAME
+		./$PARALLEL_EXE -p $p $s >> $LOG_FILE_NAME
 		echo -e " } ::" >> $LOG_FILE_NAME
 	    done
 	done
@@ -135,5 +144,6 @@ fi
 
 # Clean up
 
-./restore-max-leaf-size.sh
 make clean
+popd
+./restore-max-leaf-size.sh

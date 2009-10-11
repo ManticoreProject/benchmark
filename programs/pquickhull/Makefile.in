@@ -1,0 +1,25 @@
+# Makefile for quickhull benchmarks
+#
+# @configure_input@
+#
+
+SHELL =		/bin/sh
+
+SMLNJ =		@SMLNJ_CMD@
+MLTON =		@MLTON@
+PMLC =		@PMLC@
+#PMLCFLAGS =	-Cdebug=true
+
+TARGET =	quickhull
+
+all:		$(TARGET)-smlnj $(TARGET)-mc1 $(TARGET)-mc2 $(TARGET)-mc3
+
+$(TARGET)-par:	pquickhull.mlb pquickhull.pml
+	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par pquickhull.mlb
+
+$(TARGET)-seq-elison:	pquickhull.mlb pquickhull.pml
+	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison pquickhull.mlb
+
+.PHONY: clean
+clean:
+	rm -f $(TARGET)-par $(TARGET)-seq-elison *.s
