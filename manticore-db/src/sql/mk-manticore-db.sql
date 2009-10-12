@@ -4,6 +4,8 @@
    Usage: select pg_grant('manticorer ','select','%','public');
    Note: User manticore must already exist.
 */
+DROP FUNCTION IF EXISTS pg_grant(TEXT, TEXT, TEXT, TEXT);
+
 CREATE FUNCTION pg_grant(TEXT, TEXT, TEXT, TEXT)
 RETURNS integer AS '
 DECLARE obj record;
@@ -41,13 +43,13 @@ DROP TABLE IF EXISTS problems;
 
 CREATE TABLE problems 
 (
-  problem_id   integer PRIMARY KEY,
+  problem_id   SERIAL PRIMARY KEY,
   problem_name text    NOT NULL
 );
 
 CREATE TABLE experiments 
 (
-  experiment_id integer   PRIMARY KEY,
+  experiment_id SERIAL PRIMARY KEY,
   problem_id    integer   REFERENCES problems (problem_id),
   username      text      NOT NULL,
   datetime      timestamp NOT NULL
@@ -55,7 +57,7 @@ CREATE TABLE experiments
 
 CREATE TABLE contexts 
 (
-  context_id    integer PRIMARY KEY,
+  context_id    SERIAL PRIMARY KEY,
   experiment_id integer REFERENCES experiments (experiment_id),
 
 /* Manticore-only fields follow */ 
@@ -83,7 +85,7 @@ CREATE TABLE contexts
 
 CREATE TABLE runs 
 (
-  run_id          integer PRIMARY KEY,
+  run_id          SERIAL PRIMARY KEY,
   context_id      integer REFERENCES contexts (context_id),
   n_procs         integer NOT NULL, -- how many procs used in parallel?
   time_sec        double precision NOT NULL,
@@ -93,3 +95,4 @@ CREATE TABLE runs
 );
 
 SELECT pg_grant('manticorer ','select','%','public');
+
