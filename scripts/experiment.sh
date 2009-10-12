@@ -100,6 +100,7 @@ metadata "datetime" "\"$DATETIME\""
 metadata "username" "\"$EXPERIMENTOR\""
 metadata "machine" "\"$MACHINE\""
 metadata "pmlcFlags" "\"$PMLC_FLAGS\""
+metadata "maxLeafSize" "$MAX_LEAF_SIZE"
 metadata_list "$PROCS" "nProcs"
 metadata_list "$SIZES" "sizes"
 
