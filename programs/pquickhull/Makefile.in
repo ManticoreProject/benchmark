@@ -1,4 +1,4 @@
-# Makefile for quickhull benchmarks
+# Makefile for pquickhull benchmarks
 #
 # @configure_input@
 #
@@ -10,9 +10,9 @@ MLTON =		@MLTON@
 PMLC =		@PMLC@
 #PMLCFLAGS =	-Cdebug=true
 
-TARGET =	quickhull
+TARGET =	pquickhull
 
-all:		$(TARGET)-smlnj $(TARGET)-mc1 $(TARGET)-mc2 $(TARGET)-mc3
+all:		$(TARGET)-par $(TARGET)-seq-elison
 
 $(TARGET)-par:	pquickhull.mlb pquickhull.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par pquickhull.mlb
