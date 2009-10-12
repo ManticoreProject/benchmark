@@ -1,6 +1,6 @@
 (* Adam Shaw, Oct 2009 *)
 
-signature Experiment = sig
+signature EXPERIMENT = sig
 
   datatype pl = Manticore | SML | DPH | C | Java
 
@@ -8,12 +8,9 @@ signature Experiment = sig
 
   val problem_name : string
 
-  val username : string
-  val datetime : string
-
 (* the following are optional since they apply only to manticore contexts, *)
 (* as opposed to contexts for runs in other languages (sml, etc.) *)
-  val compiler_src_url : string option (* manticore compiler, of course *)
+  val compiler_url : string option     (* manticore compiler, of course *)
   val compiler_svn     : int option    (* svn version no. *)
   val script_url       : string option (* the svn url of the run-benchmark script *)
   val script_svn       : int option    (* svn version no. *)
@@ -30,7 +27,8 @@ signature Experiment = sig
   val bench_url : string
   val bench_svn : int    (* svn version no. *)
   val input     : string
-  val username  : string
+  val username : string
+  val datetime : string
   val machine   : string (* what machine was the trial run on? *)
   
   type run = {n_procs         : int, 

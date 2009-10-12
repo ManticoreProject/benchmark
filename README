@@ -16,7 +16,7 @@ The makefile shall include rules for compiling each version of the benchmark. At
 
 The benchmark script takes the following parameters:
 
-    -s	      problem size*
+    -s	      problem size
     -p	      number of processors*
     -a	      makefile rule to build a parallel binary**
     -c	      makefile rule to build a sequential binary**
