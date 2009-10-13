@@ -7,6 +7,8 @@
  * of rounds, which involves twice that many signals.
  *)
 
+#include "prim.def"
+
 structure VProcPingPong =
   struct
 
@@ -38,7 +40,12 @@ structure VProcPingPong =
 		      do SchedulerAction.@stop()
 		      return()
                   let self : vproc = SchedulerAction.@atomic-begin()
-		  do VProc.@send-high-priority-signal-from-atomic(vp1, vp2, k)
+                  let fls : FLS.fls = FLS.@get ()
+#ifdef TRUNK
+		  do VProc.@send-and-preempt-from-atomic(vp1, vp2, fls, k)
+#else /* SWP */
+	          do VProc.@send-from-atomic(vp1, vp2, fls, k)
+#endif
                   do SchedulerAction.@atomic-end(self)
 		  do apply wait (i, n1)
 		  apply ping ()
@@ -54,7 +61,12 @@ structure VProcPingPong =
 		      do SchedulerAction.@stop()
 		      return()
                   let self : vproc = SchedulerAction.@atomic-begin()
-		  do VProc.@send-high-priority-signal-from-atomic(vp2, vp1, k)
+                  let fls : FLS.fls = FLS.@get ()
+#ifdef TRUNK
+		  do VProc.@send-and-preempt-from-atomic(vp1, vp2, fls, k)
+#else /* SWP */
+	          do VProc.@send-from-atomic(vp1, vp2, fls, k)
+#endif
                   do SchedulerAction.@atomic-end(self)
 		  apply pong (I32Add(i, 1))
 	      else
@@ -65,7 +77,12 @@ structure VProcPingPong =
 	      SchedulerAction.@stop()
 
           let self : vproc = SchedulerAction.@atomic-begin()
-	  do VProc.@send-high-priority-signal-from-atomic(vp1, vp2, k2)
+          let fls : FLS.fls = FLS.@get ()
+#ifdef TRUNK
+	  do VProc.@send-and-preempt-from-atomic(vp1, vp2, fls, k2)
+#else /* SWP */
+          do VProc.@send-from-atomic(vp1, vp2, fls, k2)
+#endif
           do SchedulerAction.@atomic-end(self)
 	  do apply ping ()
 
@@ -92,7 +109,7 @@ structure Main =
 		       | _ => dfltN)
 	    fun doit () = VProcPingPong.run (n, otherVP)		
 	in
-	    RunPar.run doit
+	    RunSeq.run doit
 	end
 
   end

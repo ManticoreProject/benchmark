@@ -1,5 +1,5 @@
 ../common/run-seq.pml
-ann "cpp" ""
+ann "cpp" "-DTRUNK"
 in
     vproc-pingpong.pml
 end
