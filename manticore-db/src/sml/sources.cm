@@ -1,0 +1,12 @@
+Library
+  signature EXPERIMENT
+  functor ExperimentToJSON
+  structure Main
+is
+  $/basis.cm
+  common.sml
+  experiment.sig
+  experiment-to-json.sml
+  some-data.sml
+  main.sml
+

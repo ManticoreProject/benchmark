@@ -1,6 +1,4 @@
-signature Experiment = sig
-
-  datatype pl = Manticore | SML | DPH
+signature EXPERIMENT = sig
 
 (* metadata *)
 
@@ -21,14 +19,15 @@ signature Experiment = sig
 
 (* the following are not options, since they should all be easy to provide *)
 (* for all runs *)
-  val language : pl
+  val language : Common.pl
   val compiler : string
   val version  : string
+
+  val description : string
 
   val bench_url : string
   val bench_svn : int    (* svn version no. *)
   val input     : string
-  val username  : string
   val machine   : string (* what machine was the trial run on? *)
   
   type run = {n_procs         : int, 
