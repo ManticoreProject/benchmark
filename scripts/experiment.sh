@@ -69,8 +69,8 @@ function metadata_list {
 
 DATETIME=$( date +"%F-%H-%M-%S" )
 LOG_FILE=$EXPERIMENT_NAME-$DATETIME.sml
-
 DATETIME_SML=${DATETIME//-/_}
+DATETIME_MD=$( date +"%F %H:%M:%S" )
 
 SCRIPT_SVN_REVISION=$( svn info | grep Revision )
 SCRIPT_SVN_REVISION=${SCRIPT_SVN_REVISION:10}
@@ -135,8 +135,9 @@ metadata "bench_url" "\"$BENCHMARK_SVN_URL\""
 metadata "bench_svn" "$BENCHMARK_SVN_REVISION"
 metadata "input" "\"$SIZE\""
 metadata "username" "\"$EXPERIMENTOR\""
-metadata "datetime" "\"$DATETIME\""
+metadata "datetime" "\"$DATETIME_MD\""
 metadata "machine" "\"$MACHINE\""
+metadata "description" "\"\""
 
 # extras
 metadata "pmlcFlags" "\"$PMLC_FLAGS\""
