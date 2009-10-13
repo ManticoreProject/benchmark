@@ -1,5 +1,7 @@
 functor ExperimentToJSON (E : EXPERIMENT) = struct
 
+(* BUGS! Key/val pairs need to be comma-delimited...they aren't yet.*)
+
   fun appWith thunk f xs = let
     fun lp [] = ()
       | lp [x] = f x
