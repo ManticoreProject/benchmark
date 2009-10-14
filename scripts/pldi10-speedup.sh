@@ -9,24 +9,24 @@ EXPERIMENT_NAME="PLDI10Speedup"
 
 PARALLEL_BENCHMARKS=( 
     fib tree-add plus-scan 
-    id-raytracer mandelbrot minimax pmergesort pquickhull pquicksort )
+    barnes-hut id-raytracer mandelbrot minimax pmergesort pquickhull pquicksort )
 PARALLEL_BUILD_RULES=(
     pfib tree-add plus-scan-par
-    id-raytracer-par mandelbrot-par minimax-par pmergesort-par pquickhull-par pquicksort-par )
+    barnes-hut id-raytracer-par mandelbrot-par minimax-par pmergesort-par pquickhull-par pquicksort-par )
 
 SEQUENTIAL_BENCHMARKS=( 
     fib tree-add plus-prefix 
-    id-raytracer mandelbrot minimax list-mergesort pquickhull list-quicksort )
+    barnes-hut id-raytracer mandelbrot minimax list-mergesort pquickhull list-quicksort )
 SEQUENTIAL_BUILD_RULES=( 
     fib-seq-elison tree-add-seq-elison plus-prefix
-    id-raytracer-seq mandelbrot-seq minimax-seq-elison list-mergesort pquickhull-seq-elison list-quicksort )
+    barnes-hut-seq-elison id-raytracer-seq mandelbrot-seq minimax-seq-elison list-mergesort pquickhull-seq-elison list-quicksort )
 
 INPUT_SIZES=(
     30 10 500000
-    256 512 0 500000 1000000 500000 )
+    200000 256 512 0 500000 1000000 500000 )
 LEAF_SIZES=(
     128 128 128
-    128 128 4 128 128 128 )
+    128 128 128 4 128 128 128 )
 
 NUM_TRIALS=8
 
