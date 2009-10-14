@@ -157,9 +157,14 @@ if [ -n "$SEQUENTIAL_BUILD_RULE" ]; then
     echo "val runs =" >> $LOG_FILE
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	echo "./$SEQUENTIAL_EXE $SIZE"
-	echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
 	RES=$( ./$SEQUENTIAL_EXE $SIZE )
-	echo -n -e "$RES" >> $LOG_FILE
+	if [ $? == "0" ]; then
+	    echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
+	    echo -n -e "$RES" >> $LOG_FILE
+	else
+	    echo "Benchmark failed unexpectedly with nonzero return code"
+	    exit 1
+	fi
 	echo -e ", \t\tgc_time_sec=NONE,\t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
     done
     echo -e "\t\tnil" >> $LOG_FILE
@@ -170,11 +175,21 @@ elif [ -n "$PARALLEL_BUILD_RULE" ]; then
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	for p in $PROCS; do
 	    echo "./$PARALLEL_EXE -p $p $SIZE"
-	    echo -n -e "\t\t{ n_procs=$p,\t\ttime_sec=" >> $LOG_FILE
 	    RES=$( ./$PARALLEL_EXE -p $p $SIZE )
-	    if [ $? == "0" ]; then
-		echo -n -e "$RES" >> $LOG_FILE
-	    fi
+	    retcode=$?
+	    nretries=0
+	    while [ $retcode != "0" ]; do
+		let nretries=nretries+1
+		echo "Benchmark failed unexpectedly with nonzero return code -- retrying."
+		RES=$( ./$PARALLEL_EXE -p $p $SIZE )
+		retcode=$?
+		if [ $nretries -gt 100 ]; then
+		    echo "Exceeded maximum number of failed executions of the benchmark"
+		    exit 1
+		fi
+	    done
+	    echo -n -e "\t\t{ n_procs=$p,\t\ttime_sec=" >> $LOG_FILE
+	    echo -n -e "$RES" >> $LOG_FILE
 	    echo -e ", \t\tgc_time_sec=NONE,\t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
 	done
     done
