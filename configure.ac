@@ -23,6 +23,8 @@ fi
 
 MANTICORE_BINDIR=$MANTICORE_ROOT/bin
 PMLC=$MANTICORE_BINDIR/pmlc
+
+AC_SUBST(MANTICORE_ROOT)
 AC_SUBST(PMLC)
 
 AC_CONFIG_FILES(\
@@ -48,5 +50,6 @@ dnl ***** Makefiles *****
   programs/pquickhull/Makefile
   programs/pquicksort/Makefile
   programs/tree-add/Makefile
+  scripts/experiment.sh:scripts/experiment_sh.in
 )
 AC_OUTPUT
