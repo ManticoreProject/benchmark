@@ -12,14 +12,17 @@ PMLC =		@PMLC@
 
 TARGET =	raytracer
 
-all:		$(TARGET)-par $(TARGET)-seq-elison
+all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq
 
 $(TARGET)-par:	raytracer-par.mlb raytracer-par.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par raytracer-par.mlb
+
+$(TARGET)-seq-elison:	raytracer-par.mlb raytracer-par.pml
+	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-seq-elison raytracer-par.mlb
 
 $(TARGET)-seq:	raytracer-seq.mlb raytracer-seq.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq raytracer-seq.mlb
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq *.s out.ppm
+	rm -f $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq *.s out.ppm
