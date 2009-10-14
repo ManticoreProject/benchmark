@@ -6,6 +6,8 @@
 # See the README file for instructions.
 
 MANTICORE_ROOT="@MANTICORE_ROOT@"
+RESULTS_DIR="@MANTI_BENCH_RESULTS@"
+SCRIPTS_DIR="@MANTI_BENCH_SCRIPTS@"
 PMLC="@PMLC@"
 SIZE=""
 PROCS=""
@@ -51,7 +53,7 @@ else
 fi
 
 if [ $MAX_LEAF_SIZE != "128" ]; then
-    ./set-max-leaf-size.sh $MAX_LEAF_SIZE
+    $SCRIPTS_DIR/set-max-leaf-size.sh $MAX_LEAF_SIZE
 fi
 
 # Gather metadata
@@ -70,7 +72,7 @@ function metadata_list {
 }
 
 DATETIME=$( date +"%F-%H-%M-%S" )
-LOG_FILE=../results/$EXPERIMENT_NAME-$DATETIME.sml
+LOG_FILE=$RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.sml
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -78,7 +80,6 @@ SCRIPT_SVN_REVISION=$( svn info | grep Revision )
 SCRIPT_SVN_REVISION=${SCRIPT_SVN_REVISION:10}
 SCRIPT_SVN_URL=$( svn info | grep URL )
 SCRIPT_SVN_URL=${SCRIPT_SVN_URL:5}
-SCRIPT_DIR=`pwd`
 
 pushd $BENCHMARK_PATH
 
@@ -96,7 +97,7 @@ pushd $MANTICORE_ROOT
     COMPILER_SVN_URL=${COMPILER_SVN_URL:5}
 popd
 
-( cat $SCRIPT_DIR/sml/experiment.sig ) >> $LOG_FILE
+( cat $SCRIPTS_DIR/sml/experiment.sig ) >> $LOG_FILE
 echo -e "structure $EXPERIMENT_NAME$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
 
 (
@@ -186,5 +187,5 @@ echo -e "end" >> $LOG_FILE # structure
 #make clean
 popd
 if [ $MAX_LEAF_SIZE != "128" ]; then
-    ./restore-max-leaf-size.sh
+    $SCRIPTS_DIR/restore-max-leaf-size.sh.
 fi

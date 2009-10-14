@@ -5,6 +5,14 @@ AC_PREREQ(2.59)
 
 dnl ******************** Paths ********************
 
+MANTI_BENCH_ROOT=`pwd`
+MANTI_BENCH_SCRIPTS=$MANTI_BENCH_ROOT/scripts
+MANTI_BENCH_RESULTS=$MANTI_BENCH_ROOT/results
+
+AC_SUBST(MANTI_BENCH_ROOT)
+AC_SUBST(MANTI_BENCH_SCRIPTS)
+AC_SUBST(MANTI_BENCH_RESULTS)
+
 MANTICORE_ROOT=""
 AC_ARG_WITH(manticore,
   AC_HELP_STRING([--with-manticore=PATH], [specify location of Manticore root directory]),
