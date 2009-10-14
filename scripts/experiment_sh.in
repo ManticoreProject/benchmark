@@ -158,7 +158,8 @@ if [ -n "$SEQUENTIAL_BUILD_RULE" ]; then
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	echo "./$SEQUENTIAL_EXE $SIZE"
 	echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
-	./$SEQUENTIAL_EXE $SIZE >> $LOG_FILE
+	RES=$( ./$SEQUENTIAL_EXE $SIZE )
+	echo -n -e "$RES" >> $LOG_FILE
 	echo -e ", \t\tgc_time_sec=NONE,\t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
     done
     echo -e "\t\tnil" >> $LOG_FILE
@@ -170,7 +171,10 @@ elif [ -n "$PARALLEL_BUILD_RULE" ]; then
 	for p in $PROCS; do
 	    echo "./$PARALLEL_EXE -p $p $SIZE"
 	    echo -n -e "\t\t{ n_procs=$p,\t\ttime_sec=" >> $LOG_FILE
-	    ./$PARALLEL_EXE -p $p $SIZE >> $LOG_FILE
+	    RES=$( ./$PARALLEL_EXE -p $p $SIZE )
+	    if [ $? == "0" ]; then
+		echo -n -e "$RES" >> $LOG_FILE
+	    fi
 	    echo -e ", \t\tgc_time_sec=NONE,\t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
 	done
     done
