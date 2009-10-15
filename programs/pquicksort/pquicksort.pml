@@ -24,7 +24,7 @@ structure Main =
     fun main (_, args) =
 	let
 	    val n = (case args
-		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
+		      of arg :: _ => Option.getOpt (SOME 1000, dfltN)
 		       | _ => dfltN)
 	    fun doit () =
 		let		
@@ -39,4 +39,5 @@ structure Main =
 
   end
 
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
+val _ = Main.main ("", "10"::nil)
+

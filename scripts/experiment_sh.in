@@ -98,7 +98,8 @@ pushd $MANTICORE_ROOT
 popd
 
 ( cat $SCRIPTS_DIR/sml/experiment.sig ) >> $LOG_FILE
-echo -e "structure $EXPERIMENT_NAME$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
+EXPERIMENT_NAME_SML=${EXPERIMENT_NAME//"-"/"_"}
+echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
 
 (
 cat <<EOF
