@@ -1,7 +1,9 @@
 structure Main = struct
 
-  structure J = MakeJSONFn(minimax2009_10_14_22_21_27)
+  structure J = MakeJSONFn (minimax2009_10_14_22_05_33)
 
-  fun main() = J.mkJSON()
+  fun main outfile = J.mkJSON outfile
+
+  val _ = main "foo"
 
 end
