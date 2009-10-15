@@ -143,7 +143,7 @@ structure Main =
   struct
 
     val dfltN = 10000    (* default number of bodies *)
-    val dfltI = 10       (* default number of iterations *)
+    val dfltI = 1        (* default number of iterations *)
 
     structure V = Vector2
 
@@ -240,17 +240,17 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
+	    val initialBodies = fromListP (testdata n)
 	    fun doit () = 
 		let
 		    fun iter (ps, i) =
 			if i < dfltI then
-			    (* FIXME: read the top-level box from the input *)
 			    iter (BarnesHutPar.oneStep ps, i + 1)
 			else
 			    ps
 
 		in
-		    iter (fromListP (testdata n), 0)
+		    iter (initialBodies, 0)
 		end
 		
 	in

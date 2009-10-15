@@ -258,6 +258,7 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
+	    val initialBodies = testdata n
 	    fun doit () = 
 		let
 		    fun iter (ps, i) =
@@ -268,7 +269,7 @@ structure Main =
 			    ps
 
 		in
-		    iter (testdata n, 0)
+		    iter (initialBodies, 0)
 		end
 		
 	in
