@@ -51,12 +51,6 @@ signature EXPERIMENT = sig
   val input     : string
   val machine   : string (* what machine was the trial run on? *)
   
-  type run = {n_procs         : int, 
-	      time_sec        : real,
-	      gc_time_sec     : real option,
-	      cpu_time_sec    : real option,
-	      max_space_bytes : int option} 
-
-  val runs : run list
+  val runs : Common.run list
 
 end

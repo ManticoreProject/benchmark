@@ -1,6 +1,6 @@
 structure Main = struct
 
-  structure J = MakeJSONFn(PQuicksort2009_10_12_17_49_10)
+  structure J = MakeJSONFn(minimax2009_10_14_22_21_27)
 
   fun main() = J.mkJSON()
 

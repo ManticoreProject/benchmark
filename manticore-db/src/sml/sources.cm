@@ -7,6 +7,7 @@ is
   common.sml
   experiment.sig
   make-json-fn.sml
+  minimax-2009-10-14-22-21-27.sml
   some-data.sml
   main.sml
 
