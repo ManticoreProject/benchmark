@@ -96,13 +96,8 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    fun doit () =
-		let							   
-		    val pts = tabP (n, fn _ => (Rand.randFloat (~100000.0, 100000.0), 
-						Rand.randFloat (~100000.0, 100000.0)))
-		in 
-		    PQuickhull.quickhull pts
-		end
+	    val points = fromListP (List.tabulate (n, fn _ => (Rand.randFloat (~100000.0, 100000.0), Rand.randFloat (~100000.0, 100000.0))))
+	    fun doit () = PQuickhull.quickhull points
 		
 	in
 	    RunPar.run doit
