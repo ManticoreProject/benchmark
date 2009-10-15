@@ -97,20 +97,8 @@ pushd $MANTICORE_ROOT
     COMPILER_SVN_URL=${COMPILER_SVN_URL:5}
 popd
 
-( cat $SCRIPTS_DIR/sml/experiment.sig ) >> $LOG_FILE
 EXPERIMENT_NAME_SML=${EXPERIMENT_NAME//"-"/"_"}
 echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
-
-(
-cat <<EOF
-  datatype pl = Manticore | SML | DPH | C | Java
-  type run = {n_procs         : int, 
-	      time_sec        : real,
-	      gc_time_sec     : real option,
-	      cpu_time_sec    : real option,
-	      max_space_bytes : int option} 
-EOF
-) >> $LOG_FILE
 
 metadata "problem_name" "\"$EXPERIMENT_NAME\""
 
@@ -130,7 +118,7 @@ else
 fi
 metadata "seq_cutoff" "NONE"
 
-metadata "language" "Manticore"
+metadata "language" "Common.Manticore"
 metadata "compiler" "\"pmlc\""
 PMLC_VERSION=$( $PMLC -version 2>&1 )
 metadata "version" "\"$PMLC_VERSION\""
