@@ -38,7 +38,7 @@ structure Main =
 		if d' >= d then
 		    T.LEAF (Rand.inRangeInt (0, 1000))
 		else
-		    T.NODE (mk (d'+1), mk (d'+1), mk (d'+1))
+		    T.NODE ( mk (d'+1), mk (d'+1), mk (d'+1) )
 	in
 	    mk 0
 	end
@@ -48,7 +48,8 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    fun doit () = T.treeAdd (mkTree n)
+	    val t = mkTree n
+	    fun doit () = T.treeAdd t
 		
 	in
 	    RunPar.run doit
