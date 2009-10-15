@@ -24,14 +24,10 @@ structure Main =
     fun main (_, args) =
 	let
 	    val n = (case args
-		      of arg :: _ => Option.getOpt (SOME 1000, dfltN)
+		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    fun doit () =
-		let		
-		    val x = tabP(n, fn _ => Rand.inRangeInt (0, 10000))
-		in 
-		    PQuicksort.quicksort x
-		end
+	    val input = fromListP (List.tabulate (n, fn _ => Rand.inRangeInt (0, 10000)))
+	    fun doit () = PQuicksort.quicksort input
 		
 	in
 	    RunPar.run doit
@@ -39,5 +35,5 @@ structure Main =
 
   end
 
-val _ = Main.main ("", "10"::nil)
+val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
 
