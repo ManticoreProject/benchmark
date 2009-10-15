@@ -114,7 +114,7 @@ EOF
 
 metadata "problem_name" "\"$EXPERIMENT_NAME\""
 
-metadata "compiler_url" "SOME \"$COMPILER_SVN_URL\""
+metadata "compiler_src_url" "SOME \"$COMPILER_SVN_URL\""
 metadata "compiler_svn" "SOME $COMPILER_SVN_REVISION"
 metadata "script_url" "SOME \"$SCRIPT_SVN_URL\""
 metadata "script_svn" "SOME $SCRIPT_SVN_REVISION"
