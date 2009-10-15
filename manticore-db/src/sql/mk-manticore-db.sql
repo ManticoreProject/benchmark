@@ -52,7 +52,8 @@ CREATE TABLE experiments
   experiment_id SERIAL PRIMARY KEY,
   problem_id    integer   REFERENCES problems (problem_id),
   username      text      NOT NULL,
-  datetime      timestamp NOT NULL
+  datetime      timestamp NOT NULL,
+  description   text
 );
 
 CREATE TABLE contexts 
