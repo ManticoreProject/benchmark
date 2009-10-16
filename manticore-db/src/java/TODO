@@ -1,5 +1,7 @@
 Makefile, etc.
 
+Write out the specification of the JSON files this tool expects.
+
 What if a particular set of runs has already been entered into the
 database?
 - idea: include source file name in table 'contexts'

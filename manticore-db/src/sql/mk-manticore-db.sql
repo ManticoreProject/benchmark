@@ -36,10 +36,11 @@ END;
 
 /* TODO -- dump the data into some backup location before doing this */
 
-DROP TABLE IF EXISTS runs;
-DROP TABLE IF EXISTS contexts;
-DROP TABLE IF EXISTS experiments;
-DROP TABLE IF EXISTS problems;
+DROP VIEW  IF EXISTS view_runs   CASCADE;
+DROP TABLE IF EXISTS runs        CASCADE;
+DROP TABLE IF EXISTS contexts    CASCADE;
+DROP TABLE IF EXISTS experiments CASCADE;
+DROP TABLE IF EXISTS problems    CASCADE;
 
 CREATE TABLE problems 
 (
@@ -95,5 +96,12 @@ CREATE TABLE runs
   max_space_bytes integer -- in bytes
 );
 
-SELECT pg_grant('manticorer ','select','%','public');
+CREATE VIEW view_runs AS
+SELECT C.*, R.run_id, R.n_procs, R.time_sec, R.gc_time_sec, R.cpu_time_sec, R.max_space_bytes
+FROM   contexts C, runs R
+WHERE  C.context_id = R.context_id;
+-- Note:  the fields of R are named individually because if one tries to 
+--   SELECT * from the join, postgres complains that it can't handle
+--   two columns named context_id.
 
+SELECT pg_grant('manticorer ','select','%','public');

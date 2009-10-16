@@ -14,7 +14,10 @@ To compile the code, run the script
 
 .
 
-The scripts are both simple shell commands that run the appropriately
-flagged java tools.
+The scripts are just shell commands that run the javac and java with
+the appropriate flags.
 
--- Adam Shaw, Oct 2009
+See TODO for outstanding issues.
+
+Adam Shaw
+October 2009
