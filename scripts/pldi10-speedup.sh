@@ -12,7 +12,7 @@ PARALLEL_BENCHMARKS=(
     barnes-hut id-raytracer mandelbrot minimax pmergesort pquickhull pquicksort )
 PARALLEL_BUILD_RULES=(
     pfib tree-add plus-scan-par
-    barnes-hut raytracer-par mandelbrot-par ttt-par pmergesort-par pquickhull-par pquicksort-par )
+    barnes-hut-par raytracer-par mandelbrot-par ttt-par pmergesort-par pquickhull-par pquicksort-par )
 
 SEQUENTIAL_BENCHMARKS=( 
     fib tree-add plus-prefix 
@@ -22,8 +22,8 @@ SEQUENTIAL_BUILD_RULES=(
     barnes-hut-seq-elison raytracer-seq mandelbrot-seq ttt-seq-elison list-mergesort pquickhull-seq-elison list-quicksort )
 
 INPUT_SIZES=(
-    30 10 500000
-    200000 256 512 0 500000 1000000 500000 )
+    30 10 1000000
+    200000 256 512 0 1000000 1000000 1000000 )
 LEAF_SIZES=(
     128 128 128
     128 8 128 4 128 128 128 )
