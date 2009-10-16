@@ -1,0 +1,7 @@
+Makefile, etc.
+
+What if a particular set of runs has already been entered into the
+database?
+- idea: include source file name in table 'contexts'
+        - check it before (re)entering data
+
