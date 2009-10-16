@@ -37,12 +37,8 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    fun doit () = 
-		let
-		    val a = List.tabulate (n, fn _ => (Rand.inRangeInt (0, 100)))
-		in 
-		    PlusPrefix.plusPrefix a
-		end
+	    val a = List.tabulate (n, fn _ => (Rand.inRangeInt (0, 100)))
+	    fun doit () = PlusPrefix.plusPrefix a
 		
 	in
 	    RunSeq.run doit

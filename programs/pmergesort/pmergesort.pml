@@ -92,12 +92,8 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    fun doit () =
-		let		
-		    val x = Rope.tabP(n, fn _ => Rand.inRangeInt (0, 10000))
-		in 
-		    PMergesort.pMergesort Int.compare x
-		end
+	    val input = Rope.fromList (List.tabulate (n, fn _ => Rand.inRangeInt (0, 10000)))
+	    fun doit () = PMergesort.pMergesort Int.compare input
 		
 	in
 	    RunPar.run doit

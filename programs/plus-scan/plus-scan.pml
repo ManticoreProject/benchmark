@@ -17,12 +17,8 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    fun doit () = 
-		let
-		    val a = Rope.tabP (n, fn _ => (Rand.inRangeInt (0, 100)))
-		in 
-		    Scan.plusScan a
-		end
+	    val a = Rope.fromList (List.tabulate (n, fn _ => (Rand.inRangeInt (0, 100))))
+	    fun doit () = Scan.plusScan a
 		
 	in
 	    RunPar.run doit

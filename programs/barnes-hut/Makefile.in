@@ -21,7 +21,7 @@ $(TARGET)-seq-elison:	barnes-hut-par.mlb barnes-hut-par.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison barnes-hut-par.mlb
 
 $(TARGET)-seq:	barnes-hut-seq.mlb barnes-hut-seq.pml
-	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-par barnes-hut-seq.mlb
+	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq barnes-hut-seq.mlb
 
 $(TARGET)-smlnj:	barnes-hut.cm barnes-hut.sml
 	echo "SMLofNJ.exportFn(\"barnes-hut\", Main.main);" | $(SMLNJ) barnes-hut.cm
