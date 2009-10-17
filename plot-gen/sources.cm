@@ -1,0 +1,14 @@
+Library
+	signature EFFICIENCY
+	functor EfficiencyFn
+	structure PlotEfficiency
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+
+  ../manticore-db/src/sml/sources.cm
+
+  efficiency.sig
+  efficiency-fn.sml
+  plot-efficiency.sml
