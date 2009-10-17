@@ -1,4 +1,4 @@
-structure fib2009_10_16_14_11_55 : EXPERIMENT = struct
+structure fib2009_10_16_14_11_55 : EXPERIMENT_PLUS = struct
 val problem_name = "fib"
 val compiler_src_url = SOME "https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/swp"
 val compiler_svn = SOME 4311

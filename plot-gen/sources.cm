@@ -1,7 +1,6 @@
 Library
 	signature EFFICIENCY
 	functor EfficiencyFn
-	structure PlotEfficiency
 is
 
   $/basis.cm
@@ -11,4 +10,3 @@ is
 
   efficiency.sig
   efficiency-fn.sml
-  plot-efficiency.sml

@@ -1,4 +1,4 @@
-structure tree_add2009_10_16_14_49_44 : EXPERIMENT = struct
+structure tree_add2009_10_16_14_49_44 : EXPERIMENT_PLUS = struct
 val problem_name = "tree-add"
 val compiler_src_url = SOME "https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/swp"
 val compiler_svn = SOME 4311

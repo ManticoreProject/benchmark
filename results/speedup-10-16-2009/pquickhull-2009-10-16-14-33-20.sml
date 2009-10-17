@@ -1,4 +1,4 @@
-structure pquickhull2009_10_16_14_33_20 : EXPERIMENT = struct
+structure pquickhull2009_10_16_14_33_20 : EXPERIMENT_PLUS = struct
 val problem_name = "pquickhull"
 val compiler_src_url = SOME "https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/swp"
 val compiler_svn = SOME 4311

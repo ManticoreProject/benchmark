@@ -1,4 +1,4 @@
-structure minimax2009_10_16_14_50_44 : EXPERIMENT = struct
+structure minimax2009_10_16_14_50_44 : EXPERIMENT_PLUS = struct
 val problem_name = "minimax"
 val compiler_src_url = SOME "https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/swp"
 val compiler_svn = SOME 4311

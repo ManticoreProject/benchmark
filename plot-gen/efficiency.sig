@@ -1,6 +1,8 @@
 signature EFFICIENCY =
   sig
 
+    include EXPERIMENT
+
     type efficiency_result = {
 	 n_procs                       : int,
 	 avg_speedup                   : real,      (* average speedup *)
@@ -10,5 +12,7 @@ signature EFFICIENCY =
     }
 
     val efficiency_results : efficiency_result list
+
+    val plot : unit -> unit     (* emit a ploticus plot *)
 
   end
