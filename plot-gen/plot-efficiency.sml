@@ -5,7 +5,7 @@ structure PlotEfficiency =
 	let
 	    fun f {n_procs, avg_speedup, std_dev_speedup, avg_efficiency, std_dev_efficiency} =
 		TextIO.output (outS, Format.format "%d %f %g\n"
-			   [Format.INT n_procs, Format.REAL avg_efficiency, Format.REAL std_dev_efficiency])
+			   [Format.INT n_procs, Format.REAL ( 100.0 * avg_efficiency), Format.REAL (100.0 * std_dev_efficiency)])
 	in
 	    List.app f efficiency_results
 	end

@@ -1,0 +1,32 @@
+Group
+  structure Efficiency
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+
+  ../../manticore-db/src/sml/sources.cm
+  ../../plot-gen/sources.cm
+
+  barnes-hut-2009-10-16-14-13-34.sml
+  barnes-hut-2009-10-16-14-49-48.sml
+  fib-2009-10-16-14-11-55.sml
+  fib-2009-10-16-14-49-44.sml
+  id-raytracer-2009-10-16-14-16-13.sml
+  id-raytracer-2009-10-16-14-50-11.sml
+  list-mergesort-2009-10-16-14-50-47.sml
+  list-quicksort-2009-10-16-14-51-33.sml
+  mandelbrot-2009-10-16-14-17-55.sml
+  mandelbrot-2009-10-16-14-50-37.sml
+  minimax-2009-10-16-14-18-32.sml
+  minimax-2009-10-16-14-50-44.sml
+  plus-prefix-2009-10-16-14-49-44.sml
+  plus-scan-2009-10-16-14-12-04.sml
+  pmergesort-2009-10-16-14-20-36.sml
+  pquickhull-2009-10-16-14-33-20.sml
+  pquickhull-2009-10-16-14-51-10.sml
+  pquicksort-2009-10-16-14-36-35.sml
+  tree-add-2009-10-16-14-12-02.sml
+  tree-add-2009-10-16-14-49-44.sml
+
+  efficiency.sml

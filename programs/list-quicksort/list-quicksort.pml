@@ -38,7 +38,6 @@ structure ListQuicksort =
 structure Main =
   struct
 
-
     val dfltN = 100000
 	
     fun main (_, args) =
@@ -46,12 +45,8 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    fun doit () =
-		let		
-		    val x = List.tabulate(n, fn _ => Rand.inRangeInt (0, 10000))
-		in 
-		    ListQuicksort.quicksort x
-		end
+	    val x = List.tabulate(n, fn _ => Rand.inRangeInt (0, 10000))
+	    fun doit () = ListQuicksort.quicksort x
 		
 	in
 	    RunSeq.run doit
