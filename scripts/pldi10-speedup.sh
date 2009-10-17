@@ -22,8 +22,8 @@ SEQUENTIAL_BUILD_RULES=(
     barnes-hut-seq-elison raytracer-seq mandelbrot-seq ttt-seq-elison list-mergesort pquickhull-seq-elison list-quicksort )
 
 INPUT_SIZES=(
-    30 10 1000000
-    200000 256 512 0 1000000 1000000 1000000 )
+    30 13 1000000
+    200000 256 1024 0 1000000 1000000 1000000 )
 LEAF_SIZES=(
     128 128 128
     128 8 128 4 128 128 128 )
