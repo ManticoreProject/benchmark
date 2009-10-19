@@ -19,22 +19,24 @@ SEQUENTIAL_BENCHMARKS=(
     barnes-hut id-raytracer mandelbrot minimax list-mergesort pquickhull list-quicksort )
 SEQUENTIAL_BUILD_RULES=( 
     pfib-seq-elison tree-add-seq-elison plus-prefix
-    barnes-hut-seq-elison raytracer-seq mandelbrot-seq ttt-seq-elison list-mergesort pquickhull-seq-elison list-quicksort )
+    barnes-hut-seq-elison raytracer-seq mandelbrot-seq ttt-seq list-mergesort pquickhull-seq-elison list-quicksort )
 
 INPUT_SIZES=(
     30 13 1000000
     200000 256 1024 0 1000000 1000000 1000000 )
 LEAF_SIZES=(
     128 128 128
-    128 8 128 4 128 128 128 )
+    128 8 128 128 128 128 128 )
 
-NUM_TRIALS=8
+NUM_TRIALS=10
+
+./clean-all.sh
 
 for (( i = 0 ; i < ${#PARALLEL_BENCHMARKS[@]} ; i++ )); do
     ./experiment.sh -s ${INPUT_SIZES[i]} -a ${PARALLEL_BUILD_RULES[i]} -f ../programs/${PARALLEL_BENCHMARKS[i]} -l ${LEAF_SIZES[i]} -n ${PARALLEL_BENCHMARKS[i]} -t $NUM_TRIALS -p 1 -p 2 -p 3 -p 4 -p 5 -p 6 -p 7 -p 8 -p 9 -p 10 -p 11 -p 12 -p 13 -p 14 -p 15 -p 16
 done
 
 for (( i = 0 ; i < ${#SEQUENTIAL_BENCHMARKS[@]} ; i++ )); do
-    ./experiment.sh -s ${INPUT_SIZES[i]} -c ${SEQUENTIAL_BUILD_RULES[i]} -f ../programs/${SEQUENTIAL_BENCHMARKS[i]} -l ${LEAF_SIZES[i]} -n ${SEQUENTIAL_BENCHMARKS[i]} -t $NUM_TRIALS -p 1
+    ./experiment.sh -s ${INPUT_SIZES[i]} -c ${SEQUENTIAL_BUILD_RULES[i]} -f ../programs/${SEQUENTIAL_BENCHMARKS[i]} -n ${SEQUENTIAL_BENCHMARKS[i]} -t $NUM_TRIALS -p 1
 done
 
