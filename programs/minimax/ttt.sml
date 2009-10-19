@@ -344,9 +344,10 @@ structure TicTacToe = struct
     in
       app pr (map (fn (b,i) => (btos b, i)) (fringe t))
     end    
-
+val _ = go()
 end
 
+(*
 structure Main =
   struct
 
@@ -362,3 +363,5 @@ structure Main =
 	end
 
   end
+*)
+
