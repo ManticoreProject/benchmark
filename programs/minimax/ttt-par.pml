@@ -3,6 +3,18 @@ structure TicTacToe = struct
   fun compose (f, g) x = f(g x)
   val hd = List.hd
   val tl = List.tl
+  fun cut (s, n) = (List.take (s, n), List.drop (s, n))
+  fun parMap (f, xs) =
+      (case xs
+	of nil => nil
+	 | x :: nil => f x :: nil
+	 | xs => 
+	   let
+	       val (xs1, xs2) = cut (xs, List.length xs div 2)
+	       val (xs1', xs2') = (| parMap (f, xs1), parMap (f, xs2) |)
+	   in
+	       xs1' @ xs2'
+	   end)
 
   datatype player = X | O
 
@@ -135,18 +147,6 @@ structure TicTacToe = struct
   (* A list of all possible successor states given a board and a player to move. *)
   fun successors (b : board, p : player) : board list = map (moveTo (b, p)) (allMoves b)
 
-  fun toListP xs =
-      let
-	  val n = lengthP xs
-	  fun lp (i, acc) =
-	      if i < n then
-		  lp (i+1, subP(xs,i)::acc)
-	      else
-		  rev acc
-      in
-	  lp (0, nil)
-      end
-    
   (* minimax : player -> board -> game_tree *)
   (* Build the tree and score it at the same time. *)
   (* p is the player to move *)
@@ -155,8 +155,7 @@ structure TicTacToe = struct
         if gameOver(b) then
 	  mkLeaf (b, score b)
 	else let 
-	  val succs = successors (b, p)
-          val trees = toListP (mapP (minimax (other p), (fromListP succs)))
+          val trees = parMap (minimax (other p), (successors (b, p)))
 	  val scores = map (compose (snd, top)) trees
 	  in 
              case p

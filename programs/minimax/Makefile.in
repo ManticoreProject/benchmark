@@ -12,17 +12,20 @@ PMLC =		@PMLC@
 
 TARGET =	ttt
 
-all:		$(TARGET)-par $(TARGET)-seq-elison  $(TARGET)-smlnj
+all:		$(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison  $(TARGET)-smlnj
 
 $(TARGET)-par:	ttt-par.mlb ttt-par.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par ttt-par.mlb
 
 $(TARGET)-seq-elison:	ttt-par.mlb ttt-par.pml
-	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-seq-elison ttt-par.mlb
+	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison ttt-par.mlb
+
+$(TARGET)-seq:	ttt-seq.mlb ttt-seq.pml
+	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq ttt-seq.mlb
 
 $(TARGET)-smlnj:	ttt.cm ttt.sml
 	echo "SMLofNJ.exportFn(\"ttt\", Main.main);" | $(SMLNJ) ttt.cm
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison *.s
+	rm -f $(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison *.s
