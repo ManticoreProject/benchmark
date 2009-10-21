@@ -1,0 +1,13 @@
+#!/bin/bash
+
+NAME="plus-prefix"
+DESCRIPTION="sequential plus prefix computation over a list"
+
+## Parameters provided by the configure script
+
+# number of times to test each data point; for statistical validity
+NUM_TRIALS="@NUM_TRIALS@"
+MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
+
+# sequential elison 
+$MANTI_BENCH_ROOT/scripts/experiment.sh -e -f plus-prefix -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 

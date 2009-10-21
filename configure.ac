@@ -94,9 +94,41 @@ dnl ***** Makefiles *****
 
 dnl ***** Scripts ******
 AC_CONFIG_FILES([
+  programs/barnes-hut/run.sh:programs/barnes-hut/run_sh.in
+  programs/fib/run.sh:programs/fib/run_sh.in
+  programs/fib-array/run.sh:programs/fib-array/run_sh.in
+  programs/id-raytracer/run.sh:programs/id-raytracer/run_sh.in
+  programs/life-seq/run.sh:programs/life-seq/run_sh.in
+  programs/list-mergesort/run.sh:programs/list-mergesort/run_sh.in
+  programs/list-quicksort/run.sh:programs/list-quicksort/run_sh.in
+  programs/mandelbrot/run.sh:programs/mandelbrot/run_sh.in
+  programs/minimax/run.sh:programs/minimax/run_sh.in
   programs/plus-scan/run.sh:programs/plus-scan/run_sh.in
+  programs/plus-prefix/run.sh:programs/plus-prefix/run_sh.in
+  programs/pmerge/run.sh:programs/pmerge/run_sh.in
+  programs/pmergesort/run.sh:programs/pmergesort/run_sh.in
+  programs/pquickhull/run.sh:programs/pquickhull/run_sh.in
+  programs/pquicksort/run.sh:programs/pquicksort/run_sh.in
+  programs/tree-add/run.sh:programs/tree-add/run_sh.in
+
 ], [
+   chmod +x programs/barnes-hut/run.sh
+   chmod +x programs/fib/run.sh
+   chmod +x programs/fib-array/run.sh
+   chmod +x programs/id-raytracer/run.sh
+   chmod +x programs/life-seq/run.sh
+   chmod +x programs/list-mergesort/run.sh
+   chmod +x programs/list-quicksort/run.sh
+   chmod +x programs/mandelbrot/run.sh
+   chmod +x programs/minimax/run.sh
+   chmod +x programs/plus-prefix/run.sh
    chmod +x programs/plus-scan/run.sh
+   chmod +x programs/pmerge/run.sh
+   chmod +x programs/pmergesort/run.sh
+   chmod +x programs/pquickhull/run.sh
+   chmod +x programs/pquicksort/run.sh
+   chmod +x programs/tree-add/run.sh
+
 ])
 AC_CONFIG_FILES([
   scripts/experiment.sh:scripts/experiment_sh.in

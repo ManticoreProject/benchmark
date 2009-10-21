@@ -1,0 +1,22 @@
+#!/bin/bash
+
+NAME="fib-array"
+DESCRIPTION="synthetic benchmark: each element of a parallel array is seeded with fib(x) for some x"
+
+## Parameters provided by the configure script
+
+# number of times to test each data point; for statistical validity
+NUM_TRIALS="@NUM_TRIALS@"
+MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
+# generate different processor configurations used by the experiment
+# e.g., -p 1 -p 2 ... -p num_procs
+PROCS_LIST=""
+for i in {1..@NUM_PROCS@}; do
+    PROCS_LIST="$PROCS_LIST -p $i"
+done
+
+# parallel 
+$MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f fib-array-par -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# sequential elison 
+$MANTI_BENCH_ROOT/scripts/experiment.sh -e -f fib-array-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 

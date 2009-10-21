@@ -115,6 +115,8 @@ popd > /dev/null
 EXPERIMENT_NAME_SML=${EXPERIMENT_NAME//"-"/"_"}
 echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
 
+echo "datatype gc = datatype Common.gc" >> $LOG_FILE
+echo "datatype gc_stats = datatype Common.gc_stats" >> $LOG_FILE
 metadata "problem_name" "\"$EXPERIMENT_NAME\""
 
 metadata "compiler_src_url" "SOME \"$COMPILER_SVN_URL\""

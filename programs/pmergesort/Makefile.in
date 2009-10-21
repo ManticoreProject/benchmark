@@ -8,7 +8,7 @@ SHELL =		/bin/sh
 SMLNJ =		@SMLNJ_CMD@
 MLTON =		@MLTON@
 PMLC =		@PMLC@
-#PMLCFLAGS =	-Cdebug=true
+PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	pmergesort
 
