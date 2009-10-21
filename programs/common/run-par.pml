@@ -1,3 +1,9 @@
+(* run-par.pml
+ *
+ * COPYRIGHT (c) 2009 The Manticore Project (http://manticore.cs.uchicago.edu)
+ * All rights reserved.
+ *)
+
 structure RunPar (* sig
   val run : (unit -> unit) -> unit
   end *) = struct

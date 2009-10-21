@@ -14,15 +14,14 @@ structure TreeAdd =
       = LEAF of int
       | NODE of (tree * tree * tree)
 
-    fun treeAdd tree =
-	(case tree
-	  of LEAF x => x
-	   | NODE (t1, t2, t3) =>
-	     let
-		 val (x1, x2, x3) = (| treeAdd t1, treeAdd t2, treeAdd t3 |)
-	     in
-		 x1 + x2 + x3
-	     end)
+    fun treeAdd tree = (case tree
+	   of LEAF x => x
+	    | NODE (t1, t2, t3) => let
+		val (x1, x2, x3) = (| treeAdd t1, treeAdd t2, treeAdd t3 |)
+		in
+		  x1 + x2 + x3
+		end
+	  (* end case *))
   end
 
 structure Main =
@@ -32,28 +31,23 @@ structure Main =
 
     val dfltN = 10
 
-    fun mkTree d =
-	let
-	    fun mk d' =
-		if d' >= d then
-		    T.LEAF (Rand.inRangeInt (0, 1000))
-		else
-		    T.NODE ( mk (d'+1), mk (d'+1), mk (d'+1) )
-	in
+    fun mkTree d = let
+	  fun mk d' = if d' >= d
+		then T.LEAF (Rand.inRangeInt (0, 1000))
+		else T.NODE ( mk (d'+1), mk (d'+1), mk (d'+1) )
+	  in
 	    mk 0
-	end
+	  end
 	
-    fun main (_, args) =
-	let
-	    val n = (case args
-		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
-		       | _ => dfltN)
-	    val t = mkTree n
-	    fun doit () = T.treeAdd t
-		
-	in
+    fun main (_, args) = let
+	  val n = (case args
+		    of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
+		     | _ => dfltN)
+	  val t = mkTree n
+	  fun doit () = T.treeAdd t		
+	  in
 	    RunPar.run doit
-	end
+	  end
 
   end
 
