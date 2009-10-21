@@ -59,5 +59,6 @@ dnl ***** Makefiles *****
   programs/pquicksort/Makefile
   programs/tree-add/Makefile
   scripts/experiment.sh:scripts/experiment_sh.in
+  scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
 )
 AC_OUTPUT

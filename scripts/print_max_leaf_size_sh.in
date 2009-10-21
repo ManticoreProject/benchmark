@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PMLC="@PMLC@"
+
+$PMLC -o print-max-leaf-size print-max-leaf-size.pml 2> /dev/null
+./print-max-leaf-size
+
+rm -rf print-max-leaf-size
