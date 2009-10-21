@@ -22,15 +22,15 @@ val n_procs =
  1 :: nil
 val nTrials = 10
 val runs =
-		{ n_procs=0,		time_sec=0.961, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.961, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.959, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.935, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.901, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.960, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.957, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.957, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.955, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
-		{ n_procs=0,		time_sec=0.962, 		gc_time_sec=NONE,		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.961, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.961, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.959, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.935, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.901, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.960, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.957, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.957, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.955, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
+		{ n_procs=0,		time_sec=0.962, 		gc=[],		cpu_time_sec=NONE,		max_space_bytes=NONE} ::
 		nil
 end
