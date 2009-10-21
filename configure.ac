@@ -29,11 +29,17 @@ dnl
   esac
 fi
 
+PMLCFLAGS=""
+AC_ARG_WITH(pmlcflags,
+  AC_HELP_STRING([--with-pmlcflags=PATH], [Manticore compiler flags]),
+  PMLCFLAGS=$with_pmlcflags)
+
 MANTICORE_BINDIR=$MANTICORE_ROOT/bin
 PMLC=$MANTICORE_BINDIR/pmlc
 
 AC_SUBST(MANTICORE_ROOT)
 AC_SUBST(PMLC)
+AC_SUBST(PMLCFLAGS)
 
 AC_CONFIG_FILES(\
 dnl ***** Makefiles *****

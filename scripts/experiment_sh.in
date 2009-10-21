@@ -11,26 +11,27 @@ SCRIPTS_DIR="@MANTI_BENCH_SCRIPTS@"
 PMLC="@PMLC@"
 SIZE=""
 PROCS=""
-PARALLEL_BUILD_RULE=""
-SEQUENTIAL_BUILD_RULE=""
+SEQUENTIAL_BINARY="false"
 BENCHMARK_PATH=""
-MAX_LEAF_SIZE="128"
 EXPERIMENT_NAME="experiment"
+DESCRIPTION=""
+GC_STATS="false"
 NUM_TRIALS="1"
 
 usage="See the README file for instructions"
 
-while getopts ":t:s:p:a:c:f:l:n:x" options; 
+while getopts ":s:p:f:en:gd:t:a:" options; 
 do
     case $options in
-	t ) NUM_TRIALS="$OPTARG";;
 	s ) SIZE="$OPTARG";;
 	p ) PROCS="$PROCS $OPTARG";;
-	a ) PARALLEL_BUILD_RULE="$OPTARG";;
-	c ) SEQUENTIAL_BUILD_RULE="$OPTARG";;
 	f ) BENCHMARK_PATH="$OPTARG";;
-	l ) MAX_LEAF_SIZE="$OPTARG";;
+	e ) SEQUENTIAL_BINARY="true";;
 	n ) EXPERIMENT_NAME="$OPTARG";;
+	d ) DESCRIPTION="$OPTARG";;
+	g ) GC_STATS="true";;
+	t ) NUM_TRIALS="$OPTARG";;
+	a ) PMLC_FLAGS="$OPTARG";;
 	\? ) echo $usage
             exit 1;;
 	* ) echo $usage
@@ -38,22 +39,19 @@ do
     esac
 done
 
-if [ -z "$SIZE" ]; then
-    echo "Enter one choice for problem size"
-    exit 1
-elif [ -z "$PROCS" ]; then
+if [ $SEQUENTIAL_BINARY == "true" ]; then
+    PROCS="1"
+fi
+
+if [ -z "$PROCS" ]; then
     echo "Enter at least one choice for number of processors"
     exit 1
-elif [ ! -d "$BENCHMARK_PATH" ]; then
-    echo "Need a path to the benchmark directory (-f)"
+elif [ ! -w "$BENCHMARK_PATH" ]; then
+    echo "Need a path to the benchmark executable"
 elif [ -z "$MANTICORE_ROOT" ]; then
     echo "Need to set the environment variable MANTICORE_ROOT to contain the path to the Manticore root directory"
 else
     :
-fi
-
-if [ $MAX_LEAF_SIZE != "128" ]; then
-    $SCRIPTS_DIR/set-max-leaf-size.sh $MAX_LEAF_SIZE
 fi
 
 # Gather metadata
@@ -81,21 +79,33 @@ SCRIPT_SVN_REVISION=${SCRIPT_SVN_REVISION:10}
 SCRIPT_SVN_URL=$( svn info | grep URL )
 SCRIPT_SVN_URL=${SCRIPT_SVN_URL:5}
 
-pushd $BENCHMARK_PATH
+CURRENT_DIR=`pwd`
+BENCHMARK_PATH="$CURRENT_DIR/$BENCHMARK_PATH"
+BENCHMARK_DIR=$( dirname $BENCHMARK_PATH )
+
+pushd $BENCHMARK_DIR > /dev/null
 
 BENCHMARK_SVN_REVISION=$( svn info | grep Revision )
 BENCHMARK_SVN_REVISION=${BENCHMARK_SVN_REVISION:10}
 BENCHMARK_SVN_URL=$( svn info | grep URL )
 BENCHMARK_SVN_URL=${BENCHMARK_SVN_URL:5}
+BENCHMARK_SVN_STATUS=$( svn st -q | wc -l )
+if [ $BENCHMARK_SVN_STATUS != "0" ]; then
+    echo "WARNING: not all changes have been committed to the benchmark directory"
+fi
 EXPERIMENTOR=$( whoami )
 MACHINE=$( uname -n )
 
-pushd $MANTICORE_ROOT
+pushd $MANTICORE_ROOT > /dev/null
     COMPILER_SVN_REVISION=$( svn info | grep Revision )
     COMPILER_SVN_REVISION=${COMPILER_SVN_REVISION:10}
     COMPILER_SVN_URL=$( svn info | grep URL )
     COMPILER_SVN_URL=${COMPILER_SVN_URL:5}
-popd
+    COMPILER_SVN_STATUS=$( svn st -q | wc -l )
+    if [ $COMPILER_SVN_STATUS != "0" ]; then
+	echo "WARNING: not all changes have been committed to the compiler"
+    fi
+popd > /dev/null
 
 EXPERIMENT_NAME_SML=${EXPERIMENT_NAME//"-"/"_"}
 echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
@@ -106,16 +116,13 @@ metadata "compiler_src_url" "SOME \"$COMPILER_SVN_URL\""
 metadata "compiler_svn" "SOME $COMPILER_SVN_REVISION"
 metadata "script_url" "SOME \"$SCRIPT_SVN_URL\""
 metadata "script_svn" "SOME $SCRIPT_SVN_REVISION"
-if [ -n "$SEQUENTIAL_BUILD_RULE" ]; then
+if [ $SEQUENTIAL_BINARY == "true" ]; then
     metadata "seq_compilation" "SOME true"
 else
     metadata "seq_compilation" "SOME false"
 fi
-if [ $MAX_LEAF_SIZE != "128" ]; then
-    metadata "max_leaf_size" "SOME $MAX_LEAF_SIZE"
-else
-    metadata "max_leaf_size" "NONE"
-fi
+MAX_LEAF_SIZE=$( $SCRIPTS_DIR/print-max-leaf-size.sh )
+metadata "max_leaf_size" "SOME $MAX_LEAF_SIZE"
 metadata "seq_cutoff" "NONE"
 
 metadata "language" "Common.Manticore"
@@ -129,7 +136,7 @@ metadata "input" "\"$SIZE\""
 metadata "username" "\"$EXPERIMENTOR\""
 metadata "datetime" "\"$DATETIME_MD\""
 metadata "machine" "\"$MACHINE\""
-metadata "description" "\"\""
+metadata "description" "\"$DESCRIPTION\""
 
 # extras
 metadata "pmlcFlags" "\"$PMLC_FLAGS\""
@@ -140,60 +147,71 @@ metadata "nTrials" "$NUM_TRIALS"
 
 echo "Logging performance results to $LOG_FILE"
 
-if [ -n "$SEQUENTIAL_BUILD_RULE" ]; then
-    make -s $SEQUENTIAL_BUILD_RULE
-    SEQUENTIAL_EXE=$SEQUENTIAL_BUILD_RULE
+if [ $GC_STATS == "false" ]; then
+    ARGS="$SIZE"
+else
+    ARGS="$SIZE -gcstats=all,sml -gcstatsfile=stats.sml"
+fi
+
+if [ $SEQUENTIAL_BINARY == "true" ]; then
+    SEQUENTIAL_EXE=$BENCHMARK_PATH
     echo "val runs =" >> $LOG_FILE
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
-	echo "./$SEQUENTIAL_EXE $SIZE"
-	RES=$( ./$SEQUENTIAL_EXE $SIZE )
+	echo "$SEQUENTIAL_EXE $ARGS"
+	RES=$( $SEQUENTIAL_EXE $ARGS )
 	if [ $? == "0" ]; then
 	    echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
 	    echo -n -e "$RES" >> $LOG_FILE
+	    echo -n -e ",\t\t" >> $LOG_FILE
+	    if [ $GC_STATS == "false" ]; then
+		echo -n -e "gc=[]" >> $LOG_FILE
+	    else
+		echo -n -e "gc=" >> $LOG_FILE
+		cat stats.sml >> $LOG_FILE
+		rm -rf stats.sml
+	    fi
 	else
 	    echo "Benchmark failed unexpectedly with nonzero return code"
 	    exit 1
 	fi
-	echo -e ", \t\tgc_time_sec=NONE,\t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
+	echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
     done
     echo -e "\t\tnil" >> $LOG_FILE
-elif [ -n "$PARALLEL_BUILD_RULE" ]; then
-    make -s $PARALLEL_BUILD_RULE
-    PARALLEL_EXE=$PARALLEL_BUILD_RULE
+else
+    PARALLEL_EXE=$BENCHMARK_PATH
     echo "val runs =" >> $LOG_FILE
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	for p in $PROCS; do
-	    echo "./$PARALLEL_EXE -p $p $SIZE"
-	    RES=$( ./$PARALLEL_EXE -p $p $SIZE )
+	    echo "$PARALLEL_EXE -p $p $ARGS"
+	    RES=$( $PARALLEL_EXE -p $p $ARGS )
 	    retcode=$?
 	    nretries=0
 	    while [ $retcode != "0" ]; do
 		let nretries=nretries+1
 		echo "Benchmark failed unexpectedly with nonzero return code -- retrying."
-		RES=$( ./$PARALLEL_EXE -p $p $SIZE )
+		RES=$( $PARALLEL_EXE -p $p $ARGS )
 		retcode=$?
 		if [ $nretries -gt 100 ]; then
 		    echo "Exceeded maximum number of failed executions of the benchmark"
 		    exit 1
 		fi
 	    done
-	    echo -n -e "\t\t{ n_procs=$p,\t\ttime_sec=" >> $LOG_FILE
+	    echo -n -e ",\t\t" >> $LOG_FILE
+	    if [ $GC_STATS == "false" ]; then
+		echo -n -e "gc=[]" >> $LOG_FILE
+	    else
+		echo -n -e "gc=" >> $LOG_FILE
+		cat stats.sml >> $LOG_FILE
+		rm -rf stats.sml
+	    fi
+	    echo -n -e "\t\t{ n_procs=$p,\tgc=NONE,\t\ttime_sec=" >> $LOG_FILE
 	    echo -n -e "$RES" >> $LOG_FILE
-	    echo -e ", \t\tgc_time_sec=NONE,\t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
+	    echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
 	done
     done
     echo -e "\t\tnil" >> $LOG_FILE
-else
-    echo "Provide a build rule (either -a or -b)"
-    exit 1
 fi
 
 echo -e "end" >> $LOG_FILE # structure
 
-# Clean up
-
-#make clean
-popd
-if [ $MAX_LEAF_SIZE != "128" ]; then
-    $SCRIPTS_DIR/restore-max-leaf-size.sh.
-fi
+popd > /dev/null

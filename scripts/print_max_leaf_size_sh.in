@@ -1,8 +1,10 @@
 #!/bin/bash
 
 PMLC="@PMLC@"
+SCRIPTS_DIR="@MANTI_BENCH_SCRIPTS@"
 
-$PMLC -o print-max-leaf-size print-max-leaf-size.pml 2> /dev/null
-./print-max-leaf-size
-
-rm -rf print-max-leaf-size
+( cd $SCRIPTS_DIR
+  $PMLC -Csequential=true -o print-max-leaf-size print-max-leaf-size.pml 2> /dev/null
+  ./print-max-leaf-size
+  rm -rf print-max-leaf-size
+)
