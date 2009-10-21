@@ -56,8 +56,8 @@ plot_title = 'Minimax'
 base_context_id = 52
 par_context_id  = 51
 
-base = collect_data.baseline_time(base_context_id)
-pars = collect_data.parallel_times(par_context_id)
+base = collect_data.med_baseline_time(base_context_id)
+pars = collect_data.med_parallel_times(par_context_id)
 effs = efficiencies(base, pars)
 
 efficiency_plot(plot_title, effs)

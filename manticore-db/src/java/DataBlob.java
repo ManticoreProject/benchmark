@@ -60,7 +60,26 @@ public class DataBlob {
 		
     }
 	
-    static DataBlob fromJSON(String filename) throws IOException, JSONException {
+    static DataBlob fromJSON(String filename) 
+	throws ClassNotFoundException, SQLException, RuntimeException, IOException, JSONException {
+
+	// first check if the current source file has already been pushed into the db
+	// if so, return null
+	String justFile = filename.substring(1+filename.lastIndexOf('/'));
+
+	Integer kOpt = Utils.lookFor("contexts",
+				     "data_source_file",
+				     justFile,
+				     "context_id");
+
+	if (kOpt != null) {
+	    System.out.println("With respect to data file " + justFile + ":");
+	    System.out.println("It looks as though this file has already been recorded in the db.");
+	    System.out.println("The program will refrain from writing it.");
+	    return null;
+	}
+
+	// since the file looks not to be in the database, parse it and write it
 
 	BufferedReader br = new BufferedReader(new FileReader(filename));
 	String in = "";
@@ -90,8 +109,8 @@ public class DataBlob {
 		
 	Experiment e = new Experiment(username, datetime, description);
 		
-	Context c = new Context(language, compiler, version,
-				bench_url, bench_svn, input, username, machine, datetime);
+	Context c = new Context(language, compiler, version, bench_url, bench_svn,
+				input, username, machine, datetime, justFile);
 
 	int nRuns = runs.length();
 	List<Run> rs = new ArrayList<Run>(nRuns);
@@ -149,16 +168,22 @@ public class DataBlob {
 	}
 	
 	for (String f : args) {
-	    if (!f.endsWith(".json")) {
+	    String filename = f.substring(1+f.lastIndexOf('#'));
+	    if (!filename.endsWith(".json")) {
 		exitWithoutWriting("Please enter only filenames with suffix 'json': " +
 				   "you entered " + f + ".");
 	    }
 	}
 
 	for (String f : args) {
-	    System.out.println("Writing " + f + " to the database...");
+	    String filename = f.substring(1+f.lastIndexOf('#'));
+	    System.out.println("Writing " + filename + " to the database...");
 	    DataBlob b = fromJSON(f);
-	    b.writeToDB();
+	    if (b != null) {
+		b.writeToDB();
+	    } else {
+		// don't
+	    }
 	    System.out.println("Done.");
 	}
 

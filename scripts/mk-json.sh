@@ -2,6 +2,8 @@
 
 # TODO check for exactly one argument
 
+rm -rf .cm
+
 NEW_BASENAME=${1%.sml}
 
 STRUCTURE_NAME=`grep "structure" $1 | cut -d " " -f 2`
@@ -15,6 +17,7 @@ Library
   signature EXPERIMENT
   functor MakeJSONFn
   structure Main
+  structure $STRUCTURE_NAME
 is
   \$/basis.cm
   common.sml

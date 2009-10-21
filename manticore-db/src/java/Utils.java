@@ -64,6 +64,34 @@ public class Utils {
 	conn.close();
     }	
 	
+    static Integer lookFor(String tablename,
+			   String field,
+			   String value,
+			   String returning)
+	throws ClassNotFoundException, SQLException, IllegalStateException {
+	String query = "SELECT " + returning + " FROM " +
+	    tablename + " WHERE " + field + "='" +
+	    value + "'";
+	Class.forName("org.postgresql.Driver");
+	Connection conn = DriverManager.getConnection(url, props);
+	Statement st = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+	ResultSet rs = st.executeQuery(query);	
+	int n = numRows(rs); // leaves cursor at first
+	if (n == 1) {
+	    int m = rs.getInt(1);
+	    st.close();
+	    conn.close();
+	    return m;
+	}
+	st.close();
+	conn.close();
+	if (n == 0) {
+	    return null;
+	} else {
+	    throw new IllegalStateException("More than one record?");	       
+	}
+    }
+
     static int insertAndReturnNewKey(String tableName,
 				     List<String> fieldNames,
 				     List<String> values,

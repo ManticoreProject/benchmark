@@ -23,4 +23,5 @@ val pmlcFlags = ""
 val n_procs = 
  1 ::  2 ::  3 ::  4 ::  5 ::  6 ::  7 ::  8 ::  9 ::  10 ::  11 ::  12 ::  13 ::  14 ::  15 ::  16 :: nil
 val nTrials = 8
-val runs =
+val runs = []
+end

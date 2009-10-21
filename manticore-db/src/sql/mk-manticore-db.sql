@@ -82,7 +82,9 @@ CREATE TABLE contexts
   input     text,               -- cmd-line input to the program, if any
   username  text      NOT NULL, -- who conducted the experiment
   machine   text      NOT NULL, -- on what machine was exp. conducted
-  datetime  timestamp NOT NULL
+  datetime  timestamp NOT NULL,
+
+  data_source_file text -- the file whence the data came
 );
 
 CREATE TABLE runs 

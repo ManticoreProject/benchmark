@@ -40,6 +40,20 @@ def unzip3(triples):
     zs.append(z)
   return (xs, ys, zs)
 
+# unzip3 : (a, b, c, d) list -> (a list, b list, c list, d list)
+
+def unzip4(quads):
+  xs = []
+  ys = []
+  zs = []
+  hs = []
+  for (x, y, z, h) in quads:
+    xs.append(x)
+    ys.append(y)
+    zs.append(z)
+    hs.append(h)
+  return (xs, ys, zs, hs)
+
 # cpmap : ((a, b) -> c) * a list * b list -> c list
 # map a function over the cartesian product of two lists
 
@@ -50,9 +64,12 @@ def cpmap(f, xs, ys):
       retval.append(f(x,y))
   return retval
 
-# medians : (index, value) list -> (index, value) list
+# agg_by : (value list -> value) * (index, value) list -> (index, value) list
+# Given an aggregating function and a list of index, value pairs,
+#   return pairs where each index appears exactly once and all values
+#   for that index have been aggregated with the given function.
 
-def medians(pairs):
+def agg_by(f, pairs):
   retval = []
   if len(pairs) == 0:
     return retval
@@ -68,6 +85,16 @@ def medians(pairs):
   uniqs = uniq(np.sort(firsts))
   for u in uniqs:
     curr_values = map(select_value, filter(with_index(u), pairs))
-    med = np.median(curr_values)
-    retval.append((u, med))
+    agg = f(curr_values)
+    retval.append((u, agg))
   return retval
+
+# medians : (index, value) list -> (index, value) list
+
+def medians(pairs):
+  return agg_by(np.median, pairs)
+
+# stdevs : (index, value) list -> (index, value) list
+
+def stdevs(pairs):
+  return agg_by(np.std, pairs)
