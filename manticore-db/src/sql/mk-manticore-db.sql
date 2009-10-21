@@ -37,6 +37,7 @@ END;
 /* TODO -- dump the data into some backup location before doing this */
 
 DROP VIEW  IF EXISTS view_runs   CASCADE;
+DROP TABLE IF EXISTS gc          CASCADE;
 DROP TABLE IF EXISTS runs        CASCADE;
 DROP TABLE IF EXISTS contexts    CASCADE;
 DROP TABLE IF EXISTS experiments CASCADE;
@@ -93,17 +94,38 @@ CREATE TABLE runs
   context_id      integer REFERENCES contexts (context_id),
   n_procs         integer NOT NULL, -- how many procs used in parallel?
   time_sec        double precision NOT NULL,
-  gc_time_sec     double precision,
   cpu_time_sec    double precision,
   max_space_bytes integer -- in bytes
 );
 
+CREATE TABLE gc
+(
+  gc_id                SERIAL PRIMARY KEY,
+  run_id               integer REFERENCES runs (run_id),
+  processor            integer,
+  minor_n_collections  integer,
+  minor_alloc_bytes    bigint,
+  minor_copied_bytes   bigint,
+  minor_time_coll_sec  double precision,
+  major_n_collections  integer,
+  major_alloc_bytes    bigint,
+  major_copied_bytes   bigint,
+  major_time_coll_sec  double precision,
+  global_n_collections integer,
+  global_alloc_bytes   bigint,
+  global_copied_bytes  bigint,
+  global_time_coll_sec double precision,
+  n_promotions         integer,
+  prom_bytes           bigint,
+  mean_prom_time_sec   double precision  
+);
+
 CREATE VIEW view_runs AS
-SELECT C.*, R.run_id, R.n_procs, R.time_sec, R.gc_time_sec, R.cpu_time_sec, R.max_space_bytes
+SELECT C.*, R.run_id, R.n_procs, R.time_sec, R.cpu_time_sec, R.max_space_bytes
 FROM   contexts C, runs R
 WHERE  C.context_id = R.context_id;
 -- Note:  the fields of R are named individually because if one tries to 
 --   SELECT * from the join, postgres complains that it can't handle
 --   two columns named context_id.
 
-SELECT pg_grant('manticorer ','select','%','public');
+SELECT pg_grant('manticorer ', 'select', '%', 'public');
