@@ -1,5 +1,7 @@
 functor MakeJSONFn (E : EXPERIMENT) = struct
 
+  structure C = Common
+
   fun dquote s = String.concat ["\"", s, "\""]
 
   datatype json_value
@@ -43,13 +45,18 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
     | mkPairOpt (SOME value) name = mkPair value name
 
   fun buildJSON () = let
-    fun buildGC {num, alloc, copied, time} : json_value =
-      Object [("num", Int num),
-	      ("alloc", BigInt alloc),
-	      ("copied", BigInt copied),
-	      ("time", Real time)]
-    fun buildGCStats {processor, minor, major, global, promotion} = let
-      val {num, bytes, time} = promotion
+    fun buildGC (C.GC info) : json_value = let
+      val {n_collections=num, alloc_bytes=alloc, 
+	   copied_bytes=copied, time_coll_sec=time} = info
+      in
+	Object [("num", Int num),
+		("alloc", BigInt alloc),
+		("copied", BigInt copied),
+		("time", Real time)]
+      end
+    fun buildGCStats (C.GCS info) : string = let
+      val {processor, minor, major, global, promotion} = info
+      val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=time} = promotion
       val promotionObj = Object [("num", Int num), 
 				 ("bytes", BigInt bytes), 
 				 ("time", Real time)]
@@ -84,7 +91,7 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
       [mkPair (String E.problem_name) "problem_name",
        mkPair (String E.username) "username",
        mkPair (String E.datetime) "datetime",
-       mkPair (String (Common.pltos E.language)) "language",
+       mkPair (String (C.pltos E.language)) "language",
        mkPair (String E.compiler) "compiler",
        mkPair (String E.version) "version",
        mkPair (String E.description) "description",
