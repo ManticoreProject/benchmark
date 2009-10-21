@@ -1,18 +1,18 @@
 structure Common = struct
 
-  type gc = {num       : int,            (* number of collections *)
-	     alloc     : Int64.int,       (* bytes allocated *)
-	     copied    : Int64.int,       (* bytes copied *)
-	     time      : real}            (* elapsed time *)
+  type gc = {n_collections : int,       (* number of collections *)
+	     alloc_bytes   : Int64.int, (* bytes allocated *)
+	     copied_bytes  : Int64.int, (* bytes copied *)
+	     time_coll_sec : real}      (* elapsed time *)
 
   (* garbage collection stats *)
   type gc_stats = {processor    : int,
 		   minor        : gc,
 		   major        : gc,
 		   global       : gc,
-		   promotion    : {num    : int,
-				   bytes  : Int64.int,
-				   time   : real}}     (* mean time *)
+		   promotion    : {n_promotions       : int,
+				   prom_bytes         : Int64.int,
+				   mean_prom_time_sec : real}} (* mean time *)
 
   type run = {n_procs         : int, 
 	      time_sec        : real,
