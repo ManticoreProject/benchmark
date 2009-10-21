@@ -6,11 +6,17 @@ signature MAIN : sig
   val run : int -> unit
 end
 
-The run function takes a problem size, runs the benchmark, and prints the result to stdout. The result should be a legal SML expression.
+The run function takes a problem size, runs the benchmark,
+and prints the result to stdout. The result should be a
+legal SML expression.
 
 ** Benchmark makefile **
 
-The makefile shall include rules for compiling each version of the benchmark. At a minimum, each parallel benchmark shall include rules for the standard parallel version, the sequential elison (parallel code compiled as a sequential program) and the sequential baseline.
+The makefile shall include rules for compiling each version
+of the benchmark. At a minimum, each parallel benchmark shall
+include rules for the standard parallel version, the
+sequential elison (parallel code compiled as a sequential
+program) and the sequential baseline.
 
 ** Benchmark script **
 
@@ -23,8 +29,12 @@ The benchmark script takes the following parameters:
     -f	      path to the directory containing the benchmark
     -l	      max leaf size (used by the rope data structure)
     -n	      name of the experiment
-    -t	      number of repeated runs to do for each data point (default is 1)**
+    -t	      number of repeated runs to do for each data
+	      point (default is 1)**
 
-The * indicates that one or more values may be provided and the ** indicates that one or no value may be provided.
+The * indicates that one or more values may be provided and
+the ** indicates that one or no value may be provided.
 
-The script expects the makefile build rule to create a binary of the same name in the benchmark directory.
+The script expects the makefile build rule to create a binary
+of the same name in the benchmark directory.
+
