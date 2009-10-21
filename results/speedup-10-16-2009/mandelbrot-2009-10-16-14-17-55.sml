@@ -1,4 +1,4 @@
-structure mandelbrot2009_10_16_14_17_55 : EXPERIMENT_PLUS = struct
+structure mandelbrot2009_10_16_14_17_55 : EXPERIMENT = struct
 val problem_name = "mandelbrot"
 val compiler_src_url = SOME "https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/swp"
 val compiler_svn = SOME 4311

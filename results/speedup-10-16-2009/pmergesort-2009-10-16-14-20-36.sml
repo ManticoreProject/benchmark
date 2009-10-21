@@ -1,4 +1,4 @@
-structure pmergesort2009_10_16_14_20_36 : EXPERIMENT_PLUS = struct
+structure pmergesort2009_10_16_14_20_36 : EXPERIMENT = struct
 val problem_name = "pmergesort"
 val compiler_src_url = SOME "https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/swp"
 val compiler_svn = SOME 4311

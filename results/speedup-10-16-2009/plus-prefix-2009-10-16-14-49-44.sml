@@ -1,4 +1,4 @@
-structure plus_prefix2009_10_16_14_49_44 : EXPERIMENT_PLUS = struct
+structure plus_prefix2009_10_16_14_49_44 : EXPERIMENT = struct
 val problem_name = "plus-prefix"
 val compiler_src_url = SOME "https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/swp"
 val compiler_svn = SOME 4311
