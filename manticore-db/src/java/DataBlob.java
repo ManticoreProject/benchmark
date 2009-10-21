@@ -118,7 +118,49 @@ public class DataBlob {
 	    JSONObject curr = runs.getJSONObject(i);
 	    int n_procs = curr.getInt("n_procs");
 	    double time_sec = curr.getDouble("time_sec");
-	    Run r = new Run(n_procs, time_sec);
+	    // TODO -- cpu time and max bytes
+
+	    JSONArray jgcs = j.getJSONArray("gc");
+	    int ngcs = jgcs.length();
+            List<GC> gcs = new ArrayList<GC>(ngcs);
+	    for (int k = 0; k < ngcs; k++) {
+		JSONObject currGC = jgcs.getJSONObject(k);
+		int processor =	j.getInt("processor");
+		int minor_n_collections = j.getInt("minor_n_collections");
+		long minor_alloc_bytes = j.getLong("minor_alloc_bytes");
+		long minor_copied_bytes = j.getLong("minor_copied_bytes");
+		double minor_time_coll_sec = j.getDouble("minor_time_coll_sec");
+		int major_n_collections = j.getInt("major_n_collections");
+		long major_alloc_bytes = j.getLong("major_alloc_bytes");
+		long major_copied_bytes = j.getLong("major_copied_bytes");
+		double major_time_coll_sec = j.getDouble("major_time_coll_sec");
+		int global_n_collections = j.getInt("global_n_collections");
+		long global_alloc_bytes = j.getLong("global_alloc_bytes");
+		long global_copied_bytes = j.getLong("global_copied_bytes");
+		double global_time_coll_sec = j.getDouble("global_time_coll_sec");
+		int n_promotions = j.getInt("n_promotions");
+		long prom_bytes = j.getLong("prom_bytes");
+		double mean_prom_time_sec = j.getDouble("mean_prom_time_sec");
+		GC gc = new GC(processor,
+			       minor_n_collections,
+			       minor_alloc_bytes,
+			       minor_copied_bytes,
+			       minor_time_coll_sec,
+			       major_n_collections,
+			       major_alloc_bytes,
+			       major_copied_bytes,
+			       major_time_coll_sec,
+			       global_n_collections,
+			       global_alloc_bytes,
+			       global_copied_bytes,
+			       global_time_coll_sec,
+			       n_promotions,
+			       prom_bytes,
+			       mean_prom_time_sec);
+		gcs.add(gc);
+	    }
+
+	    Run r = new Run(n_procs, time_sec, gcs);
 	    rs.add(r);
 	}
 		
