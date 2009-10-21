@@ -74,8 +74,8 @@ public class DataBlob {
 
 	if (kOpt != null) {
 	    System.out.println("With respect to data file " + justFile + ":");
-	    System.out.println("It looks as though this file has already been recorded in the db.");
-	    System.out.println("The program will refrain from writing it.");
+	    System.out.println("  - It looks as though this file has already been recorded in the db.");
+	    System.out.println("  - The program will refrain from writing it.");
 	    return null;
 	}
 
