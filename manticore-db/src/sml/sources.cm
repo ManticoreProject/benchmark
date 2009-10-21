@@ -1,12 +1,10 @@
 Library
   signature EXPERIMENT
-  signature EXPERIMENT_PLUS
   structure Main
   structure Common
 is
   $/basis.cm
   common.sml
   experiment.sig
-  experiment-plus.sig
   main.sml
 

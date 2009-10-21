@@ -196,6 +196,8 @@ else
 		    exit 1
 		fi
 	    done
+	    echo -n -e "\t\t{ n_procs=$p,\t\ttime_sec=" >> $LOG_FILE
+	    echo -n -e "$RES" >> $LOG_FILE
 	    echo -n -e ",\t\t" >> $LOG_FILE
 	    if [ $GC_STATS == "false" ]; then
 		echo -n -e "gc=[]" >> $LOG_FILE
@@ -204,8 +206,6 @@ else
 		cat stats.sml >> $LOG_FILE
 		rm -rf stats.sml
 	    fi
-	    echo -n -e "\t\t{ n_procs=$p,\tgc=NONE,\t\ttime_sec=" >> $LOG_FILE
-	    echo -n -e "$RES" >> $LOG_FILE
 	    echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
 	done
     done
