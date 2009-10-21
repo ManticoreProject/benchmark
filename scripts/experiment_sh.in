@@ -15,12 +15,14 @@ SEQUENTIAL_BINARY="false"
 BENCHMARK_PATH=""
 EXPERIMENT_NAME="experiment"
 DESCRIPTION=""
-GC_STATS="false"
+GEN_GC_STATS="@GEN_GC_STATS"
+GEN_LOG="@GEN_LOG"
+PMLCFLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
 
 usage="See the README file for instructions"
 
-while getopts ":s:p:f:en:gd:t:a:" options; 
+while getopts ":s:p:f:en:d:t:" options; 
 do
     case $options in
 	s ) SIZE="$OPTARG";;
@@ -29,9 +31,7 @@ do
 	e ) SEQUENTIAL_BINARY="true";;
 	n ) EXPERIMENT_NAME="$OPTARG";;
 	d ) DESCRIPTION="$OPTARG";;
-	g ) GC_STATS="true";;
 	t ) NUM_TRIALS="$OPTARG";;
-	a ) PMLC_FLAGS="$OPTARG";;
 	\? ) echo $usage
             exit 1;;
 	* ) echo $usage
@@ -43,7 +43,12 @@ if [ $SEQUENTIAL_BINARY == "true" ]; then
     PROCS="1"
 fi
 
-if [ -z "$PROCS" ]; then
+if [ $GEN_LOG == "true" ]; then
+    echo "log generation not yet supported"
+    exit 1
+fi
+
+if [ -z "$PROCS" ] && [ $SEQUENTIAL_BINARY == "false" ]; then
     echo "Enter at least one choice for number of processors"
     exit 1
 elif [ ! -w "$BENCHMARK_PATH" ]; then
@@ -147,7 +152,7 @@ metadata "nTrials" "$NUM_TRIALS"
 
 echo "Logging performance results to $LOG_FILE"
 
-if [ $GC_STATS == "false" ]; then
+if [ $GEN_GC_STATS == "false" ]; then
     ARGS="$SIZE"
 else
     ARGS="$SIZE -gcstats=all,sml -gcstatsfile=stats.sml"
@@ -163,7 +168,7 @@ if [ $SEQUENTIAL_BINARY == "true" ]; then
 	    echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
 	    echo -n -e "$RES" >> $LOG_FILE
 	    echo -n -e ",\t\t" >> $LOG_FILE
-	    if [ $GC_STATS == "false" ]; then
+	    if [ $GEN_GC_STATS == "false" ]; then
 		echo -n -e "gc=[]" >> $LOG_FILE
 	    else
 		echo -n -e "gc=" >> $LOG_FILE
@@ -199,7 +204,7 @@ else
 	    echo -n -e "\t\t{ n_procs=$p,\t\ttime_sec=" >> $LOG_FILE
 	    echo -n -e "$RES" >> $LOG_FILE
 	    echo -n -e ",\t\t" >> $LOG_FILE
-	    if [ $GC_STATS == "false" ]; then
+	    if [ $GEN_GC_STATS == "false" ]; then
 		echo -n -e "gc=[]" >> $LOG_FILE
 	    else
 		echo -n -e "gc=" >> $LOG_FILE

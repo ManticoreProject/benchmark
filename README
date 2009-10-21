@@ -10,14 +10,6 @@ The run function takes a problem size, runs the benchmark,
 and prints the result to stdout. The result should be a
 legal SML expression.
 
-** Benchmark makefile **
-
-The makefile shall include rules for compiling each version
-of the benchmark. At a minimum, each parallel benchmark shall
-include rules for the standard parallel version, the
-sequential elison (parallel code compiled as a sequential
-program) and the sequential baseline.
-
 ** Benchmark script **
 
 The benchmark script takes the following parameters:
@@ -28,13 +20,12 @@ The benchmark script takes the following parameters:
     -e	      indicates that the binary was compiled for sequential execution
     -n	      name of the experiment
     -d        brief description of the experiment
-    -g	      collect GC stats
     -t	      number of repeated runs to do for each data point (default is 1)**
-    -a	      compile-time flags
 
 * zero or more instances of the argument may occur
 ** the argument is optional
 
-The script expects the makefile build rule to create a binary
-of the same name in the benchmark directory.
-
+** Benchmark results **
+Results are formatted as SML modules that match the signature in 
+  manticore-db/src/sml/experiment.sig
+and generated in the results directory.

@@ -34,12 +34,38 @@ AC_ARG_WITH(pmlcflags,
   AC_HELP_STRING([--with-pmlcflags=PATH], [Manticore compiler flags]),
   PMLCFLAGS=$with_pmlcflags)
 
+GEN_GC_STATS="false"
+AC_ARG_WITH(gcstats,
+  AC_HELP_STRING([--with-gcstats], [generate gc stats]),
+  PMLCFLAGS="$PMLCFLAGS -gcstats"
+  GEN_GC_STATS="true")
+
+GEN_LOG="false"
+AC_ARG_WITH(log,
+  AC_HELP_STRING([--with-log], [generate log data]),
+  PMLCFLAGS="$PMLCFLAGS -log"
+  GEN_LOG="true")
+
+NUM_PROCS="16"
+AC_ARG_WITH(numprocs,
+  AC_HELP_STRING([--with-numprocs], [number of processors (default is 16)]),
+  NUM_PROCS=$with_numprocs)
+
+NUM_TRIALS="10"
+AC_ARG_WITH(numtrials,
+  AC_HELP_STRING([--with-numtrials], [number of processors (default is 10)]),
+  NUM_TRIALS=$with_numtrials)
+
 MANTICORE_BINDIR=$MANTICORE_ROOT/bin
 PMLC=$MANTICORE_BINDIR/pmlc
 
 AC_SUBST(MANTICORE_ROOT)
 AC_SUBST(PMLC)
 AC_SUBST(PMLCFLAGS)
+AC_SUBST(GEN_GC_STATS)
+AC_SUBST(GEN_LOG)
+AC_SUBST(NUM_PROCS)
+AC_SUBST(NUM_TRIALS)
 
 AC_CONFIG_FILES(\
 dnl ***** Makefiles *****
@@ -64,7 +90,21 @@ dnl ***** Makefiles *****
   programs/pquickhull/Makefile
   programs/pquicksort/Makefile
   programs/tree-add/Makefile
-  scripts/experiment.sh:scripts/experiment_sh.in
-  scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
 )
+
+dnl ***** Scripts ******
+AC_CONFIG_FILES([
+  programs/plus-scan/run.sh:programs/plus-scan/run_sh.in
+], [
+   chmod +x programs/plus-scan/run.sh
+])
+AC_CONFIG_FILES([
+  scripts/experiment.sh:scripts/experiment_sh.in
+], [
+   chmod +x scripts/experiment.sh
+])
+AC_CONFIG_FILES([
+  scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
+], [chmod +x scripts/print-max-leaf-size.sh])
+
 AC_OUTPUT
