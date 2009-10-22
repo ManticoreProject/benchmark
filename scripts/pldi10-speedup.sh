@@ -8,18 +8,17 @@
 #./clean-all.sh
 ./build-all.sh
 
-function f {
-    d=$1
-    if [ ! -d $d ]; then
-	return
-    fi
-    pushd $d
-    ./run.sh
-    popd
-}
-
-pushd ../benchmarks/
+d=`pwd`
+echo "current dir = $d"
+pushd ../programs
 for d in $( ls ); do
-    f $d
+    if [ ! -d $d ]; then
+	:
+    else
+	echo "running $d"
+	pushd $d
+	./run.sh
+	popd
+    fi
 done
 popd
