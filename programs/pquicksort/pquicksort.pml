@@ -19,7 +19,7 @@ end
 structure Main =
   struct
 
-    val dfltN = 100000
+    val dfltN = 1000000
 	
     fun main (_, args) =
 	let

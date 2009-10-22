@@ -71,7 +71,7 @@ structure MandelbrotSeq =
 structure Main =
   struct
 
-    val dfltN = 256
+    val dfltN = 1024
 	
     fun main (_, args) =
 	let
