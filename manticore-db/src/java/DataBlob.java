@@ -126,23 +126,31 @@ public class DataBlob {
 	    for (int k = 0; k < ngcs; k++) {
 		JSONObject currGC = jgcs.getJSONObject(k);
 		int processor =	currGC.getInt("processor");
-		// ERROR: This isn't how it's structured...look at the JSON more closely
-		if (0==0) throw new RuntimeException("ERROR FIXME (in DataBlob)");
-		int minor_n_collections = currGC.getInt("minor_n_collections");
-		long minor_alloc_bytes = currGC.getLong("minor_alloc_bytes");
-		long minor_copied_bytes = currGC.getLong("minor_copied_bytes");
-		double minor_time_coll_sec = currGC.getDouble("minor_time_coll_sec");
-		int major_n_collections = currGC.getInt("major_n_collections");
-		long major_alloc_bytes = currGC.getLong("major_alloc_bytes");
-		long major_copied_bytes = currGC.getLong("major_copied_bytes");
-		double major_time_coll_sec = currGC.getDouble("major_time_coll_sec");
-		int global_n_collections = currGC.getInt("global_n_collections");
-		long global_alloc_bytes = currGC.getLong("global_alloc_bytes");
-		long global_copied_bytes = currGC.getLong("global_copied_bytes");
-		double global_time_coll_sec = currGC.getDouble("global_time_coll_sec");
-		int n_promotions = currGC.getInt("n_promotions");
-		long prom_bytes = currGC.getLong("prom_bytes");
-		double mean_prom_time_sec = currGC.getDouble("mean_prom_time_sec");
+
+		JSONObject minor = currGC.getJSONObject("minor");
+	
+   	        int minor_n_collections    = minor.getInt("num");
+		long minor_alloc_bytes     = minor.getLong("alloc");
+		long minor_copied_bytes    = minor.getLong("copied");
+		double minor_time_coll_sec = minor.getDouble("time");
+
+		JSONObject major = currGC.getJSONObject("major");
+		int major_n_collections    = major.getInt("num");
+		long major_alloc_bytes     = major.getLong("alloc");
+		long major_copied_bytes    = major.getLong("copied");
+		double major_time_coll_sec = major.getDouble("time");
+
+		JSONObject global = currGC.getJSONObject("global");
+		int global_n_collections    = global.getInt("num");
+		long global_alloc_bytes     = global.getLong("alloc");
+		long global_copied_bytes    = global.getLong("copied");
+		double global_time_coll_sec = global.getDouble("time");
+
+		JSONObject promotion = currGC.getJSONObject("promotion");
+		int n_promotions          = promotion.getInt("num");
+		long prom_bytes           = promotion.getLong("bytes");
+		double mean_prom_time_sec = promotion.getDouble("time");
+
 		GC gc = new GC(processor,
 			       minor_n_collections,
 			       minor_alloc_bytes,
