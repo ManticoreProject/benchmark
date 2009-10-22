@@ -5,23 +5,20 @@
 #
 # Build each benchark
 
-(
 pushd ../programs/
 for d in $( ls ); do
     if [ ! -d $d ]; then
 	return
     else
-	echo "building $d"
+	if [ $d == "id-raytracer" ]; then
+	    ../scripts/set-max-leaf-size.sh 8
+	fi
 	pushd $d
-	if [ $d == "id-raytracer" ]; then
-	    ./set-max-leaf-size.sh 8
-	fi
 	make
-	if [ $d == "id-raytracer" ]; then
-	    ./restore-max-leaf-size.sh
-	fi
 	popd
+	if [ $d == "id-raytracer" ]; then
+	    ../scripts/restore-max-leaf-size.sh
+	fi
     fi
 done
 popd
-)
