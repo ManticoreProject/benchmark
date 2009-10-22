@@ -21,5 +21,5 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f ttt-par -n $NAME -d "$DES
 # sequential elison 
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f ttt-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
 
-# sequential elison 
-$MANTI_BENCH_ROOT/scripts/experiment.sh -e -f ttt-seq -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
+# sequential
+$MANTI_BENCH_ROOT/scripts/experiment.sh -e -f ttt-seq -n "$NAME-seq" -d "$DESCRIPTION -- sequential version" -t $NUM_TRIALS 

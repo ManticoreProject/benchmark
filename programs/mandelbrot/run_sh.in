@@ -22,4 +22,4 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f mandelbrot-par -n $NAME -
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f mandelbrot-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
 
 # sequential
-$MANTI_BENCH_ROOT/scripts/experiment.sh -e -f mandelbrot-seq -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
+$MANTI_BENCH_ROOT/scripts/experiment.sh -e -f mandelbrot-seq -n "$NAME-seq" -d "$DESCRIPTION -- sequential version" -t $NUM_TRIALS 

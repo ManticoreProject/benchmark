@@ -9,5 +9,5 @@ DESCRIPTION="sequential plus prefix computation over a list"
 NUM_TRIALS="@NUM_TRIALS@"
 MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
 
-# sequential elison 
+# sequential
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f plus-prefix -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
