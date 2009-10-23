@@ -16,7 +16,7 @@ signature SEQ =
 
     type 'a seq
 
-    val empty      : 'a seq
+    val empty      : unit -> 'a seq
     val isEmpty    : 'a seq -> bool
     val length     : 'a seq -> int
     val singleton  : 'a -> 'a seq
@@ -34,6 +34,7 @@ signature SEQ =
     val find       : ('a -> bool) -> 'a seq -> 'a option
     val exists     : ('a -> bool) -> 'a seq -> bool
     val all        : ('a -> bool) -> 'a seq -> bool
+    val tabulate   : int * (int -> 'a) -> 'a seq
 
     val take       : 'a seq * int -> 'a seq
     val drop       : 'a seq * int -> 'a seq
@@ -44,5 +45,9 @@ signature SEQ =
 
     val fromList   : 'a list -> 'a seq
     val toList     : 'a seq -> 'a list
+
+    structure Pair : sig
+	val map : ('a * 'b -> 'g) -> 'a seq * 'b seq -> 'g seq
+    end
 
   end

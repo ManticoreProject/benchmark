@@ -1,4 +1,3 @@
-
 (* rope-sig.sml
  *
  * COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
@@ -25,7 +24,7 @@ signature ROPE =
     val maxLeafSize : int
 
   (* constant-time operations *)
-    val empty      : 'a rope
+    val empty      : unit -> 'a rope
     val isEmpty    : 'a rope -> bool
     val isLeaf     : 'a rope -> bool
     val length     : 'a rope -> int
@@ -66,5 +65,13 @@ signature ROPE =
 
   (* utilities *)
     val toString   : ('a -> string) -> 'a rope -> string
+
+    structure Pair : sig
+	val map : ('a * 'b -> 'g) -> 'a rope * 'b rope -> 'g rope
+    end
+
+    structure Scan : sig
+	val plusScan : int rope -> int rope
+    end
     
   end

@@ -12,13 +12,16 @@ PMLCFLAGS =	@PMLCFLAGS@
 
 TARGET =	plus-scan
 
-all:		$(TARGET)-par $(TARGET)-seq-elison
+all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-smlnj
 
 $(TARGET)-par:	plus-scan.mlb plus-scan.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par plus-scan.mlb
 
 $(TARGET)-seq-elison:	plus-scan.mlb plus-scan.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison plus-scan.mlb
+
+$(TARGET)-smlnj:	plus-scan.cm plus-scan.sml
+	echo "SMLofNJ.exportFn(\"plus-scan\", Main.main);" | $(SMLNJ) plus-scan.cm
 
 .PHONY: clean
 clean:

@@ -41,7 +41,7 @@ functor PMergesortWithSeqBcFn (
   (* split xs into xs[0, ..., n-1] and xs[n, ..., |xs|] *)
     fun split (xs, n) =
 	  if n = 0
-	     then (R.empty, xs)
+	     then (R.empty (), xs)
 	  else R.splitAt(xs, n - 1)
 
   (* assuming that xs is sorted, return p such that xs[p] <= y <= xs[p+1]. this

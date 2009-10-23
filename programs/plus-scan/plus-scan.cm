@@ -8,4 +8,5 @@ is
 	$/smlnj-lib.cm
 
 	../common/run-seq.sml
-	plus-prefix.sml
+	../common/rope-smlnj/sources.cm
+	plus-scan.sml

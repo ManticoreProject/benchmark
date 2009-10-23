@@ -1,25 +1,29 @@
-(* pquicksort.pml
+(* rope-quicksort.pml
  *
  * COPYRIGHT (c) 2009 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
  *
- * Parallel quicksort over parallel arrays.
+ * Quicksort over ropes.
  *)
 
-structure PQuicksort = struct
+structure Rope = RopeFn (
+		 structure S = ListSeq
+		 val maxLeafSize = 128)
+
+structure RopeQuicksort = struct
 
     fun quicksort xs =
-	if lengthP xs <= 1 then
+	if Rope.length xs <= 1 then
 	    xs
 	else
 	    let
-		val p = subP (xs, lengthP xs div 2)
-		val (lt, eq, gt) = (| filterP (fn x => x < p, xs), 
-				      filterP (fn x => x = p, xs),
-				      filterP (fn x => x > p, xs) |)
-		val (l, u) = (| quicksort lt, quicksort gt |)
+		val p = Rope.sub (xs, Rope.length xs div 2)
+		val (lt, eq, gt) = ( Rope.filter (fn x => x < p) xs, 
+				     Rope.filter (fn x => x = p) xs,
+				     Rope.filter (fn x => x > p) xs )
+		val (l, u) = ( quicksort lt, quicksort gt )
 	    in
-		concatP (l, (concatP (eq, u)))
+		Rope.append (l, (Rope.append (eq, u)))
 	    end
 
 end
@@ -42,19 +46,18 @@ structure Main =
 
     fun main (_, args) =
 	let
-	    val x = fromListP 
+	    val rand = Random.rand (0, 1000000)
+	    val x = Rope.fromList 
 			(case args
 			  of arg :: _ => 
 			     List.tabulate (Option.getOpt (Int.fromString arg, dfltN),
-					 fn _ => Rand.inRangeInt (0, 10000))
+					 fn _ => Random.randNat rand)
 			   | _ => readFromFile ())
-	    fun doit () = PQuicksort.quicksort x
-		
+	    fun doit () = RopeQuicksort.quicksort x
 	in
-	    RunPar.run doit
+	    RunSeq.run doit;
+	    OS.Process.success
 	end
 
   end
-
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
 

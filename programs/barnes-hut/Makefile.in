@@ -12,7 +12,7 @@ PMLCFLAGS =	@PMLCFLAGS@
 
 TARGET =	barnes-hut
 
-all:		$(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-smlnj gen-bodies
+all:		$(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-smlnj $(TARGET)-rope-smlnj gen-bodies
 
 $(TARGET)-par:	barnes-hut-par.mlb barnes-hut-par.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par barnes-hut-par.mlb
@@ -25,6 +25,9 @@ $(TARGET)-seq:	barnes-hut-seq.mlb barnes-hut-seq.pml
 
 $(TARGET)-smlnj:	barnes-hut.cm barnes-hut.sml
 	echo "SMLofNJ.exportFn(\"barnes-hut\", Main.main);" | $(SMLNJ) barnes-hut.cm
+
+$(TARGET)-rope-smlnj:	barnes-hut-rope.cm barnes-hut-rope.sml
+	echo "SMLofNJ.exportFn(\"barnes-hut-rope\", Main.main);" | $(SMLNJ) barnes-hut-rope.cm
 
 gen-bodies:	gen-bodies.sml gen-bodies.cm
 	echo "SMLofNJ.exportFn(\"gen-bodies\", Main.main);" | $(SMLNJ) gen-bodies.cm

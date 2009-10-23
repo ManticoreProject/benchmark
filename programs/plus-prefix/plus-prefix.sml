@@ -30,7 +30,7 @@ structure PlusPrefix =
 structure Main =
   struct
 
-    val dfltN = 5000000
+    val dfltN = 3000000
 	
     fun main (_, args) =
 	let
@@ -38,7 +38,7 @@ structure Main =
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
 	    val rand = Random.rand (0, 10000)
-	    val a = List.tabulate (n, fn _ => Random.randNat rand mod 2000)
+	    val a = List.tabulate (n, fn _ => Random.randNat rand mod 2)
 	    fun doit () = PlusPrefix.plusPrefix a
 		
 	in

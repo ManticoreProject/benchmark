@@ -1,0 +1,23 @@
+(* rope-quicksort.cm
+ *
+ * COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
+ * All rights reserved.
+ *
+ * Quicksort over ropes
+ * 
+ *   Mike Rainey (mrainey@cs.uchicago.edu)
+ *
+ *)
+
+Group
+
+	structure Main
+
+is
+
+	$/basis.cm
+	$/smlnj-lib.cm
+
+	../common/run-seq.sml
+	../common/rope-smlnj/sources.cm
+	rope-quicksort.sml

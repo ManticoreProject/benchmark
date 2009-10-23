@@ -58,7 +58,7 @@ structure Quickhull (* : sig
     (* we maintain the invariant that the points a and b lie on the convex hull *)
     fun quickhull' (a, b, S) = 
 	if Rope.length S = 0 then
-	    Rope.empty
+	    Rope.empty ()
 	else
 	    let
 		val c = farthest (a, b, S)  (* c must also be on the convex hull *)

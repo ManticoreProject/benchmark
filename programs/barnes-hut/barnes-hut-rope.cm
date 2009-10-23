@@ -8,4 +8,6 @@ is
 	$/smlnj-lib.cm
 
 	../common/run-seq.sml
-	plus-prefix.sml
+	gen-bodies.cm
+	../common/rope-smlnj/sources.cm
+	barnes-hut-rope.sml

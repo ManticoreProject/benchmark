@@ -128,7 +128,7 @@ functor RopeFn (
 	    then raise Fail "RopeFn.mkLeaf: bogus leaf size"
 	  else Leaf seq
 
-    val empty : 'a rope = Leaf S.empty
+    fun empty () : 'a rope = Leaf (S.empty ())
 
   (* toString : ('a -> string) -> 'a rope -> string *)
     fun toString show r = let
@@ -337,7 +337,7 @@ functor RopeFn (
 	   | (_, _, SOME r) => appendWithoutBalancing (r, acc)
           (* end case *))
       in
-        List.foldl f (mkLeaf S.empty) balancer
+        List.foldl f (mkLeaf (S.empty ())) balancer
       end
 
   (* insert : 'a rope * 'a balancer -> 'a balancer *)
@@ -416,7 +416,7 @@ functor RopeFn (
     fun fromList (xs : 'a list) : 'a rope = let
       val ldata = chop (xs, maxLeafSize)
       val leaves = List.map leafFromList ldata
-      fun build [] = mkLeaf S.empty
+      fun build [] = mkLeaf (S.empty ())
 	| build [r] = r
 	| build rs = build (appendPairs rs)
       in
@@ -502,10 +502,10 @@ functor RopeFn (
               val nLeft = Int.min (len, lenL - st)
 	      val nRight = len - nLeft
               val left = if nLeft = 0
-			 then mkLeaf S.empty
+			 then mkLeaf (S.empty ())
 			 else get (rL, st, nLeft)
 	      val right = if nRight = 0
-			  then mkLeaf S.empty
+			  then mkLeaf (S.empty ())
 			  else get (rR, st + nLeft - lenL, nRight)
               in
                 appendWithoutBalancing (left, right)
@@ -519,7 +519,7 @@ functor RopeFn (
   (* cut the rope r into r[0, ..., n-1] and r[n, ..., length r] *)
     fun cut (r, n) =
 	  if n = 0
-	     then (mkLeaf S.empty, r)
+	     then (mkLeaf (S.empty ()), r)
 	  else splitAt(r, n - 1)
 
   (* take : 'a rope * int -> 'a rope *)
@@ -535,6 +535,35 @@ functor RopeFn (
       in
         build r
       end
+
+  (* partialSeq : 'a rope * int * int -> 'a seq *)
+  (* return the sequence of elements from low incl to high excl *)
+  (* zero-based *)
+  (* failure when lower bound is less than 0  *)
+  (* failure when upper bound is off the rope (i.e., more than len rope + 1) *)
+    fun partialSeq (r, lo, hi) =
+     (case r
+        of Leaf s => 
+            (if lo >= S.length s orelse hi > S.length s then
+               raise Fail "err"
+	     else
+	       S.take (S.drop (s, lo), hi-lo))
+	 | Cat (_, len, rL, rR) => let
+             val lenL = length rL
+	     val lenR = length rR
+	     in
+	       if hi <= lenL then (* everything's on the left *)
+		   partialSeq (rL, lo, hi)
+	       else if lo >= lenL then (* everything's on the right *)
+		   partialSeq (rR, lo-lenL, hi-lenL)
+	       else let
+                 val sL = partialSeq (rL, lo, lenL)
+		 val sR = partialSeq (rR, 0, hi-lenL)
+                 in
+		   S.append (sL, sR)
+		 end
+	     end
+        (* end case *))
 
   (* rev : 'a rope -> 'a rope *)
   (* pre: the input is balanced *)
@@ -631,6 +660,178 @@ functor RopeFn (
 
   (* collate : ('a * 'a -> order) -> 'a rope * 'a rope -> order *)
     fun collate order (r0, r1) = List.collate order (toList r0, toList r1)
+
+    structure Pair =
+      struct
+
+      (* map' : ('a * 'b -> 'g) * 'a rope * 'b rope -> 'g rope *)
+      (* pre : the first rope's length is <= that of the second *)
+      (* traversal follows the structure of the shorter rope *)
+      (* post : the output rope has the same shape as the first rope *)
+	fun map' (f, ropeS, ropeL) = let
+	  fun go (n, r) = 
+	   (case r
+	      of Leaf sS => let
+		   val (lo, hi) = (n, n+S.length sS)
+		   val sL = partialSeq (ropeL, lo, hi)
+		   val s = S.Pair.map f (sS, sL)
+		   in
+		     mkLeaf s
+		   end
+	       | Cat (d, len, rL, rR) => let
+		   val (rL', rR') = ( go (n, rL), go (n + length rL, rR) )
+		   in
+		     Cat (d, len, rL', rR')
+		   end
+	      (* end case *))
+	  in
+	    go (0, ropeS)
+	  end
+
+      (* map : ('a * 'b -> 'g) -> 'a rope * 'b rope -> 'g rope *)
+      (* stop mapping when the elements of one rope run out *)
+      (* post : the output has the same shape as the shorter input *)
+      (* note : the sameStructureP test might not be worth it when leaf size is small *)
+	(* note : since pcase is currently broken, i've temporarily disabled the sameStructureP
+	 * check below *)
+	fun map f (rope1, rope2)  =
+    (*     (if sameStructureP (rope1, rope2) then
+	    fastMapP (f, rope1, rope2)
+	  else *) if length rope1 > length rope2 then let
+	    fun f' x = (case x of (b, a) => f (a, b))
+	    in
+	      map' (f', rope2, rope1)
+	    end
+	  else
+	    map' (f, rope1, rope2)
+
+      end
+
+    structure Scan =
+      struct
+      (* We need a rope that can store a datum at every node. *)
+      (* This is different from our other rope type. *)
+      (* That datum will be an accumulator. *)
+	datatype 'a scan_rope
+	  = ScanCat of ('a *      (* datum *)
+		    int *     (* depth *)
+		    int *     (* length *)
+		    'a scan_rope * (* left subtree *)
+		    'a scan_rope)  (* right subtree *)
+	  | ScanLeaf of ('a *     (* datum *)
+		     int *    (* length *)
+		     'a seq)  (* data *)
+
+      (* ***** UTILITIES ***** *)
+
+      (* failwith : string -> 'a *)
+      (* using this for the moment so we can observe the exception message at runtime *)
+	fun failwith msg = (raise Fail msg)
+
+      (* datumOf : 'a scan_rope -> 'a *)
+      (* Select the accumulator out of a scan_rope node. *)
+	fun datumOf x =
+	 (case x
+	    of (ScanCat (d, _, _, _, _)) => d
+	     | (ScanLeaf (d, _, _)) => d
+	   (* end case *))
+
+      (* ***** FULL SCANS (as opp. to short-circuiting ***** *)
+
+    (*  
+	fun seqscan seed seq =
+	  if S.null seq then (S.empty, seed)
+	  else let
+	    val len = S.length seq
+	    val seq' = S.tabulate (len, fn _ => seed)
+	    fun lp (i, last) = 
+	      if i >= len then (seq', last)
+	      else let
+		val _ = S.update (seq', i, last)
+		in
+		  lp (i+1, last + S.sub (seq, i))
+		end
+	    in
+	      lp (0, seed)
+	    end
+    *)
+
+      (* seqscan : num -> num seq -> num seq * num *)
+      (* Does a prefix scan starting from the given seed value. *)
+      (* Returns the scanned sequence and the total. *)
+      (* NOTE: this version more efficient with immutable vectors, since updates are costly *)
+	fun seqscan seed seq =
+	    if S.isEmpty seq then (S.empty(), seed)
+	    else let
+		val len = S.length seq
+	      (* we accumulate the prefix, res, in reverse order *)
+		fun lp (i, last, res) =
+		    if i >= len then
+			(S.rev(S.fromList res), last)
+		    else
+			lp (i+1, last + S.sub (seq, i), last :: res)
+		in
+		  lp (0, seed, nil)
+		end
+
+      (* seqsum : num -> num seq -> num *)
+	fun seqsum seed s = let
+	  fun plus (a, b) = a + b
+	  in
+	    S.foldl plus seed s
+	  end
+
+      (* upsweep : num -> num rope -> num scan_rope *)
+	fun upsweep seed t = let
+	  fun lp r = 
+	   (case r 
+	      of (Leaf s) => ScanLeaf (seqsum seed s, S.length s, s)
+	       | (Cat (d, len, rL, rR)) => let
+		   val (uL, uR) = ( lp rL, lp rR )
+		   in 
+		     ScanCat (datumOf uL + datumOf uR, d, len, uL, uR)
+		   end)
+	  in
+	    lp t
+	  end   
+
+      (* downsweep : num -> num scan_rope -> num rope *)
+	fun downsweep seed t = let
+	  (* FIXME It seems odd that I'm underscoring the datums here... *)
+	  (* ...think about this more. *)
+	  fun lp (c, r) =
+	   (case r
+	      of (ScanCat (_, d, len, cL, cR)) => let
+		   val nL = datumOf cL
+		   in
+		     Cat ( d, len, lp (c, cL), lp (c+nL, cR) )
+		   end
+	       | (ScanLeaf (_, len, s)) => let
+		   val (scanned, _) = seqscan c s
+		   in
+		     Leaf scanned
+		   end)
+	  in
+	    lp (seed, t)
+	  end
+
+      (* plusScan2 : num -> num rope -> num rope *)
+      (* ex: plusScan2 2 [1,1,1,1] => [3,4,5,6] *)
+	fun plusScan2 seed r =
+	  if isEmpty r then r
+	  else let
+	    val elt0 = sub (r, 0)
+	    val seed' = elt0 + seed
+	    in
+	      downsweep seed' (upsweep seed' r)
+	    end
+
+      (* plusScan : num rope -> num rope *)
+      (* ex: plusScan [1,1,1,1] => [1,2,3,4] *)
+      (* nb: plusScan is equiv. to (plusScan2 0) *)
+	fun plusScan r = plusScan2 0 r
+
+      end
 
   end
 

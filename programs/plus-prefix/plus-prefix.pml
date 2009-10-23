@@ -30,7 +30,7 @@ structure PlusPrefix =
 structure Main =
   struct
 
-    val dfltN = 200000
+    val dfltN = 3000000
 	
     fun main (_, args) =
 	let

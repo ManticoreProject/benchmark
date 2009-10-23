@@ -14,7 +14,8 @@
 structure ListSeq : SEQ = 
   struct
     type 'a seq = 'a list
-    val empty = List.nil
+    val tabulate = List.tabulate
+    fun empty () = List.nil
     fun singleton s = s :: List.nil
     val isEmpty = List.null
     val length = List.length
@@ -36,4 +37,7 @@ structure ListSeq : SEQ =
     val find = List.find
     val exists = List.exists
     val all = List.all
+    structure Pair = struct
+      val map = ListPair.map
+    end
   end
