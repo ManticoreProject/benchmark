@@ -35,10 +35,6 @@ do
     esac
 done
 
-if [ ! -w "$BENCHMARK_EXE" ]; then
-    echo "Need a path to the benchmark executable"
-fi
-
 # Gather metadata
 
 function metadata {
@@ -115,11 +111,10 @@ metadata "nTrials" "$NUM_TRIALS"
 
 echo "Logging performance results to $LOG_FILE"
 
-pushd $BENCHMARK_DIR
 echo "val runs =" >> $LOG_FILE
 for ((i=1;i<=NUM_TRIALS;i+=1)); do
-    echo "$SEQUENTIAL_EXE $ARGS"
-    RES=$( $SMLNJ_CMD @SMLload=$BENCHMARK_EXE $ARGS )
+    echo "$SMLNJ_CMD @SMLload=$BENCHMARK_EXE"
+    RES=$( $SMLNJ_CMD @SMLload=$BENCHMARK_EXE )
     if [ $? == "0" ]; then
 	echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
 	echo -n -e "$RES" >> $LOG_FILE
@@ -132,4 +127,4 @@ for ((i=1;i<=NUM_TRIALS;i+=1)); do
     echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
 done
 echo -e "\t\tnil" >> $LOG_FILE
-popd
+

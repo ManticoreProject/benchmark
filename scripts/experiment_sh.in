@@ -53,8 +53,10 @@ if [ -z "$PROCS" ] && [ $SEQUENTIAL_BINARY == "false" ]; then
     exit 1
 elif [ ! -w "$BENCHMARK_PATH" ]; then
     echo "Need a path to the benchmark executable"
+    exit 1
 elif [ -z "$MANTICORE_ROOT" ]; then
     echo "Need to set the environment variable MANTICORE_ROOT to contain the path to the Manticore root directory"
+    exit 1
 else
     :
 fi
