@@ -167,7 +167,7 @@ if [ $SEQUENTIAL_BINARY == "true" ]; then
     echo "val runs =" >> $LOG_FILE
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	echo "$SEQUENTIAL_EXE $ARGS"
-	RES=$( $SEQUENTIAL_EXE $ARGS )
+	RES=$( $SEQUENTIAL_EXE $ARGS 2> stats.sml )
 	if [ $? == "0" ]; then
 	    echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
 	    echo -n -e "$RES" >> $LOG_FILE
@@ -192,13 +192,13 @@ else
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	for p in $PROCS; do
 	    echo "$PARALLEL_EXE -p $p $ARGS"
-	    RES=$( $PARALLEL_EXE -p $p $ARGS )
+	    RES=$( $PARALLEL_EXE -p $p $ARGS 2> stats.sml )
 	    retcode=$?
 	    nretries=0
 	    while [ $retcode != "0" ]; do
 		let nretries=nretries+1
 		echo "Benchmark failed unexpectedly with nonzero return code -- retrying."
-		RES=$( $PARALLEL_EXE -p $p $ARGS )
+		RES=$( $PARALLEL_EXE -p $p $ARGS 2> stats.sml )
 		retcode=$?
 		if [ $nretries -gt 100 ]; then
 		    echo "Exceeded maximum number of failed executions of the benchmark"
