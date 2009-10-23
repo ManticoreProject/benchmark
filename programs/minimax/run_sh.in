@@ -23,3 +23,6 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f ttt-seq-elison -n $NAME -d "$DESCR
 
 # sequential
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f ttt-seq -n "$NAME-seq" -d "$DESCRIPTION -- sequential version" -t $NUM_TRIALS 
+
+# smlnj
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f ttt -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

@@ -166,97 +166,7 @@ structure Main =
     val dfltN = 20000    (* default number of bodies *)
     val dfltI = 1        (* default number of iterations *)
 
-    structure V = Vector2
-
-    val pi = 3.14159265358979323846
-
-(* random numbers *)
-    local
-      val seed = ref 0w0
-    in
-    fun srand s = (seed := Word.fromInt s)
-    fun xrand (xl, xh) = let
-	  val r = Rand.random (! seed)
-	  in
-	    seed := r;
-	    xl + (((xh - xl) * real (Word.toInt r)) / 2147483647.0)
-	  end
-    end (* local *)
-
-    val rand = Random.rand (0, 1)
-
-    (* pick a random point on a sphere of specified radius. *)
-    fun pickshell rad = 
-	let
-	    fun pickvec () = 
-		let
-		    val vec = V.tabulate (fn _ => 1.0 - Random.randReal rand * 2.0)
-		    val rsq = V.dotvp(vec, vec)
-		in
-		    if (rsq > 1.0)
-		    then pickvec ()
-		    else V.mulvs (vec, rad / Math.sqrt(rsq))
-		end
-	in
-	    pickvec ()
-	end
-
     fun particle (mass, (xp, yp), (xv, yv)) = BarnesHut.PARTICLE(BarnesHut.MP(xp, yp, mass), xv, yv)
-
-    (* generate Plummer model initial conditions for test runs, scaled
-     * to units such that M = -4E = G = 1 (Henon, Hegge, etc).
-     * See Aarseth, SJ, Henon, M, & Wielen, R (1974) Astr & Ap, 37, 183.
-     *)
-    fun testdata n =
-	let
-	    val mfrac = 0.999 (* mass cut off at mfrac of total *)
-	    val rn = Real.fromInt n
-	    val rsc = (3.0 * pi) / 16.0
-	    val vsc = Math.sqrt(1.0 / rsc)
-	    fun mkBodies x =
-		(case x
-		  of (0, cmr, cmv, l) =>
-		     let
-			 (* offset bodies by normalized cm coordinates.  Also, reverse
-			  * the list to get the same order of bodies as in the C version.
-			  *)
-			 val cmr = V.divvs(cmr, rn)
-			 val cmv = V.divvs(cmv, rn)
-			 fun norm x =
-			     (case x
-			       of (nil, l) => l
-				| ((mass, pos, vel) :: r, l) => 
-				  let
-				      val posN = V.subv(pos,cmr)
-				      val velN = V.subv(vel,cmv)
-				  in
-				      norm (r, particle(mass,posN,velN)::l)
-				  end)
-		     in
-			 norm (l, nil)
-		     end
-		   | (i, cmr, cmv, l) =>
-		     let
-			 val r = 1.0 / Math.sqrt (Math.pow(xrand(0.0, mfrac), ~2.0/3.0) - 1.0)
-			 val pos = pickshell (rsc * r)
-			 fun vN () = 
-			     let		(* von Neumann technique *)
-				 val x = xrand(0.0,1.0)
-				 val y = xrand(0.0,0.1)
-			     in
-				 if (y > x*x * (Math.pow (1.0-x*x, 3.5))) then vN () else x
-			     end
-			 val v = ((Math.sqrt 2.0) * vN()) / Math.pow(1.0 + r*r, 0.25)
-			 val vel = pickshell (vsc * v)
-			 val body = (1.0 / rn, pos, vel)
-		     in
-			 mkBodies (i-1, V.addv(cmr, pos), V.addv(cmv, vel), body :: l)
-		     end)
-	in
-	    mkBodies (n, V.zerov, V.zerov, nil)
-	end (* testdata *)
-    fun particle2sml (mass, (xp,yp), (xv, yv)) =
-	"BHS.PARTICLE(BHS.MP("^Real.toString xp^","^Real.toString yp^","^Real.toString mass^"),"^Real.toString xv^","^Real.toString yv^")"
 
     fun readFromFile () =
 	let
@@ -283,7 +193,7 @@ structure Main =
     fun main (_, args) =
 	let
 	    val initialBodies = (case args
-		      of arg :: _ => testdata (Option.getOpt (Int.fromString arg, dfltN))
+		      of arg :: _ => List.map particle (GenBodies.testdata (Option.getOpt (Int.fromString arg, dfltN)))
 		       | _ => readFromFile())
 	    fun doit () = 
 		let

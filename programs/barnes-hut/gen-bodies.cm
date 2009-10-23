@@ -1,7 +1,8 @@
 Library
 
 	structure Main
-
+	structure GenBodies
+	structure Vector2
 is
 
 	$/basis.cm

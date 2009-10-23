@@ -7,6 +7,6 @@ is
 	$/basis.cm
 	$/smlnj-lib.cm
 
-	vector2.sml
 	../common/run-seq.sml
+	gen-bodies.cm
 	barnes-hut.sml
