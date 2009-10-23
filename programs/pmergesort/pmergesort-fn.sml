@@ -98,7 +98,7 @@ structure Main =
   struct
 
     structure R = RopeFn (
-	structure S = ListSeq 
+	structure S = VectorSeq
 	val maxLeafSize= 2)
 
     structure PMergesort = PMergesortFn (

@@ -4,7 +4,7 @@
  *) 
 
 structure Rope = RopeFn (
-		 structure S = ListSeq
+		 structure S = VectorSeq
 		 val maxLeafSize = 128)
 
 structure Quickhull (* : sig

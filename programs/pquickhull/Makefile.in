@@ -12,7 +12,7 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	pquickhull
 
-all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-smlnj gen-points
+all:		$(TARGET)-par $(TARGET)-seq-elison quickhull-smlnj gen-points
 
 $(TARGET)-par:	pquickhull.mlb pquickhull.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par pquickhull.mlb
@@ -20,7 +20,7 @@ $(TARGET)-par:	pquickhull.mlb pquickhull.pml
 $(TARGET)-seq-elison:	pquickhull.mlb pquickhull.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison pquickhull.mlb
 
-$(TARGET)-smlnj:	quickhull.cm quickhull.sml
+quickhull-smlnj:	quickhull.cm quickhull.sml
 	echo "SMLofNJ.exportFn(\"quickhull\", Main.main);" | $(SMLNJ) quickhull.cm
 
 gen-points:	gen-points.sml gen-points.cm
