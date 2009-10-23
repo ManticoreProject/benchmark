@@ -23,3 +23,6 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f barnes-hut-seq-elison -n $NAME -d 
 
 # sequential
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f barnes-hut-seq -n "$NAME-seq" -d "$DESCRIPTION -- sequential version" -t $NUM_TRIALS 
+
+# smlnj
+$SML @SMLload=barnes-hut

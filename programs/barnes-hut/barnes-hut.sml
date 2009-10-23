@@ -9,6 +9,7 @@ structure BarnesHut =
   struct
 
     fun ceilingLg (x :int) : int = Real.ceil (Math.log10 (Real.fromInt x) / Math.log10 2.0)
+    fun log4 x = ceilingLg x div 2
 
     structure Double = Real
     type double = Real.real
@@ -81,29 +82,38 @@ structure BarnesHut =
 	    MP (sum_mx / sum_m, sum_my / sum_m, sum_m)
 	end
 
-    fun inBox (BOX (llx, lly, rux, ruy)) (MP (px, py, _)) =
+    fun inBox (BOX (llx, lly, rux, ruy), MP (px, py, _)) =
 	(px > llx) andalso (px <= rux) andalso (py > lly) andalso (py <= ruy)
 
-    (* returns the list of particles that are centered within the box and the number of those particles *)
-    fun particlesInBox (box, particles) =
+    (* partition the particles into the four boxes *)
+    fun partition (particles, b1, b2, b3, b4) =
 	let
-	    fun filt box (p, (n, ps)) = if inBox box p then (n + 1, p :: ps) else (n, ps)
+	    fun f (p, ((n1,q1), (n2,q2), (n3,q3), (n4,q4))) =
+		if inBox (b1, p) then
+		    ((n1+1,p::q1), (n2,q2), (n3,q3), (n4,q4))
+		else if inBox (b2, p) then
+		    ((n1,q1), (n2+1,p::q2), (n3,q3), (n4,q4))
+		else if inBox (b3, p) then
+		    ((n1,q1), (n2,q2), (n3+1,p::q3), (n4,q4))
+		else if inBox (b4, p) then
+		    ((n1,q1), (n2,q2), (n3,q3), (n4+1,p::q4))
+		else (raise Fail "particle does not fit into a box")
 	in
-	    List.foldl (filt box) (0, nil) particles
+	    List.foldl f ((0,nil),(0,nil),(0,nil),(0,nil)) particles
 	end
 
     (* split mass points according to their locations in the quadrants *)
     fun buildTree (box, particles : mass_point list) : bh_tree =
 	let
 	    val nParticles = List.length particles
-	    val maxDepth = ceilingLg nParticles
+	    val maxDepth = log4 nParticles + 1
 	    fun build (depth, BOX (llx, lly, rux, ruy), nParticles, particles) =
-		(* note the condition for stopping based on the depth of our recursion tree. if we did not
+		(* note that the stopping condition is based on the depth of our recursion tree. if we did not
 		 * limit the depth, nontermination could occur when two or more particles lie on top of 
 		 * each other. *)
 		(* also note: our stopping condition means that, in the worst case, the depth of our tree is twice the
 		 * depth of a perfectly balanced tree. *)
-		if nParticles = 1 orelse depth > maxDepth then
+		if nParticles <= 1 orelse depth > maxDepth then
 		    let
 			val MP (x, y, m) = calcCentroid particles
 		    in
@@ -117,10 +127,7 @@ structure BarnesHut =
 			val b2 = BOX (llx,  midy, midx,  ruy)
 			val b3 = BOX (midx, midy, rux,   ruy)
 			val b4 = BOX (midx, lly,  rux,  midy)
-			val (n1, p1) = particlesInBox (b1, particles)
-			val (n2, p2) = particlesInBox (b2, particles)
-			val (n3, p3) = particlesInBox (b3, particles)
-			val (n4, p4) = particlesInBox (b4, particles)
+			val ((n1,p1), (n2,p2), (n3,p3), (n4,p4)) = partition (particles, b1, b2, b3, b4)
 			val depth' = depth + 1
 			val (q1, q2, q3, q4) =
 			    ( build (depth', b1, n1, p1),
@@ -140,10 +147,10 @@ structure BarnesHut =
 	   | PARTICLE (MP (x0, y0, _), _, _) :: _ =>
 	     let
 		 val mspnts = List.map (fn (PARTICLE (mpnt, _, _)) => mpnt) pts
-		 val llx = List.foldl Real.min x0 (List.map xCoord mspnts)
-		 val lly = List.foldl Real.min y0 (List.map yCoord mspnts)
-		 val rux = List.foldl Real.max x0 (List.map xCoord mspnts)
-		 val ruy = List.foldl Real.max y0 (List.map yCoord mspnts)
+		 val llx = List.foldl Double.min x0 (List.map xCoord mspnts) - epsilon
+		 val lly = List.foldl Double.min y0 (List.map yCoord mspnts) - epsilon
+		 val rux = List.foldl Double.max x0 (List.map xCoord mspnts) + epsilon
+		 val ruy = List.foldl Double.max y0 (List.map yCoord mspnts) + epsilon
 		 val tree = buildTree (BOX (llx, lly, rux, ruy), mspnts)
 		 val accels =  List.map (fn mspnt => calcAccel (mspnt, tree)) mspnts
 	     in
@@ -157,7 +164,7 @@ structure Main =
   struct
 
     val dfltN = 20000    (* default number of bodies *)
-    val dfltI = 10       (* default number of iterations *)
+    val dfltI = 1        (* default number of iterations *)
 
     structure V = Vector2
 
@@ -176,7 +183,7 @@ structure Main =
 	  end
     end (* local *)
 
-    val rand = Random.rand (0, 2)
+    val rand = Random.rand (0, 1)
 
     (* pick a random point on a sphere of specified radius. *)
     fun pickshell rad = 
@@ -248,12 +255,36 @@ structure Main =
 	in
 	    mkBodies (n, V.zerov, V.zerov, nil)
 	end (* testdata *)
+    fun particle2sml (mass, (xp,yp), (xv, yv)) =
+	"BHS.PARTICLE(BHS.MP("^Real.toString xp^","^Real.toString yp^","^Real.toString mass^"),"^Real.toString xv^","^Real.toString yv^")"
+
+    fun readFromFile () =
+	let
+	    val f = TextIO.openIn "bodies.txt"
+	    val nParticles = valOf (Int.fromString (valOf (TextIO.inputLine f)))
+	    fun readBody () =
+		(case TextIO.inputLine f
+		  of NONE => []
+		   | SOME line =>
+		     let
+			 val [xp,yp,mass,xv,yv] = List.map (valOf o Real.fromString) 
+							   (String.tokens (fn c => c = #" ") line)
+		     in
+			 particle(mass, (xp,yp), (xv, yv)) :: readBody ()
+		     end)
+	    val bodies = readBody ()
+	in
+	    if length bodies <> nParticles then
+		raise Fail "bogus bodies.txt"
+	    else
+		bodies
+	end
 	
     fun main (_, args) =
 	let
-	    val n = (case args
-		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
-		       | _ => dfltN)
+	    val initialBodies = (case args
+		      of arg :: _ => testdata (Option.getOpt (Int.fromString arg, dfltN))
+		       | _ => readFromFile())
 	    fun doit () = 
 		let
 		    fun iter (ps, i) =
@@ -264,11 +295,12 @@ structure Main =
 			    ps
 
 		in
-		    iter (testdata n, 0)
+		    iter (initialBodies, 0)
 		end
 		
 	in
-	    RunSeq.run doit
+	    RunSeq.run doit;
+	    OS.Process.success
 	end
 
   end

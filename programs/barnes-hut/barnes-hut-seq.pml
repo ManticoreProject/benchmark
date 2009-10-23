@@ -168,19 +168,12 @@ structure Main =
     val pi = 3.14159265358979323846
 
     (* random numbers *)
-    local
-	val seed = Array64.array (1, 0.0)
-    in
-    fun srand s = (Array64.update(seed, 0, Double.fromInt s))
     fun xrand (xl, xh) = 
 	let
-	    val r = Rand.randDouble (0.0, Array64.sub(seed, 0))
+	    val r = Rand.randDouble (0.0, 1000000000.0)
 	in
-	    Array64.update(seed, 0, r);
 	    xl + (((xh - xl) * r) / 2147483647.0)
 	end
-    end (* local *)
-
 
     (* pick a random point on a sphere of specified radius. *)
     fun pickshell rad = 
