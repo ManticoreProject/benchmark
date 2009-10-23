@@ -1,0 +1,28 @@
+# Makefile for sparse-matrix-vector product
+#
+# @configure_input@
+#
+
+SHELL =		/bin/sh
+
+SMLNJ =		@SMLNJ_CMD@
+MLTON =		@MLTON@
+PMLC =		@PMLC@
+PMLCFLAGS=@PMLCFLAGS@
+
+TARGET =	smvm
+
+all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-smlnj 
+
+$(TARGET)-par:	smvm.mlb smvm.pml
+	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par smvm.mlb
+
+$(TARGET)-seq-elison:	smvm.mlb smvm.pml
+	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison smvm.mlb
+
+$(TARGET)-smlnj:	smvm.cm smvm.sml
+	echo "SMLofNJ.exportFn(\"smvm\", Main.main);" | $(SMLNJ) smvm.cm
+
+.PHONY: clean
+clean:
+	rm -f $(TARGET)-par $(TARGET)-seq-elison *.s

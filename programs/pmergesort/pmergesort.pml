@@ -86,14 +86,27 @@ structure Main =
   struct
 
     val dfltN = 1000000
-	
+
+    fun readFromFile () =
+	let
+	    val f = TextIO.openIn "../common/random-int-list.txt"
+	    fun lp acc =
+		(case TextIO.inputLine f
+		  of NONE => List.rev acc
+		   | SOME line => lp (Option.valOf (Int.fromString line) :: acc))
+	in
+	    lp nil
+	end
+
     fun main (_, args) =
 	let
-	    val n = (case args
-		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
-		       | _ => dfltN)
-	    val input = Rope.fromList (List.tabulate (n, fn _ => Rand.inRangeInt (0, 10000)))
-	    fun doit () = PMergesort.pMergesort Int.compare input
+	    val x = Rope.fromList
+			(case args
+			  of arg :: _ => 
+			     List.tabulate (Option.getOpt (Int.fromString arg, dfltN),
+					 fn _ => Rand.inRangeInt (0, 10000))
+			   | _ => readFromFile ())
+	    fun doit () = PMergesort.pMergesort Int.compare x
 		
 	in
 	    RunPar.run doit

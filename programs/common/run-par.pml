@@ -5,21 +5,21 @@
  *)
 
 structure RunPar (* sig
-  val run : (unit -> unit) -> unit
+  val run : (unit -> 'a) -> 'a
   end *) = struct
 
     fun run f =
 	let
 	    val b = Time.now ()
 #ifndef SEQUENTIAL
-	    val _ = ImplicitThread.runOnWorkGroup(WorkStealing.workGroup(), f)
+	    val ans = ImplicitThread.runOnWorkGroup(WorkStealing.workGroup(), f)
 #else
-	    val _ = f ()
+	    val ans = f ()
 #endif
 	    val e = Time.now ()
 	in
 	    Print.printLn (Time.toString (e - b));
-	    ()
+	    ans
 	end
 
   end

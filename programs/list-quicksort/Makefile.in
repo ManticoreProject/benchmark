@@ -12,10 +12,13 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	list-quicksort
 
-all:		$(TARGET)
+all:		$(TARGET)  $(TARGET)-smlnj
 
 $(TARGET):	list-quicksort.mlb list-quicksort.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET) list-quicksort.mlb
+
+$(TARGET)-smlnj:	list-quicksort.cm list-quicksort.sml
+	echo "SMLofNJ.exportFn(\"list-quicksort\", Main.main);" | $(SMLNJ) list-quicksort.cm
 
 .PHONY: clean
 clean:

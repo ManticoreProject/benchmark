@@ -53,17 +53,17 @@ structure Main =
 
     fun main (_, args) =
 	let
+	    val r = Random.rand (0, 1000000)
 	    val x = (case args
 		      of arg :: _ => 
 			 List.tabulate (Option.getOpt (Int.fromString arg, dfltN),
-					fn _ => Rand.inRangeInt (0, 10000))
+					fn _ => Random.randNat r)
 		       | _ => readFromFile ())
 	    fun doit () = ListQuicksort.quicksort x
 		
 	in
-	    RunSeq.run doit
+	    RunSeq.run doit;
+	    OS.Process.success
 	end
 
   end
-
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

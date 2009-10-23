@@ -110,26 +110,26 @@ structure Main =
 
     val dfltN = 100000
 
-    fun timeit n = 
+    fun readFromFile () =
 	let
-	    val t0 = Time.now()
-	    val x = R.tabulate(n, fn _ => Rand.range (0, 10000) 0w43343)
-	    val _ = PMergesort.pMergesort x
-	    val t = Time.-(Time.now(), t0)
+	    val f = TextIO.openIn "../common/random-int-list.txt"
+	    fun lp acc =
+		(case TextIO.inputLine f
+		  of NONE => List.rev acc
+		   | SOME line => lp (Option.valOf (Int.fromString line) :: acc))
 	in
-	    TextIO.print(Time.toString t)
+	    lp nil
 	end
 
     fun main (_, args) = let
-	  val n = (case args
-		 of arg::_ => Option.getOpt (Int.fromString arg, dfltN)
-		  | _ => dfltN
-		(* end case *))
+	  val x = (case args
+		 of arg::_ => R.tabulate(Option.getOpt (Int.fromString arg, dfltN), 
+				      fn _ => Rand.range (0, 10000) 0w43343)
+		  | _ => R.fromList (readFromFile ()))
+	  fun doit () = PMergesort.pMergesort x
 	  in
-	    timeit n;
+  	    RunSeq.run doit;
 	    OS.Process.success
 	  end
 	
   end
-
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

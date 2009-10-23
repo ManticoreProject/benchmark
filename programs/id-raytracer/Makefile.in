@@ -12,7 +12,7 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	id-raytracer
 
-all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq
+all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq $(TARGET)-smlnj
 
 $(TARGET)-par:	raytracer-par.mlb raytracer-par.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par raytracer-par.mlb
@@ -22,6 +22,9 @@ $(TARGET)-seq-elison:	raytracer-par.mlb raytracer-par.pml
 
 $(TARGET)-seq:	raytracer-seq.mlb raytracer-seq.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq raytracer-seq.mlb
+
+$(TARGET)-smlnj:	raytracer.cm raytracer.sml
+	echo "SMLofNJ.exportFn(\"raytracer\", Main.main);" | $(SMLNJ) raytracer.cm
 
 .PHONY: clean
 clean:

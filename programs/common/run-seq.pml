@@ -5,17 +5,17 @@
  *)
 
 structure RunSeq (* sig
-  val run : (unit -> unit) -> unit
+  val run : (unit -> 'a) -> 'a
   end *) = struct
 
     fun run f =
 	let
 	    val b = Time.now ()
-	    val _ = f ()
+	    val ans = f ()
 	    val e = Time.now ()
 	in
 	    Print.printLn (Time.toString (e - b));
-	    ()
+	    ans
 	end
 
   end

@@ -20,3 +20,6 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f pfib -n $NAME -d "$DESCRI
 
 # sequential elison 
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f pfib-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
+
+# smlnj
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f fib -n "fib" -d "$DESCRIPTION" -t $NUM_TRIALS

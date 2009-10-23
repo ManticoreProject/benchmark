@@ -12,13 +12,20 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	pquickhull
 
-all:		$(TARGET)-par $(TARGET)-seq-elison
+all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-smlnj gen-points
 
 $(TARGET)-par:	pquickhull.mlb pquickhull.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par pquickhull.mlb
 
 $(TARGET)-seq-elison:	pquickhull.mlb pquickhull.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison pquickhull.mlb
+
+$(TARGET)-smlnj:	quickhull.cm quickhull.sml
+	echo "SMLofNJ.exportFn(\"quickhull\", Main.main);" | $(SMLNJ) quickhull.cm
+
+gen-points:	gen-points.sml gen-points.cm
+	echo "SMLofNJ.exportFn(\"gen-points\", Main.main);" | $(SMLNJ) gen-points.cm
+	sml @SMLload=gen-points 1000000 file > points.txt
 
 .PHONY: clean
 clean:

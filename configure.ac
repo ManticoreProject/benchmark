@@ -93,6 +93,8 @@ dnl ***** Makefiles *****
   programs/pquickhull/Makefile
   programs/pquicksort/Makefile
   programs/tree-add/Makefile
+  programs/smvm/Makefile
+  programs/common/Makefile
 )
 
 dnl ***** Scripts ******
@@ -113,6 +115,7 @@ AC_CONFIG_FILES([
   programs/pquickhull/run.sh:programs/pquickhull/run_sh.in
   programs/pquicksort/run.sh:programs/pquicksort/run_sh.in
   programs/tree-add/run.sh:programs/tree-add/run_sh.in
+  programs/smvm/run.sh:programs/smvm/run_sh.in
 
 ], [
    chmod +x programs/barnes-hut/run.sh
@@ -131,6 +134,7 @@ AC_CONFIG_FILES([
    chmod +x programs/pquickhull/run.sh
    chmod +x programs/pquicksort/run.sh
    chmod +x programs/tree-add/run.sh
+   chmod +x programs/smvm/run.sh
 
 ])
 AC_CONFIG_FILES([

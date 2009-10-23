@@ -160,8 +160,7 @@ structure Main =
 		  of NONE => List.rev acc
 		   | SOME line => 
 		     let
-			 val toks = String.tokenize " " line
-			 val xp::yp::mass::xv::yv::nil = List.map rd toks
+			 val xp::yp::mass::xv::yv::nil = List.map rd (String.tokenize " " line)
 		     in
 			 lp(particle(mass, (xp, yp), (xv, yv)) :: acc)
 		     end)

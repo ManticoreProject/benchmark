@@ -62,8 +62,8 @@ structure MandelbrotSeq =
 		    end
 		  else ()
 	  in
-	    outputImg 0; Image.output("mand.ppm", image); Image.free image;
-	    ()
+	    outputImg 0;
+	    image
 	  end
 
   end
@@ -79,9 +79,10 @@ structure Main =
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
 	    fun doit () = MandelbrotSeq.mandelbrot n
-		
+	    val image = RunSeq.run doit
 	in
-	    RunSeq.run doit
+	    Image.output("mand.ppm", image); Image.free image;
+	    ()
 	end
 
   end

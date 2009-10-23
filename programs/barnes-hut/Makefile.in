@@ -26,7 +26,7 @@ $(TARGET)-seq:	barnes-hut-seq.mlb barnes-hut-seq.pml
 $(TARGET)-smlnj:	barnes-hut.cm barnes-hut.sml
 	echo "SMLofNJ.exportFn(\"barnes-hut\", Main.main);" | $(SMLNJ) barnes-hut.cm
 
-gen-bodies:	gen-bodies.sml gen-bodies.cm bodies.txt
+gen-bodies:	gen-bodies.sml gen-bodies.cm
 	echo "SMLofNJ.exportFn(\"gen-bodies\", Main.main);" | $(SMLNJ) gen-bodies.cm
 	sml @SMLload=gen-bodies 500000 file > bodies.txt
 

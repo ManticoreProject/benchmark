@@ -1,12 +1,12 @@
-(* mandelbrot-par.pml
+(* mandelbrot-seq.pml
  *
  * COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
  *
- * Parallel version of mandelbrot-set computation. The output goes to out.ppm.
+ * Sequential version of mandelbrot-set computation. The output goes to out.ppm.
  *)
 
-structure MandelbrotPar =
+structure MandelbrotSeq =
   struct
 
     val xBase = ~2.0
@@ -19,16 +19,16 @@ structure MandelbrotPar =
 	if cnt >= maxCount then
 	    (0.0, 0.0, 0.0)
 	else let
-		val w = Float.fromInt cnt / (Float.fromInt (maxCount-1))
+		val w = Real.fromInt cnt / (Real.fromInt (maxCount-1))
 	    in
 		(w, w, 0.25 + w*0.75)
 	    end
 
     fun mandelbrot N = let
 	  fun elt (i, j) = let
-	        val delta = side / (Float.fromInt (N-1))
-		val c_re = xBase + (delta * Float.fromInt j)
-		val c_im = yBase - (delta * Float.fromInt i)
+	        val delta = side / (Real.fromInt (N-1))
+		val c_re = xBase + (delta * Real.fromInt j)
+		val c_im = yBase - (delta * Real.fromInt i)
 		fun loop (cnt, z_re, z_im) = 
 		    if (cnt < maxCount)
 		      then let
@@ -47,14 +47,13 @@ structure MandelbrotPar =
 		in
 		  loop (0, c_re, c_im)
 		end
-	  val pixels = [| [| pix2rgb (elt (i, j)) | j in [| 0 to N-1 |] |] | i in [| 0 to N-1 |] |]
-	  val image = Image.new (N, N)
-	  fun output (i, j, (r, g, b)) = Image.update3f (image, i, j, r, g, b);
+	  val image = Array.array (N*N, (0.0,0.0,0.0))
+	  fun output (i, j, (r, g, b)) = Array.update (image, i*N + j, (r, g, b));
 	  fun outputImg i = if i < N
 		  then let
 		    fun loop j = if j < N
 			then (
-			     output (i, j, subP(subP(pixels, i), j));
+			     output (i, j, pix2rgb (elt (i, j)));
 			     loop (j+1)
 			  )
 			else outputImg (i+1)
@@ -63,7 +62,7 @@ structure MandelbrotPar =
 		    end
 		  else ()
 	  in
-	    outputImg 0; 
+	    outputImg 0;
 	    image
 	  end
 
@@ -79,13 +78,12 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    fun doit () = MandelbrotPar.mandelbrot n
-	    val image = RunPar.run doit
+	    fun doit () = MandelbrotSeq.mandelbrot n
+	    val image = RunSeq.run doit
 	in
-	    Image.output("mand.ppm", image); Image.free image;
-	    ()
+	    (* Image.output("mand.ppm", image); Image.free image;*)
+	    OS.Process.success
 	end
 
   end
 
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

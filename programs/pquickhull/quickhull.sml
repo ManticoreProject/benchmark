@@ -1,21 +1,25 @@
-(* pquickhull.pml
+(* quickhull.sml
  * 
- * Parallel quickhull written by Josh and Mike
+ * Quickhull written by Josh and Mike
  *) 
 
-structure PQuickhull (* : sig
-    type point = double * double
-    val quickhull : point parray -> point parray
+structure Rope = RopeFn (
+		 structure S = ListSeq
+		 val maxLeafSize = 128)
+
+structure Quickhull (* : sig
+    type point = real * real
+    val quickhull : point parray -> point Rope.rope
   end *) = struct
 
-    type point = double * double
+    type point = real * real
 
     fun samePoint ((x1, y1), (x2, y2)) = 
-	(case (Double.compare (x1, x2), Double.compare (y1, y2))
+	(case (Real.compare (x1, x2), Real.compare (y1, y2))
 	  of (EQUAL, EQUAL) => true
 	   | _ => false)
 
-    fun distance ((q, w), (z, x)) = Double.sqrt ((q - z) * (q - z) + (w - x) * (w - x))
+    fun distance ((q, w), (z, x)) = Math.sqrt ((q - z) * (q - z) + (w - x) * (w - x))
 
     fun maxP (f, m, xs) = 
 	let
@@ -24,16 +28,16 @@ structure PQuickhull (* : sig
 		  of GREATER => x
 		   | _ => y)
 	in
-	    reduceP (max, m, xs)
+	    Rope.foldl max m xs
 	end
 
     (* returns the point farthest from the line (a, b) in S *)
     fun farthest (a, b, S) = 
 	let
 	    fun dist x = (distance (a, x) + distance (b, x), x)
-	    fun cmp ((d1, _), (d2, _)) = Double.compare (d1, d2)
-	    val dpts = mapP (dist, S)
-	    val (_, pt) = maxP (cmp, dpts!0, dpts)
+	    fun cmp ((d1, _), (d2, _)) = Real.compare (d1, d2)
+	    val dpts = Rope.map dist S
+	    val (_, pt) = maxP (cmp, Rope.sub(dpts,0), dpts)
 	in
 	    pt
 	end
@@ -48,41 +52,41 @@ structure PQuickhull (* : sig
 	< 0.0
 
     (* returns those points in S to the right of the ray emanating from a and ending at b *)
-    fun pointsRightOf (a : point, b : point, S : point parray) = filterP (isRight (a, b), S)
+    fun pointsRightOf (a : point, b : point, S : point Rope.rope) = Rope.filter (isRight (a, b)) S
 
 
     (* we maintain the invariant that the points a and b lie on the convex hull *)
     fun quickhull' (a, b, S) = 
-	if lengthP S = 0 then
-	    [| |]
+	if Rope.length S = 0 then
+	    Rope.empty
 	else
 	    let
 		val c = farthest (a, b, S)  (* c must also be on the convex hull *)
-		val (rightOfac, rightOfcb) = (| pointsRightOf (a, c, S), pointsRightOf (c, b, S) |)
+		val (rightOfac, rightOfcb) = ( pointsRightOf (a, c, S), pointsRightOf (c, b, S) )
 	    in
-		concatP ([| c |], 
-			 concatP (| quickhull' (a, c, rightOfac), 
-				    quickhull' (c, b, rightOfcb) |))
+		Rope.append (Rope.singleton c, 
+			 Rope.append ( quickhull' (a, c, rightOfac), 
+				       quickhull' (c, b, rightOfcb) ))
 	    end
 
     (* takes a set of 2d points and returns the convex hull for those points *)	
     fun quickhull S = 
-	if lengthP S <= 1 then
+	if Rope.length S <= 1 then
 	    S
 	else
 	    let
-		val p0 = S!0
+		val p0 = Rope.sub (S,0)
 		fun belowAndLeft ((x1, y1), (x2, y2)) = if x1 < x2 andalso y1 < y2 then (x1, y1) else (x2, y2)
 		fun aboveAndRight ((x1, y1), (x2, y2)) = if x1 > x2 andalso y1 > y2 then (x1, y1) else (x2, y2)
 		(* points x0 and y0 lie on the convex hull *)
-		val (x0, y0) = (| reduceP (belowAndLeft, p0, S), reduceP (aboveAndRight, p0, S) |)
+		val (x0, y0) = ( Rope.foldl belowAndLeft p0 S, Rope.foldl aboveAndRight p0 S )
 		(* remove x0 and y0 from S *)
-		val S = filterP (fn p => not (samePoint (p, x0) orelse samePoint (p, y0)), S)
-		val (rightOfx0y0, rightOfy0x0) = (| pointsRightOf (x0, y0, S), pointsRightOf (y0, x0, S) |)
+		val S = Rope.filter (fn p => not (samePoint (p, x0) orelse samePoint (p, y0))) S
+		val (rightOfx0y0, rightOfy0x0) = ( pointsRightOf (x0, y0, S), pointsRightOf (y0, x0, S) )
 	    in
-		concatP ([| x0, y0 |], 
-			 concatP (| quickhull' (x0, y0, rightOfx0y0),
-				    quickhull' (y0, x0, rightOfy0x0) |))
+		Rope.append (Rope.fromList [x0, y0],
+			 Rope.append ( quickhull' (x0, y0, rightOfx0y0),
+				       quickhull' (y0, x0, rightOfy0x0) ))
 	    end
 end
 
@@ -94,13 +98,13 @@ structure Main =
     fun readFromFile () =
 	let
 	    val f = TextIO.openIn "points.txt"
-	    fun rd d = Option.valOf (Double.fromString d)
+	    fun rd d = Option.valOf (Real.fromString d)
 	    fun lp acc =
 		(case TextIO.inputLine f
 		  of NONE => List.rev acc
 		   | SOME line => 
 		     let
-			 val x::y::nil = List.map rd (String.tokenize " " line)
+			 val x::y::nil = List.map rd (String.tokens (fn c => c = #" ") line)
 		     in
 			 lp((x,y) :: acc)
 		     end)
@@ -110,17 +114,16 @@ structure Main =
 	
     fun main (_, args) =
 	let
-	    val points = fromListP
+	    val rand = Random.rand (0, 100000)
+	    val points = 
 		(case args
-		  of arg :: _ => List.tabulate (Option.getOpt (Int.fromString arg, dfltN), 
-					     fn _ => (Rand.randDouble (~100000.0, 100000.0), Rand.randDouble (~100000.0, 100000.0)))
-		   | _ =>  readFromFile ())
-	    fun doit () = PQuickhull.quickhull points
-		
+		  of arg :: _ => Rope.tabulate (Option.getOpt (Int.fromString arg, dfltN), 
+					     fn _ => (Random.randReal rand, Random.randReal rand))
+		   | _ => Rope.fromList (readFromFile ()))
+	    fun doit () = Quickhull.quickhull points
 	in
-	    RunPar.run doit
+	    RunSeq.run doit;
+	    OS.Process.success
 	end
 
   end
-
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

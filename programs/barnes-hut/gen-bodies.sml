@@ -119,9 +119,9 @@ structure Main = struct
 	    List.app p (GenBodies.testdata n)
 	end
 
-    fun main (_, size :: format :: _) =
+    fun main (_, n :: format :: _) =
 	let
-	    val n = Option.getOpt (Int.fromString size, dfltN)
+	    val n = Option.getOpt (Int.fromString n, dfltN)
 	in
 	    (case format
 	      of "sml" => outputSML n

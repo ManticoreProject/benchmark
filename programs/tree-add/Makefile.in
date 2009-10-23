@@ -12,13 +12,16 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	tree-add
 
-all:		$(TARGET) $(TARGET)-seq-elison
+all:		$(TARGET) $(TARGET)-seq-elison $(TARGET)-smlnj
 
 $(TARGET):	tree-add.mlb tree-add.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET) tree-add.mlb
 
 $(TARGET)-seq-elison:	tree-add.mlb tree-add.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison tree-add.mlb
+
+$(TARGET)-smlnj:	tree-add.cm tree-add.sml
+	echo "SMLofNJ.exportFn(\"tree-add\", Main.main);" | $(SMLNJ) tree-add.cm
 
 .PHONY: clean
 clean:
