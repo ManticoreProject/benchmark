@@ -1,7 +1,61 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl
+dnl COPYRIGHT (c) 2009 The Manticore Project (manticore.cs.uchicago.edu)
+dnl All rights reserved.
+dnl
+
 AC_INIT(manti-bench,1.0,http://manticore.cs.uchicago.edu)
 
 AC_PREREQ(2.59)
+AC_CONFIG_AUX_DIR(config)
 
+dnl
+dnl include extra macros
+dnl
+sinclude(config/check_smlnj.m4)
+sinclude(config/check_smlnj_heap_suffix.m4)
+sinclude(config/acx_pthread.m4)
+sinclude(config/check_leading_uscore.m4)
+
+dnl ******************** SML/NJ configuration ********************
+dnl
+
+dnl check that we have a compatible version of SML/NJ
+dnl
+CHECK_SMLNJ([AC_MSG_ERROR([unable to find SML/NJ installation; check your PATH or set SMLNJ_CMD])])
+if test $SMLNJ_MAJOR_VERSION -lt 110 \
+  -o $SMLNJ_MINOR_VERSION -lt 65
+then
+  AC_MSG_ERROR([installation requires SML/NJ version 110.65+])
+fi
+AC_SUBST(SMLNJ_VERSION)
+
+dnl determine the heap-image suffix
+dnl
+CHECK_SMLNJ_HEAP_SUFFIX([
+  AC_MSG_ERROR([unsupported configuration ${host_cpu}-${host_os}])])
+
+dnl look for ml-makedepend
+dnl
+AC_MSG_CHECKING([for ml-makedepend])
+tmpPATH="$SMLNJ_PATH:$PATH"
+AC_PATH_PROG(ML_MAKEDEPEND, ml-makedepend, ":", $tmpPATH)
+if test $ML_MAKEDEPEND = none ; then
+  AC_MSG_ERROR([ml-makedepend not found])
+else
+  AC_MSG_RESULT([$ML_MAKEDEPEND])
+fi
+AC_SUBST(ML_MAKEDEPEND)
+
+dnl
+dnl look for ml-build
+dnl
+tmpPATH="$SMLNJ_PATH:$PATH"
+AC_PATH_PROG(ML_BUILD, ml-build, none, $tmpPATH)
+if test $ML_BUILD = none ; then
+  AC_MSG_ERROR([ml-build not found])
+fi
+AC_SUBST(ML_BUILD)
 
 dnl ******************** Paths ********************
 
@@ -139,8 +193,10 @@ AC_CONFIG_FILES([
 ])
 AC_CONFIG_FILES([
   scripts/experiment.sh:scripts/experiment_sh.in
+  scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in
 ], [
    chmod +x scripts/experiment.sh
+   chmod +x scripts/experiment-smlnj.sh
 ])
 AC_CONFIG_FILES([
   scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
