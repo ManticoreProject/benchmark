@@ -152,19 +152,21 @@ structure Main =
 
     fun readFromFile () =
 	let
-	    val nParticles = PrimIO.readInt ()
-	    val rd = PrimIO.readDouble
-	    fun lp (i,acc) =
-		if i >= nParticles then
-		   List.rev acc
-		else
-		    let
-			val (xp,yp,mass,xv,yv) = (rd(),rd(),rd(),rd(),rd())
-		    in
-			lp(i+1, particle(mass, (xp, yp), (xv, yv)) :: acc)
-		    end
+	    val f = TextIO.openIn "bodies.txt"
+	    val SOME nParticles = Int.fromString (Option.valOf (TextIO.inputLine f))
+	    fun rd d = Option.valOf (Double.fromString d)
+	    fun lp acc =
+		(case TextIO.inputLine f
+		  of NONE => List.rev acc
+		   | SOME line => 
+		     let
+			 val toks = String.tokenize " " line
+			 val xp::yp::mass::xv::yv::nil = List.map rd toks
+		     in
+			 lp(particle(mass, (xp, yp), (xv, yv)) :: acc)
+		     end)
 	in
-	    lp (0, nil)
+	    lp nil
 	end
 	
     fun main (_, args) =

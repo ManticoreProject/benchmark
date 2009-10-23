@@ -165,104 +165,44 @@ structure Main =
 
     structure V = Vector2
 
-    val pi = 3.14159265358979323846
-
-    (* random numbers *)
-    fun xrand (xl, xh) = 
-	let
-	    val r = Rand.randDouble (0.0, 1000000000.0)
-	in
-	    xl + (((xh - xl) * r) / 2147483647.0)
-	end
-
-    (* pick a random point on a sphere of specified radius. *)
-    fun pickshell rad = 
-	let
-	    fun pickvec () = 
-		let
-		    val vec = V.tabulate (fn _ => 1.0 - Rand.randDouble(0.0, 2.0))
-		    val rsq = V.dotvp(vec, vec)
-		in
-		    if (rsq > 1.0)
-		    then pickvec ()
-		    else V.mulvs (vec, rad / Double.sqrt(rsq))
-		end
-	in
-	    pickvec ()
-	end
-
     fun particle (mass, (xp, yp), (xv, yv)) = BarnesHutSeq.PARTICLE(BarnesHutSeq.MP(xp, yp, mass), xv, yv)
+    fun genBodies n = List.map particle (GenBodies.testdata n)
 
-    (* generate Plummer model initial conditions for test runs, scaled
-     * to units such that M = -4E = G = 1 (Henon, Hegge, etc).
-     * See Aarseth, SJ, Henon, M, & Wielen, R (1974) Astr & Ap, 37, 183.
-     *)
-    fun testdata n =
+    fun readFromFile () =
 	let
-	    val mfrac = 0.999 (* mass cut off at mfrac of total *)
-	    val rn = Double.fromInt n
-	    val rsc = (3.0 * pi) / 16.0
-	    val vsc = Double.sqrt(1.0 / rsc)
-	    fun mkBodies x =
-		(case x
-		  of (0, cmr, cmv, l) =>
+	    val f = TextIO.openIn "bodies.txt"
+	    val SOME nParticles = Int.fromString (Option.valOf (TextIO.inputLine f))
+	    fun rd d = Option.valOf (Double.fromString d)
+	    fun lp acc =
+		(case TextIO.inputLine f
+		  of NONE => List.rev acc
+		   | SOME line => 
 		     let
-			 (* offset bodies by normalized cm coordinates.  Also, reverse
-			  * the list to get the same order of bodies as in the C version.
-			  *)
-			 val cmr = V.divvs(cmr, rn)
-			 val cmv = V.divvs(cmv, rn)
-			 fun norm x =
-			     (case x
-			       of (nil, l) => l
-				| ((mass, pos, vel) :: r, l) => 
-				  let
-				      val posN = V.subv(pos,cmr)
-				      val velN = V.subv(vel,cmv)
-				  in
-				      norm (r, particle(mass,posN,velN)::l)
-				  end)
+			 val toks = String.tokenize " " line
+			 val xp::yp::mass::xv::yv::nil = List.map rd toks
 		     in
-			 norm (l, nil)
-		     end
-		   | (i, cmr, cmv, l) =>
-		     let
-			 val r = 1.0 / Double.sqrt (Double.pow(xrand(0.0, mfrac), ~2.0/3.0) - 1.0)
-			 val pos = pickshell (rsc * r)
-			 fun vN () = 
-			     let		(* von Neumann technique *)
-				 val x = xrand(0.0,1.0)
-				 val y = xrand(0.0,0.1)
-			     in
-				 if (y > x*x * (Double.pow (1.0-x*x, 3.5))) then vN () else x
-			     end
-			 val v = ((Double.sqrt 2.0) * vN()) / Double.pow(1.0 + r*r, 0.25)
-			 val vel = pickshell (vsc * v)
-			 val body = (1.0 / rn, pos, vel)
-		     in
-			 mkBodies (i-1, V.addv(cmr, pos), V.addv(cmv, vel), body :: l)
+			 lp(particle(mass, (xp, yp), (xv, yv)) :: acc)
 		     end)
 	in
-	    mkBodies (n, V.zerov, V.zerov, nil)
-	end (* testdata *)
+	    lp nil
+	end
 	
     fun main (_, args) =
 	let
-	    val n = (case args
-		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
-		       | _ => dfltN)
-	    val initialBodies = testdata n
+	    val bodiesList = 
+		(case args
+		  of arg :: _ => genBodies (Option.getOpt (Int.fromString arg, dfltN))
+		   | _ => readFromFile())
 	    fun doit () = 
 		let
 		    fun iter (ps, i) =
 			if i < dfltI then
-			    (* FIXME: read the top-level box from the input *)
 			    iter (BarnesHutSeq.oneStep ps, i + 1)
 			else
 			    ps
 
 		in
-		    iter (initialBodies, 0)
+		    iter (bodiesList, 0)
 		end
 		
 	in
