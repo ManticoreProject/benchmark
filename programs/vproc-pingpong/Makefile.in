@@ -1,0 +1,20 @@
+# Makefile for the vproc-pingpong benchmark
+#
+# @configure_input@
+#
+
+SHELL =		/bin/sh
+
+PMLC =		@PMLC@
+PMLCFLAGS =	@PMLCFLAGS@
+
+TARGET =	vproc-pingpong
+
+all:		$(TARGET)
+
+$(TARGET):	$(TARGET).pml $(TARGET).mlb
+	$(PMLC) $(PMLCFLAGS) -o $(TARGET) $(TARGET).mlb
+
+.PHONY: clean
+clean:
+	rm -f $(TARGET)
