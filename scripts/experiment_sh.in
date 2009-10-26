@@ -159,7 +159,7 @@ echo "Logging performance results to $LOG_FILE"
 if [ $GEN_GC_STATS == "false" ]; then
     ARGS="$SIZE"
 else
-    ARGS="$SIZE -gcstats=all,sml -gcstatsfile=stats.sml"
+    ARGS="$SIZE -gcstats=all,sml"
 fi
 
 if [ $SEQUENTIAL_BINARY == "true" ]; then
