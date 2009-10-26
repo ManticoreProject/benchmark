@@ -148,6 +148,7 @@ dnl ***** Makefiles *****
   programs/pquicksort/Makefile
   programs/tree-add/Makefile
   programs/smvm/Makefile
+  programs/vproc-pingpong/Makefile
   programs/common/Makefile
 )
 
@@ -170,6 +171,7 @@ AC_CONFIG_FILES([
   programs/pquicksort/run.sh:programs/pquicksort/run_sh.in
   programs/tree-add/run.sh:programs/tree-add/run_sh.in
   programs/smvm/run.sh:programs/smvm/run_sh.in
+  programs/vproc-pingpong/run.sh:programs/vproc-pingpong/run_sh.in
 
 ], [
    chmod +x programs/barnes-hut/run.sh
@@ -189,6 +191,7 @@ AC_CONFIG_FILES([
    chmod +x programs/pquicksort/run.sh
    chmod +x programs/tree-add/run.sh
    chmod +x programs/smvm/run.sh
+   chmod +x programs/vproc-pingpong/run.sh
 
 ])
 AC_CONFIG_FILES([
