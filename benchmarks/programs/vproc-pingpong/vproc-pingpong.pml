@@ -8,6 +8,7 @@
  *)
 
 #include "prim.def"
+#include "assert.def"
 
 structure VProcPingPong =
   struct
@@ -32,6 +33,7 @@ structure VProcPingPong =
 		  return()
 
 	  fun ping () : () =
+              do assert (Equal(host_vproc, vp1))
 	      let i : int = #0(n1)
 	      if I32Lt(i, n)
 		 then
@@ -53,6 +55,7 @@ structure VProcPingPong =
 		  return()
 
 	  fun pong (i : int) : () =
+              do assert (Equal(host_vproc, vp2))
 	      if I32Lt(i, n)
 		 then
 		  do apply wait (i, n2)
@@ -63,9 +66,9 @@ structure VProcPingPong =
                   let self : vproc = SchedulerAction.@atomic-begin()
                   let fls : FLS.fls = FLS.@get ()
 #ifdef TRUNK
-		  do VProc.@send-and-preempt-from-atomic(vp1, vp2, fls, k)
+		  do VProc.@send-and-preempt-from-atomic(vp2, vp1, fls, k)
 #else /* SWP */
-	          do VProc.@send-from-atomic(vp1, vp2, fls, k)
+	          do VProc.@send-from-atomic(vp2, vp1, fls, k)
 #endif
                   do SchedulerAction.@atomic-end(self)
 		  apply pong (I32Add(i, 1))
