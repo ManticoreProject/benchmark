@@ -83,6 +83,22 @@ dnl
   esac
 fi
 
+MANTI_BENCH_RESULTS=""
+AC_ARG_WITH(resultsdir,
+  AC_HELP_STRING([--with-resultsdir=PATH], [specify location of benchmarking results directory]),
+  MANTI_BENCH_RESULTS=$with_resultsdir)
+if test x$with_resultsdir = xyes -o x$with_resultsdir = xno ; then
+  AC_MSG_ERROR([--with-resultsdir option must specify directory argument])
+elif test x$MANTI_BENCH_RESULTS != x ; then
+dnl
+dnl verify that $MANTI_BENCH_RESULTS is an absolute path
+dnl
+  case $MANTI_BENCH_RESULTS in
+    /*) ;;
+    *) AC_MSG_ERROR([--with-resultsdir argument must be absolute]) ;;
+  esac
+fi
+
 PMLCFLAGS=""
 AC_ARG_WITH(pmlcflags,
   AC_HELP_STRING([--with-pmlcflags=PATH], [Manticore compiler flags]),
