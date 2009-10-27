@@ -96,7 +96,7 @@ BENCHMARK_SVN_REVISION=$( svn info | grep Revision )
 BENCHMARK_SVN_REVISION=${BENCHMARK_SVN_REVISION:10}
 BENCHMARK_SVN_URL=$( svn info | grep URL )
 BENCHMARK_SVN_URL=${BENCHMARK_SVN_URL:5}
-BENCHMARK_SVN_STATUS=$( svn st -q | wc -l )
+BENCHMARK_SVN_STATUS=$( svn st -q | grep [UAD] | wc -l )
 if [ $BENCHMARK_SVN_STATUS != "0" ]; then
     echo "WARNING: not all changes have been committed to the benchmark directory"
 fi
