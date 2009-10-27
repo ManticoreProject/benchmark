@@ -64,7 +64,8 @@ structure Main =
 	    val v = Rope.tabulate (C, fn _ => Random.randReal rand * 10000.0)
 	    fun doit () = SMVM.smvm (mtx, v)
 	in
-	    RunSeq.run doit
+	    RunSeq.run doit;
+	    OS.Process.success
 	end
 
   end
