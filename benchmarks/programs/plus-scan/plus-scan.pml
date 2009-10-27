@@ -19,7 +19,6 @@ structure Main =
 		       | _ => dfltN)
 	    val a = Rope.fromList (List.tabulate (n, fn _ => (Rand.inRangeInt (0, 100))))
 	    fun doit () = Scan.plusScan a
-		
 	in
 	    RunPar.run doit
 	end
