@@ -20,4 +20,5 @@ val datetime = "2009-10-26 20:09:19"
 val machine = "hexi.cs.uchicago.edu"
 val description = "sequential plus prefix computation over a list"
 val nTrials = 10
-val runs =
+val runs = []
+end

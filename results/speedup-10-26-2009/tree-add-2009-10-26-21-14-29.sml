@@ -20,4 +20,5 @@ val datetime = "2009-10-26 21:14:29"
 val machine = "hexi.cs.uchicago.edu"
 val description = "parallel ternary-tree add"
 val nTrials = 10
-val runs =
+val runs = []
+end

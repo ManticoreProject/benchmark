@@ -20,4 +20,5 @@ val datetime = "2009-10-26 19:59:51"
 val machine = "hexi.cs.uchicago.edu"
 val description = "mergesort over a linked list"
 val nTrials = 10
-val runs =
+val runs = []
+end

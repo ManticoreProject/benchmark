@@ -20,4 +20,5 @@ val datetime = "2009-10-26 20:01:00"
 val machine = "hexi.cs.uchicago.edu"
 val description = "quicksort over a list"
 val nTrials = 10
-val runs =
+val runs = []
+end

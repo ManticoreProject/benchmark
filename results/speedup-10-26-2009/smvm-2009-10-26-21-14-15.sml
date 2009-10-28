@@ -20,4 +20,5 @@ val datetime = "2009-10-26 21:14:15"
 val machine = "hexi.cs.uchicago.edu"
 val description = "sparse-matrix vector multiplication over parallel arrays"
 val nTrials = 10
-val runs =
+val runs = []
+end
