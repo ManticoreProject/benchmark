@@ -7,15 +7,13 @@
 
 RESULTS_DIR="@MANTI_BENCH_RESULTS@"
 SCRIPTS_DIR="@MANTI_BENCH_SCRIPTS@"
-SMLNJ_CMD="@SMLNJ_CMD@"
-SMLNJ_VERSION="@SMLNJ_VERSION@"
+MLTON="@MLTON@"
 SIZE=""
 BENCHMARK_EXE=""
 EXPERIMENT_NAME="experiment"
 DESCRIPTION=""
 GEN_GC_STATS="@GEN_GC_STATS@"
 GEN_LOG="@GEN_LOG@"
-PMLCFLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
 
 usage="See the README file for instructions"
@@ -96,8 +94,9 @@ metadata "max_leaf_size" "NONE"
 metadata "seq_cutoff" "NONE"
 
 metadata "language" "Common.SML"
-metadata "compiler" "\"SMLNJ\""
-metadata "version" "\"$SMLNJ_VERSION\""
+metadata "compiler" "\"mlton\""
+MLTON_VERSION=$( $MLTON )
+metadata "version" "\"$MLTON_VERSION\""
 
 metadata "bench_url" "\"$BENCHMARK_SVN_URL\""
 metadata "bench_svn" "$BENCHMARK_SVN_REVISION"
@@ -116,8 +115,8 @@ echo "Logging performance results to $LOG_FILE"
 
 echo "val runs =" >> $LOG_FILE
 for ((i=1;i<=NUM_TRIALS;i+=1)); do
-    echo "$SMLNJ_CMD @SMLload=$BENCHMARK_EXE"
-    RES=$( $SMLNJ_CMD @SMLload=$BENCHMARK_EXE )
+    echo "./$BENCHMARK_EXE"
+    RES=$( ./$BENCHMARK_EXE )
     if [ $? == "0" ]; then
 	echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
 	echo -n -e "$RES" >> $LOG_FILE

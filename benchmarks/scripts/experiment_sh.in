@@ -39,6 +39,9 @@ do
     esac
 done
 
+# avoid running this experiment within the same second as a previous experiment
+sleep 2
+
 if [ $SEQUENTIAL_BINARY == "true" ]; then
     PROCS="1"
 fi

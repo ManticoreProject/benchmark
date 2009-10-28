@@ -221,9 +221,11 @@ AC_CONFIG_FILES([
 AC_CONFIG_FILES([
   scripts/experiment.sh:scripts/experiment_sh.in
   scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in
+  scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in
 ], [
    chmod +x scripts/experiment.sh
    chmod +x scripts/experiment-smlnj.sh
+   chmod +x scripts/experiment-mlton.sh
 ])
 AC_CONFIG_FILES([
   scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in

@@ -12,7 +12,7 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	pfib
 
-all:		$(TARGET) $(TARGET)-seq-elison $(TARGET)-smlnj
+all:		$(TARGET) $(TARGET)-seq-elison fib-smlnj $(TARGET)-mlton
 
 $(TARGET):	pfib.mlb pfib.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET) pfib.mlb
@@ -20,9 +20,12 @@ $(TARGET):	pfib.mlb pfib.pml
 $(TARGET)-seq-elison:	pfib.mlb pfib.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison pfib.mlb
 
-$(TARGET)-smlnj:	fib.cm fib.sml
+fib-smlnj:	fib.cm fib.sml
 	echo "SMLofNJ.exportFn(\"fib\", Main.main);" | $(SMLNJ) fib.cm
+
+fib-mlton:	fib-mlton.mlb fib.sml
+	$(MLTON) -output fib-mlton fib-mlton.mlb
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET) $(TARGET)-seq-elison
+	rm -f $(TARGET) $(TARGET)-seq-elison fib-mlton
