@@ -17,6 +17,14 @@ sinclude(config/check_smlnj_heap_suffix.m4)
 sinclude(config/acx_pthread.m4)
 sinclude(config/check_leading_uscore.m4)
 
+AC_PROG_INSTALL
+
+dnl check for mlton
+dnl
+AC_PATH_PROG([MLTON], [mlton], [none],
+  [$PATH$PATH_SEPARATOR/usr/bin$PATH_SEPARATOR/usr/local/bin])
+AC_SUBST(MLTON)
+
 dnl ******************** SML/NJ configuration ********************
 dnl
 
