@@ -22,4 +22,4 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f tree-add -n $NAME -d "$DE
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f tree-add-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
 
 # smlnj
-$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f tree-add -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f tree-add-smlnj -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

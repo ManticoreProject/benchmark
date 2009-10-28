@@ -13,4 +13,4 @@ MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f list-quicksort -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
 
 # smlnj
-$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f list-quicksort -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f list-quicksort-smlnj -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

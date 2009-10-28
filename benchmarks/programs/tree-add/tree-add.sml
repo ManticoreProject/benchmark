@@ -28,12 +28,12 @@ structure Main =
 
     structure T = TreeAdd
 
-    val dfltN = 10
+    val dfltN = 13
 
     fun mkTree d = let
 	  val r = Random.rand (0, 10000)
 	  fun mk d' = if d' >= d
-		then T.LEAF (Random.randNat r)
+		then T.LEAF (Random.randNat r mod 10)
 		else T.NODE ( mk (d'+1), mk (d'+1), mk (d'+1) )
 	  in
 	    mk 0
@@ -44,7 +44,7 @@ structure Main =
 		    of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		     | _ => dfltN)
 	  val t = mkTree n
-	  fun doit () = T.treeAdd t		
+	  fun doit () = T.treeAdd t
 	  in
 	    RunSeq.run doit;
 	    OS.Process.success

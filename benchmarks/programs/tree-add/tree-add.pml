@@ -29,11 +29,11 @@ structure Main =
 
     structure T = TreeAdd
 
-    val dfltN = 10
+    val dfltN = 13
 
     fun mkTree d = let
 	  fun mk d' = if d' >= d
-		then T.LEAF (Rand.inRangeInt (0, 1000))
+		then T.LEAF (Rand.inRangeInt (0, 10))
 		else T.NODE ( mk (d'+1), mk (d'+1), mk (d'+1) )
 	  in
 	    mk 0

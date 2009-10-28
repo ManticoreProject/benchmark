@@ -18,7 +18,7 @@ $(TARGET):	plus-prefix.mlb plus-prefix.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET) plus-prefix.mlb
 
 $(TARGET)-smlnj:	plus-prefix.cm plus-prefix.sml
-	echo "SMLofNJ.exportFn(\"plus-prefix\", Main.main);" | $(SMLNJ) plus-prefix.cm
+	echo "SMLofNJ.exportFn(\"plus-prefix-smlnj\", Main.main);" | $(SMLNJ) plus-prefix.cm
 
 .PHONY: clean
 clean:
