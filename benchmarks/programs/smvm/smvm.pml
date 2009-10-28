@@ -50,13 +50,13 @@ structure Main =
 	    (rows, C)
 	end
 
-    fun rows2sm rows = tabP (A.length rows, fn r => fromListP (A.sub (rows, r)))
+    fun rows2sm rows = fromListP (List.tabulate (A.length rows, fn r => fromListP (A.sub (rows, r))))
 	
     fun main (_, args) =
 	let
 	    val (mtx, C) = readFromFile ()
 	    val mtx = rows2sm mtx
-	    val v = tabP (C, fn _ => Rand.randDouble (0.0, 10000.0))
+	    val v = fromListP (List.tabulate (C, fn _ => Rand.randDouble (0.0, 10000.0)))
 	    fun doit () = SMVM.smvm (mtx, v)
 	in
 	    RunPar.run doit
