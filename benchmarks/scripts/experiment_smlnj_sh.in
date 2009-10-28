@@ -128,3 +128,6 @@ for ((i=1;i<=NUM_TRIALS;i+=1)); do
 done
 echo -e "\t\tnil" >> $LOG_FILE
 
+echo -e "end" >> $LOG_FILE # structure
+
+popd > /dev/null
