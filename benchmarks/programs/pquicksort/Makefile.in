@@ -12,7 +12,7 @@ PMLCFLAGS =	@PMLCFLAGS@
 
 TARGET =	pquicksort
 
-all:		$(TARGET)-par $(TARGET)-seq-elison rope-quicksort-smlnj
+all:		$(TARGET)-par $(TARGET)-seq-elison rope-quicksort-smlnj rope-quicksort-mlton
 
 $(TARGET)-par:	pquicksort.mlb pquicksort.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par pquicksort.mlb
@@ -23,6 +23,9 @@ $(TARGET)-seq-elison:	pquicksort.mlb pquicksort.pml
 rope-quicksort-smlnj:	rope-quicksort.cm rope-quicksort.sml
 	echo "SMLofNJ.exportFn(\"rope-quicksort\", Main.main);" | $(SMLNJ) rope-quicksort.cm
 
+rope-quicksort-mlton:  rope-quicksort-mlton.mlb rope-quicksort.sml
+	$(MLTON) -output rope-quicksort-mlton rope-quicksort-mlton.mlb
+
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison *.s
+	rm -f $(TARGET)-par $(TARGET)-seq-elison *.s rope-quicksort-mlton

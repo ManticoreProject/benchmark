@@ -29,3 +29,9 @@ $MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f barnes-hut -n "$NAME" -d "$DESC
 
 # smlnj
 $MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f barnes-hut-rope -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f barnes-hut-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f barnes-hut-rope-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

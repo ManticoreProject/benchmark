@@ -1,0 +1,32 @@
+(* rope.mlb
+ *
+ * COPYRIGHT (c) 2009 The Manticore Project (http://manticore.cs.uchicago.edu)
+ * All rights reserved.
+ *
+ * Ropes for Standard ML.
+ * 
+ * Authors:
+ *   Mike Rainey (mrainey@cs.uchicago.edu)
+ *   Adam Shaw (ams@cs.uchicago.edu)
+ *
+ *)
+
+local
+    $(SML_LIB)/basis/basis.mlb
+
+    seq-sig.sml
+    rope-sig.sml
+    rope-fn.sml
+
+    list-seq.sml
+    vector-seq.sml
+(*  test-ropes.sml*)
+in
+	signature SEQ
+	signature ROPE	
+	functor   RopeFn
+
+	structure ListSeq
+	structure VectorSeq
+(*	structure TestRopes*)
+end

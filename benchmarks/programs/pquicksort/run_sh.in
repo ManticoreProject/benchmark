@@ -23,3 +23,6 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f pquicksort-seq-elison -n $NAME -d 
 
 # smlnj
 $MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f rope-quicksort -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f rope-quicksort-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

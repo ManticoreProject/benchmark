@@ -12,7 +12,7 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	list-mergesort
 
-all:		$(TARGET)  $(TARGET)-smlnj
+all:		$(TARGET)  $(TARGET)-smlnj $(TARGET)-mlton
 
 $(TARGET):	list-mergesort.mlb list-mergesort.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET) list-mergesort.mlb
@@ -20,6 +20,9 @@ $(TARGET):	list-mergesort.mlb list-mergesort.pml
 $(TARGET)-smlnj:	list-mergesort.cm list-mergesort.sml
 	echo "SMLofNJ.exportFn(\"list-mergesort-smlnj\", Main.main);" | $(SMLNJ) list-mergesort.cm
 
+$(TARGET)-mlton:	list-mergesort-mlton.mlb list-mergesort.pml
+	$(MLTON) -output $(TARGET)-mlton list-mergesort-mlton.mlb
+
 .PHONY: clean
 clean:
-	rm -f $(TARGET) *.s 
+	rm -f $(TARGET) *.s  $(TARGET)-mlton

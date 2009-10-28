@@ -12,7 +12,7 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	mandelbrot
 
-all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq $(TARGET)-smlnj
+all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq $(TARGET)-smlnj $(TARGET)-mlton
 
 $(TARGET)-par:	mandelbrot-par.mlb mandelbrot-par.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par mandelbrot-par.mlb
@@ -26,6 +26,9 @@ $(TARGET)-seq:	mandelbrot-seq.mlb mandelbrot-seq.pml
 $(TARGET)-smlnj:	mandelbrot.cm mandelbrot.sml
 	echo "SMLofNJ.exportFn(\"mandelbrot\", Main.main);" | $(SMLNJ) mandelbrot.cm
 
+$(TARGET)-mlton:	mandelbrot-mlton.mlb mandelbrot.sml
+	$(MLTON) -output $(TARGET)-mlton mandelbrot-mlton.mlb
+
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq *.s mand.ppm
+	rm -f $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq $(TARGET)-mlton *.s mand.ppm

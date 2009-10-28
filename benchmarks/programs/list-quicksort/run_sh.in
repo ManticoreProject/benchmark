@@ -14,3 +14,6 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f list-quicksort -n $NAME -d "$DESCR
 
 # smlnj
 $MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f list-quicksort-smlnj -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f list-quicksort-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

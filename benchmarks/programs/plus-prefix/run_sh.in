@@ -14,3 +14,6 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f plus-prefix -n $NAME -d "$DESCRIPT
 
 # smlnj
 $MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f plus-prefix-smlnj -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f plus-prefix-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

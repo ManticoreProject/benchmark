@@ -12,7 +12,7 @@ PMLCFLAGS =	@PMLCFLAGS@
 
 TARGET =	barnes-hut
 
-all:		$(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-smlnj $(TARGET)-rope-smlnj gen-bodies
+all:		$(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-smlnj $(TARGET)-rope-smlnj $(TARGET)-mlton $(TARGET)-rope-mlton gen-bodies
 
 $(TARGET)-par:	barnes-hut-par.mlb barnes-hut-par.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par barnes-hut-par.mlb
@@ -29,10 +29,16 @@ $(TARGET)-smlnj:	barnes-hut.cm barnes-hut.sml
 $(TARGET)-rope-smlnj:	barnes-hut-rope.cm barnes-hut-rope.sml
 	echo "SMLofNJ.exportFn(\"barnes-hut-rope\", Main.main);" | $(SMLNJ) barnes-hut-rope.cm
 
+$(TARGET)-mlton:	barnes-hut-mlton.mlb barnes-hut.sml
+	$(MLTON) -output $(TARGET)-mlton barnes-hut-mlton.mlb
+
+$(TARGET)-rope-mlton:	barnes-hut-rope-mlton.mlb barnes-hut-rope.sml
+	$(MLTON) -output $(TARGET)-rope-mlton barnes-hut-rope-mlton.mlb
+
 gen-bodies:	gen-bodies.sml gen-bodies.cm
 	echo "SMLofNJ.exportFn(\"gen-bodies\", Main.main);" | $(SMLNJ) gen-bodies.cm
 	sml @SMLload=gen-bodies 500000 file > bodies.txt
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison *.s
+	rm -f $(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-mlton $(TARGET)-rope-mlton *.s

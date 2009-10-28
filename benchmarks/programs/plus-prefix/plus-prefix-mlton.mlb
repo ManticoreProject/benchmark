@@ -1,0 +1,9 @@
+local
+    $(SML_LIB)/basis/basis.mlb
+    $(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
+
+    ../common/run-seq.sml
+    plus-prefix.sml
+in
+  ../common/run-main.sml
+end

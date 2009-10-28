@@ -22,4 +22,7 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f pquickhull-par -n $NAME -
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f pquickhull-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
 
 # smlnj
-$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f quickhull -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f quickhull-smlnj -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f quickhull-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

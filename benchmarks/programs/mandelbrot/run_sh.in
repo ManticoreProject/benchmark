@@ -26,3 +26,6 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f mandelbrot-seq -n "$NAME-seq" -d "
 
 # smlnj
 $MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f mandelbrot -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mandelbrot-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

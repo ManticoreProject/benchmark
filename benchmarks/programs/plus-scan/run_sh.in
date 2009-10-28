@@ -22,4 +22,7 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f plus-scan-par -n $NAME -d
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f plus-scan-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
 
 # smlnj
-$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f plus-scan -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f plus-scan-smlnj -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f plus-scan-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
