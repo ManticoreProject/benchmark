@@ -11,6 +11,8 @@ MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
 
 NUM_PINGPONGS="1 2 3 4 5 6 7 8 9 10 100 300 1000 10000 100000 1000000"
 
+## run the experiment for the swp branch
+
 # dense processor placement
 for i in $NUM_PINGPONGS; do
     $MANTI_BENCH_ROOT/scripts/experiment.sh -f vproc-pingpong -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -p 2 -s "-dense $i"
@@ -19,4 +21,16 @@ done
 # sparse processor placement
 for i in $NUM_PINGPONGS; do
     $MANTI_BENCH_ROOT/scripts/experiment.sh -f vproc-pingpong -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -p 2 -s "-sparse $i"
+done
+
+## run the experiment for the trunk
+
+# dense processor placement
+for i in $NUM_PINGPONGS; do
+    $MANTI_BENCH_ROOT/scripts/experiment.sh -f vproc-pingpong-trunk -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -p 2 -s "-dense $i"
+done
+
+# sparse processor placement
+for i in $NUM_PINGPONGS; do
+    $MANTI_BENCH_ROOT/scripts/experiment.sh -f vproc-pingpong-trunk -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -p 2 -s "-sparse $i"
 done

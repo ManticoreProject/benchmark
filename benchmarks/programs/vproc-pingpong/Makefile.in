@@ -10,11 +10,14 @@ PMLCFLAGS =	@PMLCFLAGS@
 
 TARGET =	vproc-pingpong
 
-all:		$(TARGET)
+all:		$(TARGET) $(TARGET)-trunk
 
 $(TARGET):	$(TARGET).pml $(TARGET).mlb
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET) $(TARGET).mlb
 
+$(TARGET)-trunk:	$(TARGET).pml $(TARGET)-trunk.mlb
+	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-trunk $(TARGET)-trunk.mlb
+
 .PHONY: clean
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(TARGET)-trunk
