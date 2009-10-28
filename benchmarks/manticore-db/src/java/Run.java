@@ -27,10 +27,10 @@ public class Run {
     }
     
     int writeToDB(int context_id) throws ClassNotFoundException, SQLException {
-	if (0==0) throw new RuntimeException("todo: write out gcs too");
 
 	// SIDE EFFECT: stashes new key in this.run_id
 	// SIDE EFFECT: returns new key
+
 	String[] fieldNames = {"context_id",
 			       "n_procs",
 			       "time_sec"};

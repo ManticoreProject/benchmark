@@ -36,6 +36,7 @@ public class DataBlob {
     }
 	
     void writeToDB() throws ClassNotFoundException, SQLException {
+	
 	// find or create problem_id
 	int problem_id = Utils.findByLookupOrInsert("problems",
 						    "problem_name",
@@ -54,8 +55,7 @@ public class DataBlob {
 		
 	// insert run records with given context_id
 	for (Run r : this.runs) {
-	    @SuppressWarnings("unused")
-		int throwAway = r.writeToDB(context_id);
+	    int throwAway = r.writeToDB(context_id);
 	}
 		
     }
@@ -73,7 +73,7 @@ public class DataBlob {
 				     "context_id");
 
 	if (kOpt != null) {
-	    System.out.println("With respect to data file " + justFile + ":");
+	    System.out.println("\nWith respect to data file " + justFile + ":");
 	    System.out.println("  - It looks as though this file has already been recorded in the db.");
 	    System.out.println("  - The program will refrain from writing it.");
 	    return null;
@@ -120,54 +120,57 @@ public class DataBlob {
 	    double time_sec = curr.getDouble("time_sec");
 	    // TODO -- cpu time and max bytes
 
-	    JSONArray jgcs = j.getJSONArray("gc");
-	    int ngcs = jgcs.length();
-            List<GC> gcs = new ArrayList<GC>(ngcs);
-	    for (int k = 0; k < ngcs; k++) {
-		JSONObject currGC = jgcs.getJSONObject(k);
-		int processor =	currGC.getInt("processor");
+	    List<GC> gcs = new ArrayList<GC>(0);
 
-		JSONObject minor = currGC.getJSONObject("minor");
+	    if (curr.has("gc")) {
+		JSONArray jgcs = curr.getJSONArray("gc");
+		int ngcs = jgcs.length();
+		for (int k = 0; k < ngcs; k++) {
+		    JSONObject currGC = jgcs.getJSONObject(k);
+		    int processor =	currGC.getInt("processor");
+
+		    JSONObject minor = currGC.getJSONObject("minor");
 	
-   	        int minor_n_collections    = minor.getInt("num");
-		long minor_alloc_bytes     = minor.getLong("alloc");
-		long minor_copied_bytes    = minor.getLong("copied");
-		double minor_time_coll_sec = minor.getDouble("time");
+		    int minor_n_collections    = minor.getInt("num");
+		    long minor_alloc_bytes     = minor.getLong("alloc");
+		    long minor_copied_bytes    = minor.getLong("copied");
+		    double minor_time_coll_sec = minor.getDouble("time");
 
-		JSONObject major = currGC.getJSONObject("major");
-		int major_n_collections    = major.getInt("num");
-		long major_alloc_bytes     = major.getLong("alloc");
-		long major_copied_bytes    = major.getLong("copied");
-		double major_time_coll_sec = major.getDouble("time");
+		    JSONObject major = currGC.getJSONObject("major");
+		    int major_n_collections    = major.getInt("num");
+		    long major_alloc_bytes     = major.getLong("alloc");
+		    long major_copied_bytes    = major.getLong("copied");
+		    double major_time_coll_sec = major.getDouble("time");
 
-		JSONObject global = currGC.getJSONObject("global");
-		int global_n_collections    = global.getInt("num");
-		long global_alloc_bytes     = global.getLong("alloc");
-		long global_copied_bytes    = global.getLong("copied");
-		double global_time_coll_sec = global.getDouble("time");
+		    JSONObject global = currGC.getJSONObject("global");
+		    int global_n_collections    = global.getInt("num");
+		    long global_alloc_bytes     = global.getLong("alloc");
+		    long global_copied_bytes    = global.getLong("copied");
+		    double global_time_coll_sec = global.getDouble("time");
 
-		JSONObject promotion = currGC.getJSONObject("promotion");
-		int n_promotions          = promotion.getInt("num");
-		long prom_bytes           = promotion.getLong("bytes");
-		double mean_prom_time_sec = promotion.getDouble("time");
+		    JSONObject promotion = currGC.getJSONObject("promotion");
+		    int n_promotions          = promotion.getInt("num");
+		    long prom_bytes           = promotion.getLong("bytes");
+		    double mean_prom_time_sec = promotion.getDouble("time");
 
-		GC gc = new GC(processor,
-			       minor_n_collections,
-			       minor_alloc_bytes,
-			       minor_copied_bytes,
-			       minor_time_coll_sec,
-			       major_n_collections,
-			       major_alloc_bytes,
-			       major_copied_bytes,
-			       major_time_coll_sec,
-			       global_n_collections,
-			       global_alloc_bytes,
-			       global_copied_bytes,
-			       global_time_coll_sec,
-			       n_promotions,
-			       prom_bytes,
-			       mean_prom_time_sec);
-		gcs.add(gc);
+		    GC gc = new GC(processor,
+				   minor_n_collections,
+				   minor_alloc_bytes,
+				   minor_copied_bytes,
+				   minor_time_coll_sec,
+				   major_n_collections,
+				   major_alloc_bytes,
+				   major_copied_bytes,
+				   major_time_coll_sec,
+				   global_n_collections,
+				   global_alloc_bytes,
+				   global_copied_bytes,
+				   global_time_coll_sec,
+				   n_promotions,
+				   prom_bytes,
+				   mean_prom_time_sec);
+		    gcs.add(gc);
+		}
 	    }
 
 	    Run r = new Run(n_procs, time_sec, gcs);
@@ -220,7 +223,7 @@ public class DataBlob {
 	}
 	
 	for (String f : args) {
-	    String filename = f.substring(1+f.lastIndexOf('#'));
+	    String filename = f.substring(1+f.lastIndexOf('/'));
 	    if (!filename.endsWith(".json")) {
 		exitWithoutWriting("Please enter only filenames with suffix 'json': " +
 				   "you entered " + f + ".");
@@ -228,8 +231,8 @@ public class DataBlob {
 	}
 
 	for (String f : args) {
-	    String filename = f.substring(1+f.lastIndexOf('#'));
-	    System.out.println("Writing " + filename + " to the database...");
+	    String filename = f.substring(1+f.lastIndexOf('/'));
+	    System.out.print("Writing " + filename + " to the database...");
 	    DataBlob b = fromJSON(f);
 	    if (b != null) {
 		b.writeToDB();

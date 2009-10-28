@@ -3,6 +3,8 @@ import java.sql.*;
 
 public class Utils {
 
+    static boolean STAGE_MODE = false;
+
     static final String url = 
 	"jdbc:postgresql://manticoredb.cs.uchicago.edu/manticore";
 
@@ -20,7 +22,8 @@ public class Utils {
 	return list;
     }
 	
-    static String commaSep(List<String> ss) {
+    static String commaSep(List<String> ss) 
+    {
 	if (ss.size() == 0)
 	    return "";
 	StringBuffer sb = new StringBuffer();
@@ -32,7 +35,22 @@ public class Utils {
 	sb.append(ss.get(i));
 	return sb.toString();
     }
-	
+
+    static String esq(String s) 
+    {
+	return s.replaceAll("'", "^");
+	// horrible hack -- FIXME
+    }
+
+    static List<String> escapeSingleQuotes(List<String> ss) 
+    {
+	List<String> newSS = new ArrayList<String>(ss.size());
+	for (String s : ss) {
+	    newSS.add(esq(s));
+	}
+	return newSS;
+    }
+
     static List<String> singleQuoted(List<String> ss) {
 	List<String> newSS = new ArrayList<String>(ss.size());
 	for (String s : ss) {
@@ -53,6 +71,16 @@ public class Utils {
 	rs.first();
 	return c;
     }
+
+    static String stage(String tableName) {
+	if (STAGE_MODE == true) {
+	    System.out.println("WARNING: stage mode is enabled. Data will be written into the stage_ tables.");
+	    return("stage_" + tableName);
+	} else {
+	    System.out.print(".");
+	    return tableName;
+	}
+    }
 	
     private static void update(String query) 
 	throws ClassNotFoundException, SQLException {
@@ -64,13 +92,16 @@ public class Utils {
 	conn.close();
     }	
 	
-    static Integer lookFor(String tablename,
+    static Integer lookFor(String tableName,
 			   String field,
 			   String value,
 			   String returning)
 	throws ClassNotFoundException, SQLException, IllegalStateException {
+
+	String tbl = stage(tableName);
+
 	String query = "SELECT " + returning + " FROM " +
-	    tablename + " WHERE " + field + "='" +
+	    tbl + " WHERE " + field + "='" +
 	    value + "'";
 	Class.forName("org.postgresql.Driver");
 	Connection conn = DriverManager.getConnection(url, props);
@@ -96,21 +127,29 @@ public class Utils {
 				     List<String> fieldNames,
 				     List<String> values,
 				     String keyName)
-	throws ClassNotFoundException, SQLException {
+	throws ClassNotFoundException, SQLException 
+    {
 	if (fieldNames.size() < 1)
 	    throw new IllegalArgumentException("0-length fieldNames");
 	if (values.size() < 1)
 	    throw new IllegalArgumentException("0-length values");
         if (fieldNames.size() != values.size())
 	    throw new IllegalStateException("fieldNames and values differ in size");
-	String query = "INSERT INTO " + tableName + 
+
+	String tbl = stage(tableName);
+
+	String query = "INSERT INTO " + tbl + 
 	    " (" + commaSep(fieldNames) + ") " +
-	    "VALUES (" + commaSep(singleQuoted(values)) + ") " +
+	    "VALUES (" + commaSep(singleQuoted(escapeSingleQuotes(values))) + ") " +
 	    "RETURNING " + keyName;
 	// System.out.println("<insert> query: " + query);
 	Class.forName("org.postgresql.Driver");
 	Connection conn = DriverManager.getConnection(url, props);
 	Statement st = conn.createStatement();
+
+	System.out.println();
+	System.out.println(query + '\n');
+
 	ResultSet rs = st.executeQuery(query);
 	rs.next();
 	int key = rs.getInt(1); // n.b. column indices are one-based in recordsets
@@ -148,7 +187,10 @@ public class Utils {
 				    String lookupValue,
 				    String keyName) 
 	throws ClassNotFoundException, SQLException {
-	String query = "SELECT " + keyName + " FROM " + tableName +
+
+	String tbl = stage(tableName);
+
+	String query = "SELECT " + keyName + " FROM " + tbl +
 	    " WHERE " + lookupName + "='" + lookupValue + "'";
 	Class.forName("org.postgresql.Driver");
 	Connection conn = DriverManager.getConnection(url, props);
@@ -177,7 +219,10 @@ public class Utils {
 			    String fieldToSet,
 			    String valueToSet) 
 	throws ClassNotFoundException, SQLException {
-	String query = "UPDATE " + tableName + " " + 
+
+	String tbl = stage(tableName);
+
+	String query = "UPDATE " + tbl + " " + 
 	    "SET " + fieldToSet + " = " +
 	    "'" + valueToSet + "' " +
 	    "WHERE " + keyName + " = '" + keyValue + "'";

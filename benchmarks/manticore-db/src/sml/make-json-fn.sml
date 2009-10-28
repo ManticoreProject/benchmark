@@ -23,11 +23,17 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
       String.concat ["{", prs', "}"]
     end
 
+(* regularMinus : string -> string *)
+(* consumes a string representation of a number *)
+(* replaces ~ with - *)
+  fun regularMinus s = 
+    implode (List.map (fn #"~" => #"-" | c => c) (explode s))
+
 (* jstring : json_value -> string *)
   fun jstring (String s) = dquote s
-    | jstring (Int n) = Int.toString n
-    | jstring (BigInt n) = Int64.toString n
-    | jstring (Real x) = Real.toString x
+    | jstring (Int n) = regularMinus (Int.toString n)
+    | jstring (BigInt n) = regularMinus (Int64.toString n)
+    | jstring (Real x) = regularMinus (Real.toString x)
     | jstring (Bool b) = Bool.toString b
     | jstring (Array a) = a
     | jstring (Object pairs) = let
@@ -60,7 +66,7 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
       val promotionObj = Object [("num", Int num), 
 				 ("bytes", BigInt bytes), 
 				 ("time", Real time)]
-      val pairs = [mkPair (Int num) "num",
+      val pairs = [mkPair (Int processor) "processor",
 		   mkPair (buildGC minor) "minor",
 		   mkPair (buildGC major) "major",
 		   mkPair (buildGC global) "global",
