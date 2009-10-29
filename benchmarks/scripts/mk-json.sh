@@ -6,7 +6,7 @@ rm -rf .cm
 
 NEW_BASENAME=${1%.sml}
 
-STRUCTURE_NAME=`grep "structure" $1 | cut -d " " -f 2`
+STRUCTURE_NAME=`grep "^structure" $1 | cut -d " " -f 2`
 
 FULL_SML=`realpath $1`
 JSON_OUTFILE=${FULL_SML%.sml}.json

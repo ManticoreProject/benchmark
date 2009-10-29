@@ -5,6 +5,10 @@ public class Utils {
 
     static boolean STAGE_MODE = false;
 
+    static boolean activeDBConnection = false;
+
+    static Connection conn;
+
     static final String url = 
 	"jdbc:postgresql://manticoredb.cs.uchicago.edu/manticore";
 
@@ -77,21 +81,31 @@ public class Utils {
 	    System.out.println("WARNING: stage mode is enabled. Data will be written into the stage_ tables.");
 	    return("stage_" + tableName);
 	} else {
-	    System.out.print(".");
 	    return tableName;
 	}
     }
 	
+    static void lazilyConnectToDB() throws ClassNotFoundException, SQLException{
+	if (!activeDBConnection) {
+	    Class.forName("org.postgresql.Driver");
+	    conn = DriverManager.getConnection(url, props);
+	    activeDBConnection = true;
+	}
+    }
+
+    static void closeDBConnection() throws SQLException {
+	conn.close();
+	activeDBConnection = false;
+    }
+	
     private static void update(String query) 
 	throws ClassNotFoundException, SQLException {
-	Class.forName("org.postgresql.Driver");
-	Connection conn = DriverManager.getConnection(url, props);
+	lazilyConnectToDB();
 	Statement st = conn.createStatement();
 	st.executeUpdate(query);
 	st.close();
-	conn.close();
     }	
-	
+
     static Integer lookFor(String tableName,
 			   String field,
 			   String value,
@@ -103,19 +117,17 @@ public class Utils {
 	String query = "SELECT " + returning + " FROM " +
 	    tbl + " WHERE " + field + "='" +
 	    value + "'";
-	Class.forName("org.postgresql.Driver");
-	Connection conn = DriverManager.getConnection(url, props);
+
+	lazilyConnectToDB();
 	Statement st = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 	ResultSet rs = st.executeQuery(query);	
 	int n = numRows(rs); // leaves cursor at first
 	if (n == 1) {
 	    int m = rs.getInt(1);
 	    st.close();
-	    conn.close();
 	    return m;
 	}
 	st.close();
-	conn.close();
 	if (n == 0) {
 	    return null;
 	} else {
@@ -143,19 +155,21 @@ public class Utils {
 	    "VALUES (" + commaSep(singleQuoted(escapeSingleQuotes(values))) + ") " +
 	    "RETURNING " + keyName;
 	// System.out.println("<insert> query: " + query);
-	Class.forName("org.postgresql.Driver");
-	Connection conn = DriverManager.getConnection(url, props);
+
+	lazilyConnectToDB();
 	Statement st = conn.createStatement();
 
-	System.out.println();
-	System.out.println(query + '\n');
+	// System.out.println();
+	// System.out.println(query + '\n');
 
 	ResultSet rs = st.executeQuery(query);
 	rs.next();
 	int key = rs.getInt(1); // n.b. column indices are one-based in recordsets
 	rs.close();
 	st.close();
-	conn.close();
+
+	System.out.print(".");
+
 	return key;
     }
 
@@ -192,8 +206,9 @@ public class Utils {
 
 	String query = "SELECT " + keyName + " FROM " + tbl +
 	    " WHERE " + lookupName + "='" + lookupValue + "'";
-	Class.forName("org.postgresql.Driver");
-	Connection conn = DriverManager.getConnection(url, props);
+
+	lazilyConnectToDB();
+
 	Statement st = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 	// System.out.println("<find> query: " + query);
 	ResultSet rs = st.executeQuery(query);
@@ -209,7 +224,7 @@ public class Utils {
 	}
 	rs.close();
 	st.close();
-	conn.close();
+
 	return key;
     }
 

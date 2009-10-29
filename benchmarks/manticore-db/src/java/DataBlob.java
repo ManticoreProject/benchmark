@@ -37,6 +37,8 @@ public class DataBlob {
 	
     void writeToDB() throws ClassNotFoundException, SQLException {
 	
+	Utils.lazilyConnectToDB();
+
 	// find or create problem_id
 	int problem_id = Utils.findByLookupOrInsert("problems",
 						    "problem_name",
@@ -58,6 +60,8 @@ public class DataBlob {
 	    int throwAway = r.writeToDB(context_id);
 	}
 		
+	Utils.closeDBConnection();
+
     }
 	
     static DataBlob fromJSON(String filename) 
@@ -73,7 +77,7 @@ public class DataBlob {
 				     "context_id");
 
 	if (kOpt != null) {
-	    System.out.println("\nWith respect to data file " + justFile + ":");
+	    System.out.println("With respect to data file " + justFile + ":");
 	    System.out.println("  - It looks as though this file has already been recorded in the db.");
 	    System.out.println("  - The program will refrain from writing it.");
 	    return null;
@@ -90,7 +94,7 @@ public class DataBlob {
 	// System.out.println(in);
 	JSONObject j = new JSONObject(in);
 	// System.out.println(j);
-		
+
 	// get all the mandatory items
 	String problem_name = j.getString("problem_name");
 	String username = j.getString("username");
@@ -115,6 +119,7 @@ public class DataBlob {
 	int nRuns = runs.length();
 	List<Run> rs = new ArrayList<Run>(nRuns);
 	for (int i = 0; i < nRuns; i++) {
+
 	    JSONObject curr = runs.getJSONObject(i);
 	    int n_procs = curr.getInt("n_procs");
 	    double time_sec = curr.getDouble("time_sec");
@@ -123,6 +128,7 @@ public class DataBlob {
 	    List<GC> gcs = new ArrayList<GC>(0);
 
 	    if (curr.has("gc")) {
+
 		JSONArray jgcs = curr.getJSONArray("gc");
 		int ngcs = jgcs.length();
 		for (int k = 0; k < ngcs; k++) {
@@ -232,14 +238,14 @@ public class DataBlob {
 
 	for (String f : args) {
 	    String filename = f.substring(1+f.lastIndexOf('/'));
-	    System.out.print("Writing " + filename + " to the database...");
+	    System.out.println("Writing " + filename + " to the database...");
 	    DataBlob b = fromJSON(f);
 	    if (b != null) {
 		b.writeToDB();
 	    } else {
 		// don't
 	    }
-	    System.out.println("Done.");
+	    System.out.println("Done.\n");
 	}
 
     }
