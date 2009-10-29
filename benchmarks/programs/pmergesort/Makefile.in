@@ -12,7 +12,7 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	pmergesort
 
-all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-smlnj
+all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-smlnj $(TARGET)-mlton
 
 $(TARGET)-par:	pmergesort.mlb pmergesort.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par pmergesort.mlb
@@ -26,9 +26,12 @@ $(TARGET)-par-seq-bc:	pmergesort-with-seq-bc.mlb pmergesort-with-seq-bc.pml
 $(TARGET)-seq-elison-seq-bc:	pmergesort-with-seq-bc.mlb pmergesort-with-seq-bc.pml
 	$(PMLC) $(PMLCFLAGS) -Csequential=true -o $(TARGET)-seq-elison pmergesort-with-seq-bc.mlb
 
-$(TARGET)-smlnj:	pmergesort.cm pmergesort-fn.sml
-	echo "SMLofNJ.exportFn(\"pmergesort-fn\", Main.main);" | $(SMLNJ) pmergesort.cm
+$(TARGET)-smlnj:	pmergesort.cm pmergesort.sml
+	echo "SMLofNJ.exportFn(\"pmergesort-smlnj\", Main.main);" | $(SMLNJ) pmergesort.cm
+
+$(TARGET)-mlton:	pmergesort-mlton.mlb pmergesort.sml
+	$(MLTON) -output $(TARGET)-mlton pmergesort-mlton.mlb
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison *.s
+	rm -rf $(TARGET)-par $(TARGET)-seq-elison *.s $(TARGET)-mlton .cm *.x86-linux

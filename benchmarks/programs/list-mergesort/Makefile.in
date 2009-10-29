@@ -25,4 +25,4 @@ $(TARGET)-mlton:	list-mergesort-mlton.mlb list-mergesort.pml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET) *.s  $(TARGET)-mlton
+	rm -rf $(TARGET) *.s  $(TARGET)-mlton .cm *.x86-linux

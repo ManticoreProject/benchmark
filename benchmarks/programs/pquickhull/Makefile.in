@@ -12,7 +12,7 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	pquickhull
 
-all:		$(TARGET)-par $(TARGET)-seq-elison quickhull-smlnj gen-points quickhull-mlton
+all:		$(TARGET)-par $(TARGET)-seq-elison quickhull-smlnj quickhull-mlton gen-points 
 
 $(TARGET)-par:	pquickhull.mlb pquickhull.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par pquickhull.mlb
@@ -32,4 +32,4 @@ gen-points:	gen-points.sml gen-points.cm
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison *.s quickhull-mlton
+	rm -rf $(TARGET)-par $(TARGET)-seq-elison *.s quickhull-mlton .cm *.x86-linux

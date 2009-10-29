@@ -25,4 +25,4 @@ $(TARGET)-mlton:	list-quicksort-mlton.mlb list-quicksort.pml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET) $(TARGET)-mlton *.s
+	rm -rf $(TARGET) $(TARGET)-mlton *.s .cm *.x86-linux

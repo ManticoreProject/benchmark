@@ -1,28 +1,18 @@
-(* pmergesort-fn.sml
+(* pmergesort.pml
  *
  * COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
  *
  * Purely functional parallel mergesort.
+ *
  *)
 
-functor PMergesortFn (
-    structure K : ORD_KEY
-    structure R : ROPE
-  ) : sig
+structure R = RopeFn (
+    structure S = VectorSeq
+    val maxLeafSize= 128)
 
-     structure K : ORD_KEY
-     structure R : ROPE
-
-  (* Sort a rope with ordered elements. For ropes of n elements, this operation has O(n*log^3 n) 
-   * work and O(log^4 n) depth.
-   *)
-     val pMergesort : K.ord_key R.rope -> K.ord_key R.rope
-
-  end = struct
-
-    structure K = K
-    structure R = R
+structure PMergesort =
+  struct
 
     fun less ord = 
 	(case ord
@@ -33,7 +23,7 @@ functor PMergesortFn (
 
   (* return p such that xs[p] <= y <= xs[p+1] *)
   (* precondition: xs is sorted *)
-    fun binarySearch (y, xs) = 
+    fun binarySearch cmp (y, xs) = 
 	let
 	    fun lp (a, b) =
 	        if b = a then
@@ -42,7 +32,7 @@ functor PMergesortFn (
 		    let
 			val p = (b + a) div 2
 			val (a, b) = 
-			    if less (K.compare (R.sub (xs, p), y)) then
+			    if less (cmp (R.sub (xs, p), y)) then
 				(p + 1, b)
 			    else 
 				(a, p)
@@ -54,13 +44,13 @@ functor PMergesortFn (
 	end
 
   (* merge two sorted sequences *)
-    fun pMerge (xs, ys) =
+    fun pMerge cmp (xs, ys) =
 	if R.length xs < R.length ys then
-	    pMerge (ys, xs)
+	    pMerge cmp (ys, xs)
 	else if R.length xs = 0 orelse R.length ys = 0 then
 	    xs
 	else if R.length xs = 1 (* andalso R.length ys = 1 *) then
-	    if less (K.compare (R.sub (xs, 0), R.sub (ys, 0))) then
+	    if less (cmp (R.sub (xs, 0), R.sub (ys, 0))) then
 		R.append (xs, ys)
 	    else 
 		R.append (ys, xs)
@@ -72,16 +62,16 @@ functor PMergesortFn (
 	       * lastElt xsL. one possible fix is to use another binary search to
 	       * ensure that ysL contains those elements < (lastElt xsL)
 	       *)
-		val (ysL, ysR) = R.cut (ys, binarySearch (lastElt xsL, ys))
+		val (ysL, ysR) = R.cut (ys, binarySearch cmp (lastElt xsL, ys))
 	    in
-		R.append ( pMerge (xsL, ysL), pMerge (xsR, ysR) )
+		R.append ( pMerge cmp (xsL, ysL), pMerge cmp (xsR, ysR) )
 	    end
 	    
-    fun pMergesort xs = 
+    fun pMergesort cmp xs = 
 	if R.length xs <= 1 then
 	    xs
 	else if R.length xs = 2 then
-	    if less (K.compare (R.sub (xs, 0), R.sub (xs, 1))) then
+	    if less (cmp (R.sub (xs, 0), R.sub (xs, 1))) then
 		xs
 	    else
 		R.rev xs
@@ -89,24 +79,13 @@ functor PMergesortFn (
 	    let
 		val (xsL, xsR) = R.splitAt (xs, R.length xs div 2 - 1)
 	    in
-		pMerge ( pMergesort xsL, pMergesort xsR )
+		pMerge cmp ( pMergesort cmp xsL, pMergesort cmp xsR )
 	    end
 
   end
 
 structure Main =
   struct
-
-    structure R = RopeFn (
-	structure S = VectorSeq
-	val maxLeafSize= 2)
-
-    structure PMergesort = PMergesortFn (
-	        structure K = struct
-		   type ord_key = Int.int
-		   val compare  = Int.compare
-		end
-		structure R = R)
 
     val dfltN = 100000
 
@@ -126,7 +105,7 @@ structure Main =
 		 of arg::_ => R.tabulate(Option.getOpt (Int.fromString arg, dfltN), 
 				      fn _ => Rand.range (0, 10000) 0w43343)
 		  | _ => R.fromList (readFromFile ()))
-	  fun doit () = PMergesort.pMergesort x
+	  fun doit () = PMergesort.pMergesort Int.compare x
 	  in
   	    RunSeq.run doit;
 	    OS.Process.success

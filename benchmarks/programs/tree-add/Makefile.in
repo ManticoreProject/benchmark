@@ -28,4 +28,4 @@ $(TARGET)-mlton:	tree-add-mlton.mlb tree-add.sml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET) $(TARGET)-seq-elison $(TARGET)-mlton
+	rm -rf $(TARGET) $(TARGET)-seq-elison $(TARGET)-mlton .cm *.x86-linux

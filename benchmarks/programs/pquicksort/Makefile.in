@@ -28,4 +28,4 @@ rope-quicksort-mlton:  rope-quicksort-mlton.mlb rope-quicksort.sml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison *.s rope-quicksort-mlton
+	rm -rf $(TARGET)-par $(TARGET)-seq-elison *.s rope-quicksort-mlton .cm *.x86-linux

@@ -28,4 +28,4 @@ fib-mlton:	fib-mlton.mlb fib.sml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET) $(TARGET)-seq-elison fib-mlton
+	rm -rf $(TARGET) $(TARGET)-seq-elison fib-mlton .cm *.x86-linux

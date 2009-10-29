@@ -31,4 +31,4 @@ $(TARGET)-mlton:	mandelbrot-mlton.mlb mandelbrot.sml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq $(TARGET)-mlton *.s mand.ppm
+	rm -rf $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq $(TARGET)-mlton *.s mand.ppm .cm *.x86-linux

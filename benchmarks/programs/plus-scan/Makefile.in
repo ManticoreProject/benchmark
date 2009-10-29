@@ -28,4 +28,4 @@ $(TARGET)-mlton:	plus-scan-mlton.mlb plus-scan.sml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-mlton *.s
+	rm -rf $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-mlton *.s .cm *.x86-linux

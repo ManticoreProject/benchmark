@@ -31,4 +31,4 @@ $(TARGET)-mlton:	raytracer-mlton.mlb raytracer.sml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq  $(TARGET)-mlton  *.s out.ppm
+	rm -rf $(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq  $(TARGET)-mlton  *.s out.ppm .cm *.x86-linux

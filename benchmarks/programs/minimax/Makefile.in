@@ -31,4 +31,4 @@ $(TARGET)-mlton:	ttt-mlton.mlb ttt.sml
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-mlton *.s
+	rm -rf $(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-mlton *.s .cm *.x86-linux

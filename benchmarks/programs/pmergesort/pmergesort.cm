@@ -20,4 +20,4 @@ is
 
 	../common/rope-smlnj/sources.cm
 	../common/run-seq.sml
-	pmergesort-fn.sml
+	pmergesort.sml

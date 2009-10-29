@@ -1,3 +1,4 @@
+(* generates a list of 2d points inside the unit square uniformly at random *)
 structure Main =
   struct
 
@@ -5,7 +6,7 @@ structure Main =
 
     val rand = Random.rand (0, 10000)
 
-    fun xrand () = Random.randReal rand * 100000.0
+    fun xrand () = Random.randReal rand
 
     fun output 0 = ()
       | output i = (

@@ -20,3 +20,9 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f pmergesort-par -n $NAME -
 
 # sequential elison 
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f pmergesort-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
+
+# smlnj
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f pmergesort-smlnj -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS
+
+# mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f pmergesort-mlton -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS

@@ -41,4 +41,4 @@ gen-bodies:	gen-bodies.sml gen-bodies.cm
 
 .PHONY: clean
 clean:
-	rm -f $(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-mlton $(TARGET)-rope-mlton *.s
+	rm -rf $(TARGET)-par $(TARGET)-seq $(TARGET)-seq-elison $(TARGET)-mlton $(TARGET)-rope-mlton *.s .cm *.x86-linux
