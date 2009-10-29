@@ -1,18 +1,29 @@
 #!/bin/sh
 
-# TODO check for exactly one argument
+for SMLF in $* ; do
 
-rm -rf .cm
+  echo $SMLF
 
-NEW_BASENAME=${1%.sml}
+  if [[ "$SMLF" =~ "*.sml" ]]
+    then true
+    else 
+      echo "- $SMLF should have the suffix .sml"
+      echo "- proceeding to next file"
+      echo ""
+      continue
+  fi
 
-STRUCTURE_NAME=`grep "^structure" $1 | cut -d " " -f 2`
+  rm -rf .cm
 
-FULL_SML=`realpath $1`
-JSON_OUTFILE=${FULL_SML%.sml}.json
+  NEW_BASENAME=${SMLF%.sml}
 
-(
-cat <<EOF
+  STRUCTURE_NAME=`grep "^structure" $SMLF | cut -d " " -f 2`
+
+  FULL_SML=`realpath $SMLF`
+  JSON_OUTFILE=${FULL_SML%.sml}.json
+
+  (
+      cat <<EOF
 local
   \$(SML_LIB)/basis/basis.mlb
   common.sml
@@ -27,7 +38,7 @@ in
   structure $STRUCTURE_NAME
 end
 EOF
-) > new-sources.mlb
+      ) > new-sources.mlb
 
 # (
 # cat <<EOF
@@ -46,28 +57,30 @@ EOF
 # EOF
 # ) > new-sources.cm
 
-(
-cat <<EOF
+  (
+      cat <<EOF
 structure Main = struct
   structure J = MakeJSONFn ($STRUCTURE_NAME)
   val _ = J.mkJSON "$JSON_OUTFILE"
 end
 EOF
-) > new-main.sml
+      ) > new-main.sml
 
-# # compile with sml sources.cm
-# echo "CM.make \"new-sources.cm\"" | sml
+  # # compile with sml sources.cm
+  # echo "CM.make \"new-sources.cm\"" | sml
 
-# compile with mlton
-EXEC_NAME=jsonize-$STRUCTURE_NAME
+  # compile with mlton
+  EXEC_NAME=jsonize-$STRUCTURE_NAME
+  
+  echo "Building $EXEC_NAME..."
+  mlton -output $EXEC_NAME new-sources.mlb
+  
+  echo "Running $EXEC_NAME..."
+  ./$EXEC_NAME
+  
+  echo "Deleting $EXEC_NAME."
+  rm $EXEC_NAME
 
-echo "Building $EXEC_NAME..."
-mlton -output $EXEC_NAME new-sources.mlb
+  echo ""
 
-echo "Running $EXEC_NAME..."
-./$EXEC_NAME
-
-echo "Deleting $EXEC_NAME."
-rm $EXEC_NAME
-
-echo ""
+done
