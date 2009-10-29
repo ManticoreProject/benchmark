@@ -23,4 +23,5 @@ val pmlcFlags = ""
 val n_procs = 
  1 :: nil
 val nTrials = 10
-val runs =
+val runs = []
+end
