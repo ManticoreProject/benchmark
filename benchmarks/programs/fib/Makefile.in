@@ -12,7 +12,7 @@ PMLCFLAGS=@PMLCFLAGS@
 
 TARGET =	pfib
 
-all:		$(TARGET) $(TARGET)-seq-elison fib-smlnj $(TARGET)-mlton
+all:		$(TARGET) $(TARGET)-seq-elison fib-smlnj fib-mlton
 
 $(TARGET):	pfib.mlb pfib.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET) pfib.mlb
