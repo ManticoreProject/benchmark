@@ -1,9 +1,0 @@
-structure smvm2009_10_27_22_46_25 : EXPERIMENT = struct
-datatype gc = datatype Common.gc
-datatype gc_stats = datatype Common.gc_stats
-val problem_name = "smvm"
-val compiler_src_url = SOME "https://smlnj-gforge.cs.uchicago.edu/svn/manticore/trunk"
-val compiler_svn = SOME 4373
-val script_url = SOME "https://svn.smlnj-gforge.cs.uchicago.edu/svn/manti-bench/benchmarks/programs/smvm"
-val script_svn = SOME 116
-val seq_compilation = SOME false
