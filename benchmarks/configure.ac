@@ -166,6 +166,7 @@ dnl ***** Makefiles *****
   programs/minimax/Makefile
   programs/plus-prefix/Makefile
   programs/plus-scan/Makefile
+  programs/plus-reduce/Makefile
   programs/pmerge/Makefile
   programs/pmergesort/Makefile
   programs/pquickhull/Makefile
@@ -188,6 +189,7 @@ AC_CONFIG_FILES([
   programs/mandelbrot/run.sh:programs/mandelbrot/run_sh.in
   programs/minimax/run.sh:programs/minimax/run_sh.in
   programs/plus-scan/run.sh:programs/plus-scan/run_sh.in
+  programs/plus-reduce/run.sh:programs/plus-reduce/run_sh.in
   programs/plus-prefix/run.sh:programs/plus-prefix/run_sh.in
   programs/pmerge/run.sh:programs/pmerge/run_sh.in
   programs/pmergesort/run.sh:programs/pmergesort/run_sh.in
@@ -209,6 +211,7 @@ AC_CONFIG_FILES([
    chmod +x programs/minimax/run.sh
    chmod +x programs/plus-prefix/run.sh
    chmod +x programs/plus-scan/run.sh
+   chmod +x programs/plus-reduce/run.sh
    chmod +x programs/pmerge/run.sh
    chmod +x programs/pmergesort/run.sh
    chmod +x programs/pquickhull/run.sh
