@@ -13,7 +13,6 @@ BENCHMARK_EXE=""
 EXPERIMENT_NAME="experiment"
 DESCRIPTION=""
 GEN_GC_STATS="@GEN_GC_STATS@"
-GEN_LOG="@GEN_LOG@"
 NUM_TRIALS="1"
 
 usage="See the README file for instructions"

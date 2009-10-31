@@ -18,6 +18,7 @@ DESCRIPTION=""
 GEN_GC_STATS="@GEN_GC_STATS@"
 PMLCFLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
+LOG_WORK_STEALING="@LOG_WORK_STEALING@"
 
 usage="See the README file for instructions"
 
@@ -38,11 +39,16 @@ do
     esac
 done
 
+#if [ ! $PMLCFLAGS ~= *log* ]; then
+#    echo "log file generation must be enabled at compile time"
+#    exit 1
+#fi
+
 # avoid running this experiment within the same second as a previous experiment
 sleep 2
 
 if [ $SEQUENTIAL_BINARY == "true" ]; then
-    PROCS="1"
+    exit 0
 fi
 
 if [ -z "$PROCS" ] && [ $SEQUENTIAL_BINARY == "false" ]; then
@@ -112,7 +118,7 @@ pushd $MANTICORE_ROOT > /dev/null
 popd > /dev/null
 
 EXPERIMENT_NAME_SML=${EXPERIMENT_NAME//"-"/"_"}
-echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
+echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML = struct" >> $LOG_FILE
 
 echo "datatype gc = datatype Common.gc" >> $LOG_FILE
 echo "datatype gc_stats = datatype Common.gc_stats" >> $LOG_FILE
@@ -159,43 +165,18 @@ else
     ARGS="$SIZE -gcstats=all,sml"
 fi
 
-if [ $SEQUENTIAL_BINARY == "true" ]; then
-    SEQUENTIAL_EXE=$BENCHMARK_PATH
-    echo "val runs =" >> $LOG_FILE
-    for ((i=1;i<=NUM_TRIALS;i+=1)); do
-	echo "$SEQUENTIAL_EXE $ARGS"
-	RES=$( $SEQUENTIAL_EXE $ARGS 2> stats.sml )
-	if [ $? == "0" ]; then
-	    echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
-	    echo -n -e "$RES" >> $LOG_FILE
-	    echo -n -e ",\t\t" >> $LOG_FILE
-	    if [ $GEN_GC_STATS == "false" ]; then
-		echo -n -e "gc=[]" >> $LOG_FILE
-	    else
-		echo -n -e "gc=" >> $LOG_FILE
-		cat stats.sml >> $LOG_FILE
-		rm -rf stats.sml
-	    fi
-	else
-	    echo "Benchmark failed unexpectedly with nonzero return code"
-	    exit 1
-	fi
-	echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
-    done
-    echo -e "\t\tnil" >> $LOG_FILE
-else
     PARALLEL_EXE=$BENCHMARK_PATH
     echo "val runs =" >> $LOG_FILE
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	for p in $PROCS; do
 	    echo "$PARALLEL_EXE -p $p $ARGS"
-	    RES=$( $PARALLEL_EXE -p $p $ARGS 2> stats.sml )
+	    RES=$( $PARALLEL_EXE -p $p $ARGS 2> gc-stats.sml )
 	    retcode=$?
 	    nretries=0
 	    while [ $retcode != "0" ]; do
 		let nretries=nretries+1
 		echo "Benchmark failed unexpectedly with nonzero return code -- retrying."
-		RES=$( $PARALLEL_EXE -p $p $ARGS 2> stats.sml )
+		RES=$( $PARALLEL_EXE -p $p $ARGS 2> gc-stats.sml )
 		retcode=$?
 		if [ $nretries -gt 100 ]; then
 		    echo "Exceeded maximum number of failed executions of the benchmark"
@@ -209,14 +190,23 @@ else
 		echo -n -e "gc=[]" >> $LOG_FILE
 	    else
 		echo -n -e "gc=" >> $LOG_FILE
-		cat stats.sml >> $LOG_FILE
-		rm -rf stats.sml
+		cat gc-stats.sml >> $LOG_FILE
+		rm -rf gc-stats.sml
 	    fi
+	    echo "," >> $LOG_FILE
+	    if [ ! -e "LOG" ]; then
+		echo "Cannot find log file"
+		exit 1
+	    fi
+	    $LOG_WORK_STEALING -log LOG -o ws-stats.sml
+	    echo -n -e "workStealing=" >> $LOG_FILE
+	    cat ws-stats.sml >> $LOG_FILE
+	    rm -rf ws-stats.sml
 	    echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
 	done
     done
     echo -e "\t\tnil" >> $LOG_FILE
-fi
+
 
 echo -e "end" >> $LOG_FILE # structure
 

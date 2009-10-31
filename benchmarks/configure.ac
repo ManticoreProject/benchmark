@@ -118,12 +118,6 @@ AC_ARG_WITH(gcstats,
   PMLCFLAGS="$PMLCFLAGS -gcstats"
   GEN_GC_STATS="true")
 
-GEN_LOG="false"
-AC_ARG_WITH(log,
-  AC_HELP_STRING([--with-log], [generate log data]),
-  PMLCFLAGS="$PMLCFLAGS -log"
-  GEN_LOG="true")
-
 NUM_PROCS="16"
 AC_ARG_WITH(numprocs,
   AC_HELP_STRING([--with-numprocs], [number of processors (default is 16)]),
@@ -134,6 +128,12 @@ AC_ARG_WITH(numtrials,
   AC_HELP_STRING([--with-numtrials], [number of processors (default is 10)]),
   NUM_TRIALS=$with_numtrials)
 
+LOG_WORK_STEALING=""
+AC_ARG_WITH(logworkstealing,
+  AC_HELP_STRING([--with-logworkstealing=PATH], [specify location of work-stealing log dump tool]),
+  LOG_WORK_STEALING=$with_logworkstealing
+  PMLCFLAGS="$PMLCFLAGS -log")
+
 MANTICORE_BINDIR=$MANTICORE_ROOT/bin
 PMLC=$MANTICORE_BINDIR/pmlc
 
@@ -143,10 +143,10 @@ AC_SUBST(MANTICORE_ROOT)
 AC_SUBST(PMLC)
 AC_SUBST(PMLCFLAGS)
 AC_SUBST(GEN_GC_STATS)
-AC_SUBST(GEN_LOG)
 AC_SUBST(NUM_PROCS)
 AC_SUBST(NUM_TRIALS)
 AC_SUBST(SMLNJ_CMD)
+AC_SUBST(LOG_WORK_STEALING)
 
 AC_CONFIG_FILES(\
 dnl ***** Makefiles *****
@@ -225,10 +225,12 @@ AC_CONFIG_FILES([
   scripts/experiment.sh:scripts/experiment_sh.in
   scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in
   scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in
+  scripts/work-stealing-stats.sh:scripts/work_stealing_stats_sh.in
 ], [
    chmod +x scripts/experiment.sh
    chmod +x scripts/experiment-smlnj.sh
    chmod +x scripts/experiment-mlton.sh
+   chmod +x scripts/work-stealing-stats.sh
 ])
 AC_CONFIG_FILES([
   scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
