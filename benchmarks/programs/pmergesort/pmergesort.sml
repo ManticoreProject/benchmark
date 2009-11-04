@@ -106,8 +106,16 @@ structure Main =
 				      fn _ => Rand.range (0, 10000) 0w43343)
 		  | _ => R.fromList (readFromFile ()))
 	  fun doit () = PMergesort.pMergesort Int.compare x
+	  val res = RunSeq.run doit
 	  in
-  	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+  	    if R.sub (res, 0) > R.sub (res, 1) then
+		raise Fail "bogus result"
+	    else
+		();
 	    OS.Process.success
 	  end
 	

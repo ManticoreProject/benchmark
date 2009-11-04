@@ -35,8 +35,16 @@ structure Main =
 		       | _ => dfltN)
 	    val a = Rope.fromList (List.tabulate (n, fn _ => Random.randNat rand mod 100))
 	    fun doit () = Rope.Scan.plusScan a
+	    val res = RunSeq.run doit
 	in
-	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+	    if Rope.sub (res, 0) <> Rope.sub (a, 0) then
+		raise Fail ("bogus output"^Int.toString (Rope.sub (res,0)))
+	    else
+		();	    
 	    OS.Process.success
 	end
 

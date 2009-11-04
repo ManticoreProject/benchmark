@@ -355,9 +355,16 @@ structure Main =
     fun main (_, args) =
 	let
 	    fun doit () = T.minimax T.X T.empty
-		
+	    val T.Rose ((b, _), _) = RunSeq.run doit
 	in
-	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+	    if T.score b > 1 then
+		raise Fail "bogus result"
+	    else
+		();
 	    0
 	end
 

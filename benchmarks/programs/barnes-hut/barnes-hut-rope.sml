@@ -195,9 +195,17 @@ structure Main =
 		in
 		    iter (bodiesArray, 0)
 		end
-		
+	    val particles = RunSeq.run doit
+	    val PARTICLE (_, xv, _)
 	in
-	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+	    if Real.isNan xv then
+		raise Fail "bogus result"
+	    else
+		();
 	    OS.Process.success
 	end
 

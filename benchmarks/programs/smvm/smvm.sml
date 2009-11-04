@@ -63,8 +63,16 @@ structure Main =
 	    val mtx = rows2sm mtx
 	    val v = Rope.tabulate (C, fn _ => Random.randReal rand * 10000.0)
 	    fun doit () = SMVM.smvm (mtx, v)
+	    val res = RunSeq.run doit
 	in
-	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+	    if Real.isNan (Rope.sub (res, 0)) then
+		raise Fail "bogus result"
+	    else
+		();
 	    OS.Process.success
 	end
 

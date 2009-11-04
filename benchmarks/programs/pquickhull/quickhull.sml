@@ -121,8 +121,16 @@ structure Main =
 					     fn _ => (Random.randReal rand, Random.randReal rand))
 		   | _ => Rope.fromList (readFromFile ()))
 	    fun doit () = Quickhull.quickhull points
+	    val res = RunSeq.run doit
 	in
-	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+	    if #1(Rope.sub (res, 0)) > 1.0 then
+		raise Fail "bogus result"
+	    else
+		();
 	    OS.Process.success
 	end
 

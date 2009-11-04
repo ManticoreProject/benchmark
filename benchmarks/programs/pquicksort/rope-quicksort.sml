@@ -54,8 +54,16 @@ structure Main =
 					 fn _ => Random.randNat rand)
 			   | _ => readFromFile ())
 	    fun doit () = RopeQuicksort.quicksort x
+	    val res = RunSeq.run doit
 	in
-	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+  	    if Rope.sub (res, 0) > Rope.sub (res, 1) then
+		raise Fail "bogus result"
+	    else
+		();
 	    OS.Process.success
 	end
 

@@ -33,9 +33,16 @@ structure Main =
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
 	    fun doit () = Fib.fib n
-		
+	    val res = RunSeq.run doit
 	in
-	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+	    if res < 0 then
+		raise Fail "bogus result"
+	    else
+		();
 	    OS.Process.success
 	end
 
