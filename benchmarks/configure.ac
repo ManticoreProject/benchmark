@@ -4,7 +4,7 @@ dnl COPYRIGHT (c) 2009 The Manticore Project (manticore.cs.uchicago.edu)
 dnl All rights reserved.
 dnl
 
-AC_INIT(manti-bench,1.0,http://manticore.cs.uchicago.edu)
+AC_INIT(manticore-benchmarks,1.0,http://manticore.cs.uchicago.edu)
 
 AC_PREREQ(2.59)
 AC_CONFIG_AUX_DIR(config)
@@ -14,8 +14,8 @@ dnl include extra macros
 dnl
 sinclude(config/check_smlnj.m4)
 sinclude(config/check_smlnj_heap_suffix.m4)
-sinclude(config/acx_pthread.m4)
-sinclude(config/check_leading_uscore.m4)
+
+AC_CANONICAL_HOST
 
 AC_PROG_INSTALL
 
@@ -43,28 +43,6 @@ dnl
 CHECK_SMLNJ_HEAP_SUFFIX([
   AC_MSG_ERROR([unsupported configuration ${host_cpu}-${host_os}])])
 
-dnl look for ml-makedepend
-dnl
-AC_MSG_CHECKING([for ml-makedepend])
-tmpPATH="$SMLNJ_PATH:$PATH"
-AC_PATH_PROG(ML_MAKEDEPEND, ml-makedepend, ":", $tmpPATH)
-if test $ML_MAKEDEPEND = none ; then
-  AC_MSG_ERROR([ml-makedepend not found])
-else
-  AC_MSG_RESULT([$ML_MAKEDEPEND])
-fi
-AC_SUBST(ML_MAKEDEPEND)
-
-dnl
-dnl look for ml-build
-dnl
-tmpPATH="$SMLNJ_PATH:$PATH"
-AC_PATH_PROG(ML_BUILD, ml-build, none, $tmpPATH)
-if test $ML_BUILD = none ; then
-  AC_MSG_ERROR([ml-build not found])
-fi
-AC_SUBST(ML_BUILD)
-
 dnl ******************** Paths ********************
 
 MANTI_BENCH_ROOT=`pwd`
@@ -77,8 +55,8 @@ AC_SUBST(MANTI_BENCH_RESULTS)
 
 MANTICORE_ROOT=""
 AC_ARG_WITH(manticore,
-  AC_HELP_STRING([--with-manticore=PATH], [specify location of Manticore root directory]),
-  MANTICORE_ROOT=$with_manticore)
+  AS_HELP_STRING([--with-manticore=PATH], [specify location of Manticore root directory]),
+  [MANTICORE_ROOT=$with_manticore])
 if test x$with_manticore = xyes -o x$with_manticore = xno ; then
   AC_MSG_ERROR([--with-manticore option must specify directory argument])
 elif test x$MANTICORE_ROOT != x ; then
@@ -93,8 +71,8 @@ fi
 
 MANTI_BENCH_RESULTS=""
 AC_ARG_WITH(resultsdir,
-  AC_HELP_STRING([--with-resultsdir=PATH], [specify location of benchmarking results directory]),
-  MANTI_BENCH_RESULTS=$with_resultsdir)
+  AS_HELP_STRING([--with-resultsdir=PATH], [specify location of benchmarking results directory]),
+  [MANTI_BENCH_RESULTS=$with_resultsdir])
 if test x$with_resultsdir = xyes -o x$with_resultsdir = xno ; then
   AC_MSG_ERROR([--with-resultsdir option must specify directory argument])
 elif test x$MANTI_BENCH_RESULTS != x ; then
@@ -109,35 +87,31 @@ fi
 
 PMLCFLAGS=""
 AC_ARG_WITH(pmlcflags,
-  AC_HELP_STRING([--with-pmlcflags=PATH], [Manticore compiler flags]),
-  PMLCFLAGS=$with_pmlcflags)
+  AS_HELP_STRING([--with-pmlcflags=PATH], [Manticore compiler flags]),
+  [PMLCFLAGS=$with_pmlcflags])
 
 GEN_GC_STATS="false"
 AC_ARG_WITH(gcstats,
-  AC_HELP_STRING([--with-gcstats], [generate gc stats]),
-  PMLCFLAGS="$PMLCFLAGS -gcstats"
-  GEN_GC_STATS="true")
+  AS_HELP_STRING([--with-gcstats], [generate gc stats]),
+  [PMLCFLAGS="$PMLCFLAGS -gcstats"; GEN_GC_STATS="true"])
 
 NUM_PROCS="16"
 AC_ARG_WITH(numprocs,
-  AC_HELP_STRING([--with-numprocs], [number of processors (default is 16)]),
-  NUM_PROCS=$with_numprocs)
+  AS_HELP_STRING([--with-numprocs], [number of processors (default is 16)]),
+  [NUM_PROCS=$with_numprocs])
 
 NUM_TRIALS="10"
 AC_ARG_WITH(numtrials,
-  AC_HELP_STRING([--with-numtrials], [number of processors (default is 10)]),
-  NUM_TRIALS=$with_numtrials)
+  AS_HELP_STRING([--with-numtrials], [number of processors (default is 10)]),
+  [NUM_TRIALS=$with_numtrials])
 
 LOG_WORK_STEALING=""
 AC_ARG_WITH(logworkstealing,
-  AC_HELP_STRING([--with-logworkstealing=PATH], [specify location of work-stealing log dump tool]),
-  LOG_WORK_STEALING=$with_logworkstealing
-  PMLCFLAGS="$PMLCFLAGS -log")
+  AS_HELP_STRING([--with-logworkstealing=PATH], [specify location of work-stealing log dump tool]),
+  [LOG_WORK_STEALING=$with_logworkstealing; PMLCFLAGS="$PMLCFLAGS -log"])
 
 MANTICORE_BINDIR=$MANTICORE_ROOT/bin
 PMLC=$MANTICORE_BINDIR/pmlc
-
-SMLNJ_CMD="sml"
 
 AC_SUBST(MANTICORE_ROOT)
 AC_SUBST(PMLC)
@@ -201,8 +175,8 @@ AC_CONFIG_FILES([
   programs/smvm/run.sh:programs/smvm/run_sh.in
   programs/vproc-pingpong/run.sh:programs/vproc-pingpong/run_sh.in
   programs/common/gen-random-int-list.sh:programs/common/gen_random_int_list_sh.in
-
-], [
+])
+AC_CONFIG_COMMANDS_POST([
    chmod +x programs/barnes-hut/run.sh
    chmod +x programs/barnes-hut/gen-bodies.sh
    chmod +x programs/fib/run.sh
@@ -225,19 +199,21 @@ AC_CONFIG_FILES([
    chmod +x programs/smvm/run.sh
    chmod +x programs/vproc-pingpong/run.sh
    chmod +x programs/common/gen-random-int-list.sh
-
 ])
+
 AC_CONFIG_FILES([
   scripts/experiment.sh:scripts/experiment_sh.in
   scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in
   scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in
   scripts/work-stealing-stats.sh:scripts/work_stealing_stats_sh.in
-], [
+])
+AC_CONFIG_COMMANDS_POST([
    chmod +x scripts/experiment.sh
    chmod +x scripts/experiment-smlnj.sh
    chmod +x scripts/experiment-mlton.sh
    chmod +x scripts/work-stealing-stats.sh
 ])
+
 AC_CONFIG_FILES([
   scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
 ], [chmod +x scripts/print-max-leaf-size.sh])
