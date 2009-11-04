@@ -27,6 +27,8 @@ def baseline_times(context_id):
   return v
 
 # parallel_times : int -> (int, float) list
+# TODO: when the resultset is empty, the context_id is probably ill chosen
+#   inform the user of this in some nice way
 def parallel_times(context_id):
   c = connect_read_only()
   q = "SELECT n_procs, time_sec \
@@ -44,8 +46,8 @@ def med_baseline_time(context_id):
   ts = baseline_times(context_id)
   # note: np.median returns a seq of length 1
   med = np.median(ts)  
-  assert len(med) == 1
-  return med[0] 
+  # assert len(med) == 1
+  return med
 
 # med_parallel_times : int -> (int, float) list
 # median parallel times for all numbers of procs
@@ -53,3 +55,36 @@ def med_parallel_times(context_id):
   ts = parallel_times(context_id)
   m = utils.medians(ts)
   return m
+
+# show_problem_by_compiler : string * string -> unit
+def show_problem_by_compiler(prob, comp):
+  print (prob + " by " + comp + ":")
+  c = connect_read_only()
+  q = "SELECT context_id, language, seq_compilation, datetime, bench_url \
+       FROM contexts \
+       WHERE bench_url LIKE '%" + prob + "%' \
+       AND compiler LIKE '%" + comp + "%' \
+       ORDER BY datetime ASC"
+  r = c.query(q)
+  v = r.getresult()
+  for record in v:
+    print record
+  print ""
+  c.close()
+
+# parallel_contexts : string -> unit
+def show_parallel_contexts(problem_name):
+  print ("parallel " + problem_name + ":")
+  c = connect_read_only()
+  q = "SELECT context_id, language, seq_compilation, datetime, bench_url \
+       FROM contexts \
+       WHERE bench_url LIKE '%" + problem_name + "%' \
+       AND NOT(seq_compilation) \
+       ORDER BY datetime ASC"
+  r = c.query(q)
+  v = r.getresult()
+  for record in v:
+    print record
+  print ""
+  c.close()
+

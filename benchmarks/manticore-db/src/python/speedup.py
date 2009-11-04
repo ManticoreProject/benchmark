@@ -1,3 +1,6 @@
+# Adam Shaw, November 2009
+# run this with 'python speedup.py'
+
 # Please see EDIT ME! below for customization.
 
 import numpy as np
@@ -22,7 +25,7 @@ for h in [h1, h2, h3]:
 
 # total HACK for generating a big list of distinct format strings
 # pre: len(colors) == len(shapes) - 1
-# if pre isn't met, this iteration pattern doesn't necessarily work!
+# if precondition isn't met, this iteration pattern doesn't necessarily work!
 def mash(colors, shapes):
   clen = len(colors)
   slen = len(shapes)
@@ -52,7 +55,7 @@ def errorbars(spss, devss):
       (dx, dy) = devs[j]
       assert sx == dx
       plt.errorbar(sx, sy, yerr=dy)
-      print (str(sx) + ' ' + str(sy) + ' ' + str(dy))
+      # print (str(sx) + ' ' + str(sy) + ' ' + str(dy))
 
 # speedup_plot : (string, string, (int, float) list, (int, float) list) list -> _
 # each 4-tuple is 
@@ -101,22 +104,35 @@ def speedups(base, pars):
 
 # EDIT ME!
 # Each triple is a baseline context id, a par context id, and a title
+
 # context 52 is minimax seq, 51 is minimax par
 # context 53 is plus-scan seq, 54 is plus-scan par
-foo = [(52, 51, 'minimax'),
-       (53, 54, 'plus scan')]
+# context 436 is plus-reduce mlton, 434 is plus-reduce manticore
 
+
+triples = [(426, 423, 'mandelbrot')]
+          # [(52, 51, 'minimax'),
+          # (53, 54, 'plus scan')]
+      
 pkgs = []
 i = 0
-for f in foo:
-  baseline_ctxt = f[0]
-  par_ctxt = f[1]
-  ttl = f[2]
+for t in triples:
+  baseline_ctxt = t[0]
+  par_ctxt = t[1]
+  ttl = t[2]
   base = collect_data.med_baseline_time(baseline_ctxt)
+  print base
   pars = collect_data.parallel_times(par_ctxt)
+  print pars
   sps  = speedups(base, pars)
   devs = utils.stdevs(pars)
   pkgs.append((ttl, fmts[i], sps, devs))
+  print ("ttl: " + ttl)
+  print ("fmts[i]: " + fmts[i])
+  print ("sps: ")
+  print sps
+  print ("devs: ")
+  print devs
   i = (i + 1) % len(fmts)
 
 speedup_plot(pkgs)
