@@ -17,4 +17,4 @@ gen-random-int-list:	gen-random-int-list.sml gen-random-int-list.cm
 
 .PHONY: clean
 clean:
-	rm -f random-int-list.txt
+	
