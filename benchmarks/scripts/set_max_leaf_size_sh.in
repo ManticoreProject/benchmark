@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MC="@MANTICORE_ROOT@"
+
 OUTFILE=$MC/src/lib/basis/parray/max-leaf-size.pml
 sz=$1
 

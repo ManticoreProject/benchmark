@@ -206,16 +206,18 @@ AC_CONFIG_FILES([
   scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in
   scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in
   scripts/work-stealing-stats.sh:scripts/work_stealing_stats_sh.in
+  scripts/set-max-leaf-size.sh:scripts/set_max_leaf_size_sh.in
+  scripts/restore-max-leaf-size.sh:scripts/restore_max_leaf_size_sh.in
+  scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
 ])
 AC_CONFIG_COMMANDS_POST([
    chmod +x scripts/experiment.sh
    chmod +x scripts/experiment-smlnj.sh
    chmod +x scripts/experiment-mlton.sh
    chmod +x scripts/work-stealing-stats.sh
+   chmod +x scripts/set-max-leaf-size.sh
+   chmod +x scripts/restore-max-leaf-size.sh
+   chmod +x scripts/print-max-leaf-size.sh
 ])
-
-AC_CONFIG_FILES([
-  scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
-], [chmod +x scripts/print-max-leaf-size.sh])
 
 AC_OUTPUT
