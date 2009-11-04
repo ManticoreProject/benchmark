@@ -16,8 +16,16 @@ structure Common = struct
 	      global       : gc,
 	      promotion    : {n_promotions       : int,
 			      prom_bytes         : Int64.int,
-			      mean_prom_time_sec : real}} (* mean time *)
-
+			      mean_prom_time_sec : real}} (* mean time *)'    
+    | GCST of {processor    : int,
+	       minor        : gc,
+	       major        : gc,
+	       global       : gc,
+	       time         : real,
+	       promotion    : {n_promotions       : int,
+			       prom_bytes         : Int64.int,
+			       mean_prom_time_sec : real}} (* mean time *)
+	      
   type run 
     = {n_procs         : int, 
        time_sec        : real,
