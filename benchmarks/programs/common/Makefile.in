@@ -13,8 +13,7 @@ PMLCFLAGS =	@PMLCFLAGS@
 all:		gen-random-int-list
 
 gen-random-int-list:	gen-random-int-list.sml gen-random-int-list.cm 
-	echo "SMLofNJ.exportFn(\"gen-random-int-list\", Main.main);" | $(SMLNJ) gen-random-int-list.cm
-	sml @SMLload=gen-random-int-list 1000000 file > random-int-list.txt
+	./gen-random-int-list.sh
 
 .PHONY: clean
 clean:

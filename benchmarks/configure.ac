@@ -180,6 +180,7 @@ dnl ***** Makefiles *****
 dnl ***** Scripts ******
 AC_CONFIG_FILES([
   programs/barnes-hut/run.sh:programs/barnes-hut/run_sh.in
+  programs/barnes-hut/gen-bodies.sh:programs/barnes-hut/gen_bodies_sh.in
   programs/fib/run.sh:programs/fib/run_sh.in
   programs/fib-array/run.sh:programs/fib-array/run_sh.in
   programs/id-raytracer/run.sh:programs/id-raytracer/run_sh.in
@@ -194,13 +195,16 @@ AC_CONFIG_FILES([
   programs/pmerge/run.sh:programs/pmerge/run_sh.in
   programs/pmergesort/run.sh:programs/pmergesort/run_sh.in
   programs/pquickhull/run.sh:programs/pquickhull/run_sh.in
+  programs/pquickhull/gen-points.sh:programs/pquickhull/gen_points_sh.in
   programs/pquicksort/run.sh:programs/pquicksort/run_sh.in
   programs/tree-add/run.sh:programs/tree-add/run_sh.in
   programs/smvm/run.sh:programs/smvm/run_sh.in
   programs/vproc-pingpong/run.sh:programs/vproc-pingpong/run_sh.in
+  programs/common/gen-random-int-list.sh:programs/common/gen_random_int_list_sh.in
 
 ], [
    chmod +x programs/barnes-hut/run.sh
+   chmod +x programs/barnes-hut/gen-bodies.sh
    chmod +x programs/fib/run.sh
    chmod +x programs/fib-array/run.sh
    chmod +x programs/id-raytracer/run.sh
@@ -215,10 +219,12 @@ AC_CONFIG_FILES([
    chmod +x programs/pmerge/run.sh
    chmod +x programs/pmergesort/run.sh
    chmod +x programs/pquickhull/run.sh
+   chmod +x programs/pquickhull/gen-points.sh
    chmod +x programs/pquicksort/run.sh
    chmod +x programs/tree-add/run.sh
    chmod +x programs/smvm/run.sh
    chmod +x programs/vproc-pingpong/run.sh
+   chmod +x programs/common/gen-random-int-list.sh
 
 ])
 AC_CONFIG_FILES([

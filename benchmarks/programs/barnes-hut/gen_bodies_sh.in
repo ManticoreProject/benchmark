@@ -1,0 +1,9 @@
+#!/bin/bash
+
+NUM_BODIES=500000
+SMLNJ="@SMLNJ_CMD@"
+
+if [ ! -f bodies.txt ]; then
+    echo "SMLofNJ.exportFn(\"gen-bodies\", Main.main);" | $SMLNJ gen-bodies.cm
+    $SMLNJ @SMLload=gen-bodies $NUM_BODIES file > bodies.txt
+fi

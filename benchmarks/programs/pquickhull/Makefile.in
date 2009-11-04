@@ -27,8 +27,7 @@ quickhull-mlton:	quickhull-mlton.mlb quickhull.sml
 	$(MLTON) -output quickhull-mlton quickhull-mlton.mlb
 
 gen-points:	gen-points.sml gen-points.cm
-	echo "SMLofNJ.exportFn(\"gen-points\", Main.main);" | $(SMLNJ) gen-points.cm
-	sml @SMLload=gen-points 1000000 file > points.txt
+	./gen-points.sh
 
 .PHONY: clean
 clean:

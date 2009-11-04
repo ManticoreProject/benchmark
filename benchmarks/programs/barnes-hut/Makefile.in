@@ -36,8 +36,7 @@ $(TARGET)-rope-mlton:	barnes-hut-rope-mlton.mlb barnes-hut-rope.sml
 	$(MLTON) -output $(TARGET)-rope-mlton barnes-hut-rope-mlton.mlb
 
 gen-bodies:	gen-bodies.sml gen-bodies.cm
-	echo "SMLofNJ.exportFn(\"gen-bodies\", Main.main);" | $(SMLNJ) gen-bodies.cm
-	sml @SMLload=gen-bodies 500000 file > bodies.txt
+	./gen-bodies.sh
 
 .PHONY: clean
 clean:
