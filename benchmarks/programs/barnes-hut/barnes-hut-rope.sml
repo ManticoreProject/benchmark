@@ -196,7 +196,7 @@ structure Main =
 		    iter (bodiesArray, 0)
 		end
 	    val particles = RunSeq.run doit
-	    val PARTICLE (_, xv, _)
+	    val BarnesHutSeq.PARTICLE (_, xv, _) = Rope.sub (particles, 0)
 	in
 	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
 	     * algorithm is execute in its entirety and that key parts are not optimized away by
