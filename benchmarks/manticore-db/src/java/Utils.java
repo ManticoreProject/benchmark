@@ -40,19 +40,27 @@ public class Utils {
 	return sb.toString();
     }
 
-    static String esq(String s) 
-    {
-	return s.replaceAll("'", "^");
-	// horrible hack -- FIXME
+    static String commaSep(String[] ss) {
+	return commaSep(Arrays.asList(ss));
     }
 
-    static List<String> escapeSingleQuotes(List<String> ss) 
-    {
+    // util to escape single quotes
+    // NOTE: postgres wants to see two single quotes for one
+    // that is, 'Bill's Bar' should be 'Bill''s Bar'
+    static String esq(String s) {
+	return s.replaceAll("'", "''");
+    }
+
+    static List<String> escapeSingleQuotes(List<String> ss) {
 	List<String> newSS = new ArrayList<String>(ss.size());
 	for (String s : ss) {
 	    newSS.add(esq(s));
 	}
 	return newSS;
+    }
+
+    static List<String> escapeSingleQuotes(String[] ss) {
+	return escapeSingleQuotes(Arrays.asList(ss));
     }
 
     static List<String> singleQuoted(List<String> ss) {
@@ -245,4 +253,20 @@ public class Utils {
 	update(query);
     }
 	
+    public static void main(String[] x) {
+	String s = "Joe's pretty angry.";
+
+	String[] fieldNames = {"a", "b", "c"};
+	String[] values = {"Bill's Bar", "7", "Ed's Head"};
+
+	String query = "INSERT INTO tbl " + 
+	    " (" + commaSep(fieldNames) + ") " +
+	    "VALUES (" + commaSep(singleQuoted(escapeSingleQuotes(values))) + ") " +
+	    "RETURNING key;";
+
+	System.out.println(query);
+
+
+    }
+
 }

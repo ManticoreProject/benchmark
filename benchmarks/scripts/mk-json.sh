@@ -4,7 +4,7 @@ for SMLF in $* ; do
 
   echo $SMLF
 
-  if [[ "$SMLF" =~ "*.sml" ]]
+  if [[ $SMLF =~ (.*).sml ]]
     then true
     else 
       echo "- $SMLF should have the suffix .sml"

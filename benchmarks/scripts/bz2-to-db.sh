@@ -3,8 +3,8 @@
 # Set ENABLED to "true" to enable the script, "false" to disable it.
 # The disabled script reports on what it would do.
 
-# ENABLED="true"
-ENABLED="false"
+ENABLED="true"
+#  ENABLED="false"
 
 if [[ "$ENABLED" == "false" ]] ; then
   echo "----- NOTE: this script is disabled"

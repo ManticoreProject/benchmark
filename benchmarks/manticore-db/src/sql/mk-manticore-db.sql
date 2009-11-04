@@ -117,7 +117,8 @@ CREATE TABLE gc
   global_time_coll_sec double precision,
   n_promotions         integer,
   prom_bytes           bigint,
-  mean_prom_time_sec   double precision  
+  mean_prom_time_sec   double precision,  
+  elapsed_time_sec     double precision
 );
 
 CREATE VIEW view_runs AS

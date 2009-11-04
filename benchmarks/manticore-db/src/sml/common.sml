@@ -16,7 +16,7 @@ structure Common = struct
 	      global       : gc,
 	      promotion    : {n_promotions       : int,
 			      prom_bytes         : Int64.int,
-			      mean_prom_time_sec : real}} (* mean time *)'    
+			      mean_prom_time_sec : real}} (* mean time *)
     | GCST of {processor    : int,
 	       minor        : gc,
 	       major        : gc,

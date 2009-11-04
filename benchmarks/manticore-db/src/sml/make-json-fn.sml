@@ -61,19 +61,34 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
 		("time", Real time)]
       end
     fun buildGCStats (C.GCS info) : string = let
-      val {processor, minor, major, global, promotion} = info
-      val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=time} = promotion
-      val promotionObj = Object [("num", Int num), 
-				 ("bytes", BigInt bytes), 
-				 ("time", Real time)]
-      val pairs = [mkPair (Int processor) "processor",
-		   mkPair (buildGC minor) "minor",
-		   mkPair (buildGC major) "major",
-		   mkPair (buildGC global) "global",
-		   mkPair promotionObj "promotion"]
-      in
-        pairsToJSON pairs
-      end
+          val {processor, minor, major, global, promotion} = info
+	  val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=time} = promotion
+	  val promotionObj = Object [("num", Int num), 
+				     ("bytes", BigInt bytes), 
+				     ("time", Real time)]
+	  val pairs = [mkPair (Int processor) "processor",
+		       mkPair (buildGC minor) "minor",
+		       mkPair (buildGC major) "major",
+		       mkPair (buildGC global) "global",
+		       mkPair promotionObj "promotion"]
+          in
+            pairsToJSON pairs
+          end
+      | buildGCStats (C.GCST info) : string = let
+          val {processor, minor, major, global, time, promotion} = info
+	  val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=time} = promotion
+	  val promotionObj = Object [("num", Int num), 
+				     ("bytes", BigInt bytes), 
+				     ("time", Real time)]
+          val pairs = [mkPair (Int processor) "processor",
+		       mkPair (buildGC minor) "minor",
+		       mkPair (buildGC major) "major",
+		       mkPair (buildGC global) "global",
+		       mkPair (Real time) "time",
+		       mkPair promotionObj "promotion"]
+	  in
+	    pairsToJSON pairs
+	  end
     fun buildGCStatsList rs =
       String.concat ["[\n",
 		     String.concatWith ",\n" (List.map buildGCStats rs),
@@ -118,6 +133,7 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
     end
 
   fun mkJSON outFileName = let
+    val _ = print "mkJSON\n"
     val j = buildJSON ()
     val ostream = TextIO.openOut outFileName
     in
@@ -127,4 +143,5 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
     end
 
 end
+
 

@@ -159,6 +159,12 @@ public class DataBlob {
 		    long prom_bytes           = promotion.getLong("bytes");
 		    double mean_prom_time_sec = promotion.getDouble("time");
 
+		    // there might be a field "time" containing a double
+		    Double time = null;
+		    if (curr.has("time")) {
+			time = promotion.getDouble("time");
+		    }
+
 		    GC gc = new GC(processor,
 				   minor_n_collections,
 				   minor_alloc_bytes,
@@ -174,7 +180,8 @@ public class DataBlob {
 				   global_time_coll_sec,
 				   n_promotions,
 				   prom_bytes,
-				   mean_prom_time_sec);
+				   mean_prom_time_sec,
+				   time);
 		    gcs.add(gc);
 		}
 	    }
