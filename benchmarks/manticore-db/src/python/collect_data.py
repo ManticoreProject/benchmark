@@ -1,5 +1,6 @@
 # Adam Shaw, October 2009
 
+import sys
 import pg
 import connect_manticore_db as db
 import numpy as np
@@ -17,6 +18,10 @@ def baseline_times(context_id):
   r = c.query(q)
   v = r.getresult()
   c.close()
+  if (len(v) == 0):
+    print("no sequential (i.e., n_procs=0) times found for context id " + context_id)
+    print("halting")
+    sys.exit(1)
   return v
 
 # parallel_times : int -> (int, float) list
@@ -31,8 +36,18 @@ def parallel_times(context_id):
   r = c.query(q)
   v = r.getresult()
   c.close()
+  if (len(v) == 0):
+    print("no parallel times found for context id " + context_id)
+    print("halting")
+    sys.exit(1)
   return v
- 
+
+# med_time : int -> float
+def med_time(context_id):
+  ts = baseline_times(context_id)
+  m = np.median(ts)
+  return m
+
 # med_baseline_time : int -> float
 # median basline time, given a context id
 def med_baseline_time(context_id):
@@ -53,7 +68,7 @@ def med_parallel_times(context_id):
 def show_problem_by_compiler(prob, comp):
   print (prob + " by " + comp + ":")
   c = db.connect_r()
-  q = "SELECT context_id, language, seq_compilation, datetime, bench_url \
+  q = "SELECT context_id, language, compiler, seq_compilation, datetime, bench_url \
        FROM contexts \
        WHERE bench_url LIKE '%" + prob + "%' \
        AND compiler LIKE '%" + comp + "%' \
