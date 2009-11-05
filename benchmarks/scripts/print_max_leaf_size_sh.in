@@ -4,7 +4,7 @@ PMLC="@PMLC@"
 SCRIPTS_DIR="@MANTI_BENCH_SCRIPTS@"
 
 ( cd $SCRIPTS_DIR
-  $PMLC -Csequential=true -o print-max-leaf-size print-max-leaf-size.pml 2> /dev/null
+  $PMLC -Csequential=true -o print-max-leaf-size print-max-leaf-size.pml > /dev/null 2>&1
   ./print-max-leaf-size
   rm -rf print-max-leaf-size
 )
