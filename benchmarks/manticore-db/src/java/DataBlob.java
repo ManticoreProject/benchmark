@@ -238,7 +238,7 @@ public class DataBlob {
     public static void main(String[] args) 
 	throws ClassNotFoundException, SQLException, IOException, JSONException {
 
-	if (args.length == 0) {
+	if (args.length == 1) {
 	    exitWithoutWriting("This program expects at least one JSON filename as an argument; " +
 			       "you provided none.");
 	}
