@@ -54,6 +54,14 @@ mc-pquickhull-par:
 	cd pquickhull && $(MAKE) pquickhull-par
 mc-pquickhull-seq:
 	cd pquickhull && $(MAKE) pquickhull-seq-elison
+mc-life-seq:
+	cd life-seq && $(MAKE) life-seq
+mc-list-mergesort:
+	cd list-mergesort && $(MAKE) list-mergesort
+mc-list-quicksort:
+	cd list-quicksort && $(MAKE) list-quicksort
+mc-plus-prefix:
+	cd plus-prefix && $(MAKE) plus-prefix
 
 mc-par1: mc-barnes-hut-par mc-fib-par mc-mandelbrot-par mc-ttt-par mc-plus-reduce-par \
 	mc-plus-scan-par mc-pmergesort-par mc-pquicksort-par mc-pquicksort-par mc-smvm-par mc-tree-add-par \
@@ -71,6 +79,9 @@ mc-seq1: mc-barnes-hut-seq mc-fib-seq mc-mandelbrot-seq mc-ttt-seq mc-plus-reduc
 
 mc-seq: mc-seq1
 	@cd id-raytracer && $(MAKE) id-raytracer-seq
+
+mc-seq-only: mc-seq
+	mc-life-seq mc-list-mergesort mc-list-quicksort mc-plus-prefix
 
 mlton:
 	cd barnes-hut && $(MAKE) barnes-hut-rope-mlton
