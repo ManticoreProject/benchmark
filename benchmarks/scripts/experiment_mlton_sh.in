@@ -32,6 +32,11 @@ do
     esac
 done
 
+if [ ! -x $BENCHMARK_EXE ]; then
+    echo "$BENCHMARK_EXE does not exist"
+    exit 1
+fi
+
 # avoid running this experiment within the same second as a previous experiment
 sleep 2
 
