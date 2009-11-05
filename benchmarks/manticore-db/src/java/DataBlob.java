@@ -39,6 +39,13 @@ public class DataBlob {
 	
 	Utils.lazilyConnectToDB();
 
+	if (this.runs.size() == 0) {
+	    System.out.println("empty run list; not writing anything from " + 
+			       this.c.data_source_file);
+	    Utils.closeDBConnection();
+	    return;
+	}
+
 	// find or create problem_id
 	int problem_id = Utils.findByLookupOrInsert("problems",
 						    "problem_name",

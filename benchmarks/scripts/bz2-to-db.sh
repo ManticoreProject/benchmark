@@ -42,8 +42,6 @@ cd $MBENCH/benchmarks/manticore-db/src/sml
 echo "----- making json files from sml"
 maybe_do "mk-json.sh $UNZIPPED/*.sml"
 
-exit 0
-
 cd $MBENCH/benchmarks/manticore-db/src/java
 echo "----- pushing json files into the database"
 maybe_do "./compile.sh"

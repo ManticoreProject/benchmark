@@ -132,14 +132,18 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
       pairsToJSON prs
     end
 
-  fun mkJSON outFileName = let
-    val j = buildJSON ()
-    val ostream = TextIO.openOut outFileName
-    in
-      TextIO.output (ostream, j);
-      TextIO.closeOut ostream;
-      print ("JSON object written to " ^ outFileName ^ ".\n")
-    end
+  fun mkJSON outFileName = 
+   (case E.runs
+      of [] => print ("Empty run list, no file " ^ outFileName ^ " produced.\n")
+       | _ => let
+	   val j = buildJSON ()
+	   val ostream = TextIO.openOut outFileName
+	   in
+	     TextIO.output (ostream, j);
+	     TextIO.closeOut ostream;
+	     print ("JSON object written to " ^ outFileName ^ ".\n")
+	   end
+   (* end case *))
 
 end
 
