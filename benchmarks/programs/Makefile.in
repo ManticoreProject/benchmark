@@ -18,10 +18,6 @@ mc-fib-par:
 	cd fib && $(MAKE) pfib
 mc-fib-seq:
 	cd fib && $(MAKE) pfib-seq-elison
-mc-id-raytracer-par:
-	cd id-raytracer && $(MAKE) id-raytracer-par
-mc-id-raytracer-seq:
-	cd id-raytracer && $(MAKE) id-raytracer-seq
 mc-mandelbrot-par:
 	cd mandelbrot && $(MAKE) mandelbrot-par
 mc-mandelbrot-seq:
@@ -59,13 +55,22 @@ mc-pquickhull-par:
 mc-pquickhull-seq:
 	cd pquickhull && $(MAKE) pquickhull-seq-elison
 
-mc-par: mc-barnes-hut-par mc-fib-par mc-id-raytracer-par mc-mandelbrot-par mc-ttt-par mc-plus-reduce-par \
+mc-par1: mc-barnes-hut-par mc-fib-par mc-mandelbrot-par mc-ttt-par mc-plus-reduce-par \
 	mc-plus-scan-par mc-pmergesort-par mc-pquicksort-par mc-pquicksort-par mc-smvm-par mc-tree-add-par \
 	mc-pquickhull-par
 
-mc-seq: mc-barnes-hut-seq mc-fib-seq mc-id-raytracer-seq mc-mandelbrot-seq mc-ttt-seq mc-plus-reduce-seq \
+# it is unsafe to compile id-raytracer in parallel with other benchmarks, since the build process for
+# id raytracer modifies the max leaf size file
+
+mc-par: mc-par1
+	cd id-raytracer && $(MAKE) id-raytracer-par
+
+mc-seq1: mc-barnes-hut-seq mc-fib-seq mc-mandelbrot-seq mc-ttt-seq mc-plus-reduce-seq \
 	mc-plus-scan-seq mc-pmergesort-seq mc-pquicksort-seq mc-pquicksort-seq mc-smvm-seq mc-tree-add-seq \
 	mc-pquickhull-seq
+
+mc-seq: mc-seq1
+	cd id-raytracer && $(MAKE) id-raytracer-seq
 
 mlton:
 	cd barnes-hut && $(MAKE) barnes-hut-rope-mlton
