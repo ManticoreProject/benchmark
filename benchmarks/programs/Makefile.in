@@ -10,33 +10,62 @@ MLTON =		@MLTON@
 PMLC =		@PMLC@
 PMLCFLAGS =	@PMLCFLAGS@
 
-manticore-par:
+mc-barnes-hut-par:
 	cd barnes-hut && $(MAKE) barnes-hut-par
-	cd fib && $(MAKE) pfib
-	cd id-raytracer && $(MAKE) id-raytracer-par
-	cd mandelbrot && $(MAKE) mandelbrot-par
-	cd minimax && $(MAKE) ttt-par
-	cd plus-reduce && $(MAKE) plus-reduce-par
-	cd plus-scan && $(MAKE) plus-scan-par
-	cd pmergesort && $(MAKE) pmergesort-par
-	cd pquicksort && $(MAKE) pquicksort-par
-	cd smvm && $(MAKE) smvm-par
-	cd tree-add && $(MAKE) tree-add
-	cd pquickhull && $(MAKE) pquickhull-par
-
-manticore-seq:
+mc-barnes-hut-seq:
 	cd barnes-hut && $(MAKE) barnes-hut-seq-elison
+mc-fib-par:
+	cd fib && $(MAKE) pfib
+mc-fib-seq:
 	cd fib && $(MAKE) pfib-seq-elison
+mc-id-raytracer-par:
+	cd id-raytracer && $(MAKE) id-raytracer-par
+mc-id-raytracer-seq:
 	cd id-raytracer && $(MAKE) id-raytracer-seq
+mc-mandelbrot-par:
+	cd mandelbrot && $(MAKE) mandelbrot-par
+mc-mandelbrot-seq:
 	cd mandelbrot && $(MAKE) mandelbrot-seq
+mc-ttt-par:
+	cd minimax && $(MAKE) ttt-par
+mc-ttt-seq:
 	cd minimax && $(MAKE) ttt-seq
+mc-plus-reduce-par:
+	cd plus-reduce && $(MAKE) plus-reduce-par
+mc-plus-reduce-seq:
 	cd plus-reduce && $(MAKE) plus-reduce-seq-elison
+mc-plus-scan-par:
+	cd plus-scan && $(MAKE) plus-scan-par
+mc-plus-scan-seq:
 	cd plus-scan && $(MAKE) plus-scan-seq-elison
+mc-pmergesort-par:
+	cd pmergesort && $(MAKE) pmergesort-par
+mc-pmergesort-seq:
 	cd pmergesort && $(MAKE) pmergesort-seq-elison
+mc-pquicksort-par:
+	cd pquicksort && $(MAKE) pquicksort-par
+mc-pquicksort-seq:
 	cd pquicksort && $(MAKE) pquicksort-seq-elison
+mc-smvm-par:
+	cd smvm && $(MAKE) smvm-par
+mc-smvm-seq:
 	cd smvm && $(MAKE) smvm-seq-elison
+mc-tree-add-par:
+	cd tree-add && $(MAKE) tree-add
+mc-tree-add-seq:
 	cd tree-add && $(MAKE) tree-add-seq-elison
+mc-pquickhull-par:
+	cd pquickhull && $(MAKE) pquickhull-par
+mc-pquickhull-seq:
 	cd pquickhull && $(MAKE) pquickhull-seq-elison
+
+mc-par: mc-barnes-hut-par mc-fib-par mc-id-raytracer-par mc-mandelbrot-par mc-ttt-par mc-plus-reduce-par \
+	mc-plus-scan-par mc-pmergesort-par mc-pquicksort-par mc-pquicksort-par mc-smvm-par mc-tree-add-par \
+	mc-pquickhull-par
+
+mc-seq: mc-barnes-hut-seq mc-fib-seq mc-id-raytracer-seq mc-mandelbrot-seq mc-ttt-seq mc-plus-reduce-seq \
+	mc-plus-scan-seq mc-pmergesort-seq mc-pquicksort-seq mc-pquicksort-seq mc-smvm-seq mc-tree-add-seq \
+	mc-pquickhull-seq
 
 mlton:
 	cd barnes-hut && $(MAKE) barnes-hut-rope-mlton
