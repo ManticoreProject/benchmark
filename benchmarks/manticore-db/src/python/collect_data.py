@@ -1,22 +1,15 @@
 # Adam Shaw, October 2009
 
 import pg
+import connect_manticore_db as db
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import utils
-
-# connect_read_only : () -> pgobject
-def connect_read_only():
-  c = pg.connect(dbname='manticore',
-                 host='manticoredb.cs.uchicago.edu',
-                 user='manticorer',
-                 passwd='Pic5shah')
-  return c
  
 # baseline_times : int -> float list
 def baseline_times(context_id):
-  c = connect_read_only()
+  c = db.connect_r()
   q = "SELECT time_sec \
        FROM runs \
        WHERE n_procs=0 \
@@ -30,7 +23,7 @@ def baseline_times(context_id):
 # TODO: when the resultset is empty, the context_id is probably ill chosen
 #   inform the user of this in some nice way
 def parallel_times(context_id):
-  c = connect_read_only()
+  c = db.connect_r()
   q = "SELECT n_procs, time_sec \
        FROM runs \
        WHERE n_procs>0 \
@@ -59,7 +52,7 @@ def med_parallel_times(context_id):
 # show_problem_by_compiler : string * string -> unit
 def show_problem_by_compiler(prob, comp):
   print (prob + " by " + comp + ":")
-  c = connect_read_only()
+  c = db.connect_r()
   q = "SELECT context_id, language, seq_compilation, datetime, bench_url \
        FROM contexts \
        WHERE bench_url LIKE '%" + prob + "%' \
@@ -75,7 +68,7 @@ def show_problem_by_compiler(prob, comp):
 # show_parallel_contexts : string -> unit
 def show_parallel_contexts(problem_name):
   print ("parallel " + problem_name + ":")
-  c = connect_read_only()
+  c = db.connect_r()
   q = "SELECT context_id, language, seq_compilation, datetime, bench_url \
        FROM contexts \
        WHERE bench_url LIKE '%" + problem_name + "%' \
@@ -91,7 +84,7 @@ def show_parallel_contexts(problem_name):
 # show_seq_elisions : string -> unit
 def show_seq_elisions(problem):
   print ("sequential elisions of " + problem + ":")
-  c = connect_read_only()
+  c = db.connect_r()
   q = "SELECT context_id, language, seq_compilation, datetime, bench_url \
        FROM contexts \
        WHERE bench_url LIKE '%" + problem + "%' \
