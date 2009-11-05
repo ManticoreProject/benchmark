@@ -124,6 +124,7 @@ AC_SUBST(LOG_WORK_STEALING)
 
 AC_CONFIG_FILES(\
 dnl ***** Makefiles *****
+  programs/Makefile
   programs/barnes-hut/Makefile
   programs/cml-merge/Makefile
   programs/cml-parallelpp/Makefile

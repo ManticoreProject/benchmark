@@ -15,7 +15,9 @@ TARGET =	id-raytracer
 all:		$(TARGET)-par $(TARGET)-seq-elison $(TARGET)-seq $(TARGET)-smlnj  $(TARGET)-mlton
 
 $(TARGET)-par:	raytracer-par.mlb raytracer-par.pml
+	../../scripts/set-max-leaf-size.sh 4
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-par raytracer-par.mlb
+	../../scripts/restore-max-leaf-size.sh
 
 $(TARGET)-seq-elison:	raytracer-par.mlb raytracer-par.pml
 	$(PMLC) $(PMLCFLAGS) -o $(TARGET)-seq-elison raytracer-par.mlb

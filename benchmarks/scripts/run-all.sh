@@ -3,10 +3,7 @@
 # COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
 # All rights reserved.
 #
-# Get speedup numbers for each parallel benchmark
-
-#./clean-all.sh
-./build-all.sh
+# Run each benchmark script
 
 d=`pwd`
 echo "current dir = $d"

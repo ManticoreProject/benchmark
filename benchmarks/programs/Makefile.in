@@ -1,0 +1,67 @@
+# Makefile for barnes-hut benchmarks
+#
+# @configure_input@
+#
+
+SHELL =		/bin/sh
+
+SMLNJ =		@SMLNJ_CMD@
+MLTON =		@MLTON@
+PMLC =		@PMLC@
+PMLCFLAGS =	@PMLCFLAGS@
+
+manticore-par:
+	cd barnes-hut && $(MAKE) barnes-hut-par
+	cd fib && $(MAKE) pfib
+	cd id-raytracer && $(MAKE) id-raytracer-par
+	cd mandelbrot && $(MAKE) mandelbrot-par
+	cd minimax && $(MAKE) ttt-par
+	cd plus-reduce && $(MAKE) plus-reduce-par
+	cd plus-scan && $(MAKE) plus-scan-par
+	cd pmergesort && $(MAKE) pmergesort-par
+	cd pquicksort && $(MAKE) pquicksort-par
+	cd smvm && $(MAKE) smvm-par
+	cd tree-add && $(MAKE) tree-add
+	cd pquickhull && $(MAKE) pquickhull-par
+
+manticore-seq:
+	cd barnes-hut && $(MAKE) barnes-hut-seq-elison
+	cd fib && $(MAKE) pfib-seq-elison
+	cd id-raytracer && $(MAKE) id-raytracer-seq
+	cd mandelbrot && $(MAKE) mandelbrot-seq
+	cd minimax && $(MAKE) ttt-seq
+	cd plus-reduce && $(MAKE) plus-reduce-seq-elison
+	cd plus-scan && $(MAKE) plus-scan-seq-elison
+	cd pmergesort && $(MAKE) pmergesort-seq-elison
+	cd pquicksort && $(MAKE) pquicksort-seq-elison
+	cd smvm && $(MAKE) smvm-seq-elison
+	cd tree-add && $(MAKE) tree-add-seq-elison
+	cd pquickhull && $(MAKE) pquickhull-seq-elison
+
+mlton:
+	cd barnes-hut && $(MAKE) barnes-hut-rope-mlton
+	cd fib && $(MAKE) fib-mlton
+	cd id-raytracer && $(MAKE) id-raytracer-mlton
+	cd mandelbrot && $(MAKE) mandelbrot-mlton
+	cd minimax && $(MAKE) ttt-mlton
+	cd plus-reduce && $(MAKE) plus-reduce-mlton
+	cd plus-scan && $(MAKE) plus-scan-mlton
+	cd pmergesort && $(MAKE) pmergesort-mlton
+	cd pquicksort && $(MAKE) rope-quicksort-mlton
+	cd smvm && $(MAKE) smvm-mlton
+	cd tree-add && $(MAKE) tree-mlton
+	cd pquickhull && $(MAKE) quickhull-mlton
+
+smlnj:
+	cd barnes-hut && $(MAKE) barnes-hut-rope-smlnj
+	cd fib && $(MAKE) fib-smlnj
+	cd id-raytracer && $(MAKE) id-raytracer-smlnj
+	cd mandelbrot && $(MAKE) mandelbrot-smlnj
+	cd minimax && $(MAKE) ttt-smlnj
+	cd plus-reduce && $(MAKE) plus-reduce-smlnj
+	cd plus-scan && $(MAKE) plus-scan-smlnj
+	cd pmergesort && $(MAKE) pmergesort-smlnj
+	cd pquicksort && $(MAKE) rope-quicksort-smlnj
+	cd smvm && $(MAKE) smvm-smlnj
+	cd tree-add && $(MAKE) tree-smlnj
+	cd pquickhull && $(MAKE) quickhull-smlnj
