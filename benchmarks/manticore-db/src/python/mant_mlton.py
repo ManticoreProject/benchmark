@@ -42,10 +42,10 @@ def ratio_plot(pairs):
   # plot a solid horizontal line at y=1
   plt.axhline(y=1, xmin=0, xmax=N, color='gray')
   plt.bar(ind, ratios, width=w, color='dodgerblue')
-  plt.title('MLton time / sequential Manticore time', fontproperties=h1)
+  plt.title('Sequential Manticore time / MLton time for various programs', fontproperties=h1)
   plt.xticks(ind+w/2.0, names, fontproperties=h2)
   plt.yticks(np.arange(0, h), fontproperties=h2)
-  plt.ylabel('mlton / mant', fontproperties=h1)
+  plt.ylabel('mant / mlt', fontproperties=h1)
   for x in range(0, len(names)):
     y = ratios[x]
     ystr = "%.2f" % y
@@ -62,7 +62,7 @@ def ratio_plot(pairs):
 # - a problem name
 # Returns pairs of
 # - the problem name, and
-# - the ratio of median mlton time to median seq mant time
+# - the ratio of median seq mant time to median mlton time
 def ratios(triples):
   (mants, mlts, names) = utils.unzip3(triples)
   retval = []
