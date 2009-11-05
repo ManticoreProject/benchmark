@@ -153,92 +153,92 @@ dnl ***** Makefiles *****
 )
 
 dnl ***** Scripts ******
-AC_CONFIG_FILES([
-	programs/barnes-hut/run.sh:programs/barnes-hut/run_sh.in
-], [chmod +x programs/barnes-hut/run.sh])
-AC_CONFIG_FILES([
-	programs/barnes-hut/gen-bodies.sh:programs/barnes-hut/gen_bodies_sh.in
-], [chmod +x programs/barnes-hut/gen-bodies.sh])
-AC_CONFIG_FILES([
-	programs/fib/run.sh:programs/fib/run_sh.in
-], [chmod +x programs/fib/run.sh])
-AC_CONFIG_FILES([
-	programs/fib-array/run.sh:programs/fib-array/run_sh.in
-], [chmod +x programs/fib-array/run.sh])
-AC_CONFIG_FILES([
-	programs/id-raytracer/run.sh:programs/id-raytracer/run_sh.in
-], [chmod +x programs/id-raytracer/run.sh])
-AC_CONFIG_FILES([
-	programs/life-seq/run.sh:programs/life-seq/run_sh.in
-], [chmod +x programs/life-seq/run.sh])
-AC_CONFIG_FILES([
-	programs/list-mergesort/run.sh:programs/list-mergesort/run_sh.in
-], [chmod +x programs/list-mergesort/run.sh])
-AC_CONFIG_FILES([
-	programs/list-quicksort/run.sh:programs/list-quicksort/run_sh.in
-], [chmod +x programs/list-quicksort/run.sh])
-AC_CONFIG_FILES([
-	programs/mandelbrot/run.sh:programs/mandelbrot/run_sh.in
-], [chmod +x programs/mandelbrot/run.sh])
-AC_CONFIG_FILES([
-	programs/minimax/run.sh:programs/minimax/run_sh.in
-], [chmod +x programs/minimax/run.sh])
-AC_CONFIG_FILES([
-	programs/plus-scan/run.sh:programs/plus-scan/run_sh.in
-], [chmod +x programs/plus-scan/run.sh])
-AC_CONFIG_FILES([
-	programs/plus-reduce/run.sh:programs/plus-reduce/run_sh.in
-], [chmod +x programs/plus-reduce/run.sh])
-AC_CONFIG_FILES([
-	programs/plus-prefix/run.sh:programs/plus-prefix/run_sh.in
-], [chmod +x programs/plus-prefix/run.sh])
-AC_CONFIG_FILES([
-	programs/pmerge/run.sh:programs/pmerge/run_sh.in
-], [chmod +x programs/pmerge/run.sh])
-AC_CONFIG_FILES([
-	programs/pmergesort/run.sh:programs/pmergesort/run_sh.in
-], [chmod +x programs/pmergesort/run.sh])
-AC_CONFIG_FILES([
-	programs/pquickhull/run.sh:programs/pquickhull/run_sh.in
-], [chmod +x programs/pquickhull/run.sh])
-AC_CONFIG_FILES([
-	programs/pquickhull/gen-points.sh:programs/pquickhull/gen_points_sh.in
-], [chmod +x programs/pquickhull/gen-points.sh])
-AC_CONFIG_FILES([
-	programs/pquicksort/run.sh:programs/pquicksort/run_sh.in
-], [chmod +x programs/pquicksort/run.sh])
-AC_CONFIG_FILES([
-	programs/tree-add/run.sh:programs/tree-add/run_sh.in
-], [chmod +x programs/tree-add/run.sh])
-AC_CONFIG_FILES([
-	programs/smvm/run.sh:programs/smvm/run_sh.in
-], [chmod +x programs/smvm/run.sh])
-AC_CONFIG_FILES([
-	programs/vproc-pingpong/run.sh:programs/vproc-pingpong/run_sh.in
-], [chmod +x programs/vproc-pingpong/run.sh])
-AC_CONFIG_FILES([
-	programs/common/gen-random-int-list.sh:programs/common/gen_random_int_list_sh.in
-], [chmod +x programs/common/gen-random-int-list.sh])
-AC_CONFIG_FILES([
-	scripts/experiment.sh:scripts/experiment_sh.in
-], [chmod +x scripts/experiment.sh])
-AC_CONFIG_FILES([
-	scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in
-], [chmod +x scripts/experiment-smlnj.sh])
-AC_CONFIG_FILES([
-	scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in
-], [chmod +x scripts/experiment-mlton.sh])
-AC_CONFIG_FILES([
-	scripts/work-stealing-stats.sh:scripts/work_stealing_stats_sh.in
-], [chmod +x scripts/work-stealing-stats.sh])
-AC_CONFIG_FILES([
-	scripts/set-max-leaf-size.sh:scripts/set_max_leaf_size_sh.in
-], [chmod +x scripts/set-max-leaf-size.sh])
-AC_CONFIG_FILES([
-	scripts/restore-max-leaf-size.sh:scripts/restore_max_leaf_size_sh.in
-], [chmod +x scripts/restore-max-leaf-size.sh])
-AC_CONFIG_FILES([
-	scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in
-], [chmod +x scripts/print-max-leaf-size.sh])
+AC_CONFIG_FILES(
+  [programs/barnes-hut/run.sh:programs/barnes-hut/run_sh.in],
+  [chmod +x programs/barnes-hut/run.sh])
+AC_CONFIG_FILES(
+  [programs/barnes-hut/gen-bodies.sh:programs/barnes-hut/gen_bodies_sh.in],
+  [chmod +x programs/barnes-hut/gen-bodies.sh])
+AC_CONFIG_FILES(
+  [programs/fib/run.sh:programs/fib/run_sh.in],
+  [chmod +x programs/fib/run.sh])
+AC_CONFIG_FILES(
+  [programs/fib-array/run.sh:programs/fib-array/run_sh.in],
+  [chmod +x programs/fib-array/run.sh])
+AC_CONFIG_FILES(
+  [programs/id-raytracer/run.sh:programs/id-raytracer/run_sh.in],
+  [chmod +x programs/id-raytracer/run.sh])
+AC_CONFIG_FILES(
+  [programs/life-seq/run.sh:programs/life-seq/run_sh.in],
+  [chmod +x programs/life-seq/run.sh])
+AC_CONFIG_FILES(
+  [programs/list-mergesort/run.sh:programs/list-mergesort/run_sh.in],
+  [chmod +x programs/list-mergesort/run.sh])
+AC_CONFIG_FILES(
+  [programs/list-quicksort/run.sh:programs/list-quicksort/run_sh.in],
+  [chmod +x programs/list-quicksort/run.sh])
+AC_CONFIG_FILES(
+  [programs/mandelbrot/run.sh:programs/mandelbrot/run_sh.in],
+  [chmod +x programs/mandelbrot/run.sh])
+AC_CONFIG_FILES(
+  [programs/minimax/run.sh:programs/minimax/run_sh.in],
+  [chmod +x programs/minimax/run.sh])
+AC_CONFIG_FILES(
+  [programs/plus-scan/run.sh:programs/plus-scan/run_sh.in],
+  [chmod +x programs/plus-scan/run.sh])
+AC_CONFIG_FILES(
+  [programs/plus-reduce/run.sh:programs/plus-reduce/run_sh.in],
+  [chmod +x programs/plus-reduce/run.sh])
+AC_CONFIG_FILES(
+  [programs/plus-prefix/run.sh:programs/plus-prefix/run_sh.in],
+  [chmod +x programs/plus-prefix/run.sh])
+AC_CONFIG_FILES(
+  [programs/pmerge/run.sh:programs/pmerge/run_sh.in],
+  [chmod +x programs/pmerge/run.sh])
+AC_CONFIG_FILES(
+  [programs/pmergesort/run.sh:programs/pmergesort/run_sh.in],
+  [chmod +x programs/pmergesort/run.sh])
+AC_CONFIG_FILES(
+  [programs/pquickhull/run.sh:programs/pquickhull/run_sh.in],
+  [chmod +x programs/pquickhull/run.sh])
+AC_CONFIG_FILES(
+  [programs/pquickhull/gen-points.sh:programs/pquickhull/gen_points_sh.in],
+  [chmod +x programs/pquickhull/gen-points.sh])
+AC_CONFIG_FILES(
+  [programs/pquicksort/run.sh:programs/pquicksort/run_sh.in],
+  [chmod +x programs/pquicksort/run.sh])
+AC_CONFIG_FILES(
+  [programs/tree-add/run.sh:programs/tree-add/run_sh.in],
+  [chmod +x programs/tree-add/run.sh])
+AC_CONFIG_FILES(
+  [programs/smvm/run.sh:programs/smvm/run_sh.in],
+  [chmod +x programs/smvm/run.sh])
+AC_CONFIG_FILES(
+  [programs/vproc-pingpong/run.sh:programs/vproc-pingpong/run_sh.in],
+  [chmod +x programs/vproc-pingpong/run.sh])
+AC_CONFIG_FILES(
+  [programs/common/gen-random-int-list.sh:programs/common/gen_random_int_list_sh.in],
+  [chmod +x programs/common/gen-random-int-list.sh])
+AC_CONFIG_FILES(
+  [scripts/experiment.sh:scripts/experiment_sh.in],
+  [chmod +x scripts/experiment.sh])
+AC_CONFIG_FILES(
+  [scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in],
+  [chmod +x scripts/experiment-smlnj.sh])
+AC_CONFIG_FILES(
+  [scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in],
+  [chmod +x scripts/experiment-mlton.sh])
+AC_CONFIG_FILES(
+  [scripts/work-stealing-stats.sh:scripts/work_stealing_stats_sh.in],
+  [chmod +x scripts/work-stealing-stats.sh])
+AC_CONFIG_FILES(
+  [scripts/set-max-leaf-size.sh:scripts/set_max_leaf_size_sh.in],
+  [chmod +x scripts/set-max-leaf-size.sh])
+AC_CONFIG_FILES(
+  [scripts/restore-max-leaf-size.sh:scripts/restore_max_leaf_size_sh.in],
+  [chmod +x scripts/restore-max-leaf-size.sh])
+AC_CONFIG_FILES(
+  [scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in],
+  [chmod +x scripts/print-max-leaf-size.sh])
 
 AC_OUTPUT
