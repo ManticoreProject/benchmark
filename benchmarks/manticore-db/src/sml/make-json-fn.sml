@@ -33,7 +33,7 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
   fun jstring (String s) = dquote s
     | jstring (Int n) = regularMinus (Int.toString n)
     | jstring (BigInt n) = regularMinus (Int64.toString n)
-    | jstring (Real x) = regularMinus (Real.toString x)
+    | jstring (Real x) = regularMinus (Real.fmt StringCvt.EXACT x)
     | jstring (Bool b) = Bool.toString b
     | jstring (Array a) = a
     | jstring (Object pairs) = let
@@ -62,10 +62,10 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
       end
     fun buildGCStats (C.GCS info) : string = let
           val {processor, minor, major, global, promotion} = info
-	  val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=time} = promotion
+	  val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=prom_time} = promotion
 	  val promotionObj = Object [("num", Int num), 
 				     ("bytes", BigInt bytes), 
-				     ("time", Real time)]
+				     ("time", Real prom_time)]
 	  val pairs = [mkPair (Int processor) "processor",
 		       mkPair (buildGC minor) "minor",
 		       mkPair (buildGC major) "major",
@@ -76,10 +76,10 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
           end
       | buildGCStats (C.GCST info) : string = let
           val {processor, minor, major, global, time, promotion} = info
-	  val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=time} = promotion
+	  val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=prom_time} = promotion
 	  val promotionObj = Object [("num", Int num), 
 				     ("bytes", BigInt bytes), 
-				     ("time", Real time)]
+				     ("time", Real prom_time)]
           val pairs = [mkPair (Int processor) "processor",
 		       mkPair (buildGC minor) "minor",
 		       mkPair (buildGC major) "major",
@@ -133,7 +133,6 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
     end
 
   fun mkJSON outFileName = let
-    val _ = print "mkJSON\n"
     val j = buildJSON ()
     val ostream = TextIO.openOut outFileName
     in

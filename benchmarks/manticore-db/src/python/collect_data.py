@@ -72,7 +72,7 @@ def show_problem_by_compiler(prob, comp):
   print ""
   c.close()
 
-# parallel_contexts : string -> unit
+# show_parallel_contexts : string -> unit
 def show_parallel_contexts(problem_name):
   print ("parallel " + problem_name + ":")
   c = connect_read_only()
@@ -88,3 +88,19 @@ def show_parallel_contexts(problem_name):
   print ""
   c.close()
 
+# show_seq_elisions : string -> unit
+def show_seq_elisions(problem):
+  print ("sequential elisions of " + problem + ":")
+  c = connect_read_only()
+  q = "SELECT context_id, language, seq_compilation, datetime, bench_url \
+       FROM contexts \
+       WHERE bench_url LIKE '%" + problem + "%' \
+       AND seq_compilation \
+       AND language='Manticore' \
+       ORDER BY datetime ASC"
+  r = c.query(q)
+  v = r.getresult()
+  for record in v:
+    print record
+  print ""
+  c.close()

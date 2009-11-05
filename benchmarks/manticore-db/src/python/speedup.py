@@ -109,7 +109,6 @@ def speedups(base, pars):
 # context 53 is plus-scan seq, 54 is plus-scan par
 # context 436 is plus-reduce mlton, 434 is plus-reduce manticore
 
-
 triples = [(426, 423, 'mandelbrot')]
           # [(52, 51, 'minimax'),
           # (53, 54, 'plus scan')]
@@ -121,18 +120,10 @@ for t in triples:
   par_ctxt = t[1]
   ttl = t[2]
   base = collect_data.med_baseline_time(baseline_ctxt)
-  print base
   pars = collect_data.parallel_times(par_ctxt)
-  print pars
   sps  = speedups(base, pars)
   devs = utils.stdevs(pars)
   pkgs.append((ttl, fmts[i], sps, devs))
-  print ("ttl: " + ttl)
-  print ("fmts[i]: " + fmts[i])
-  print ("sps: ")
-  print sps
-  print ("devs: ")
-  print devs
   i = (i + 1) % len(fmts)
 
 speedup_plot(pkgs)

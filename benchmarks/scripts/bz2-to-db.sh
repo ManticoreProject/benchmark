@@ -39,12 +39,12 @@ cd $ENCLOSING
 maybe_do "tar xvjf $ZIPPED"
 
 cd $MBENCH/benchmarks/manticore-db/src/sml
-
 echo "----- making json files from sml"
 maybe_do "mk-json.sh $UNZIPPED/*.sml"
 
-cd $MBENCH/benchmarks/manticore-db/src/java
+exit 0
 
+cd $MBENCH/benchmarks/manticore-db/src/java
 echo "----- pushing json files into the database"
 maybe_do "./compile.sh"
 maybe_do "./run.sh $UNZIPPED/*.json"
