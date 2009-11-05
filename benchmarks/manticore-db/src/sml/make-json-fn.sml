@@ -84,7 +84,7 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
 		       mkPair (buildGC minor) "minor",
 		       mkPair (buildGC major) "major",
 		       mkPair (buildGC global) "global",
-		       mkPair (Real time) "time",
+		       mkPair (Real time) "elapsed_time_sec",
 		       mkPair promotionObj "promotion"]
 	  in
 	    pairsToJSON pairs
