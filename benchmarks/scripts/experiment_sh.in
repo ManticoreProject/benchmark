@@ -38,6 +38,11 @@ do
     esac
 done
 
+if [ ! -x $BENCHMARK_PATH ]; then
+    echo "$BENCHMARK_PATH does not exist"
+    exit 1
+fi
+
 # avoid running this experiment within the same second as a previous experiment
 sleep 2
 
