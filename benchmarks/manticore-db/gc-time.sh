@@ -1,8 +1,11 @@
 #!/bin/sh
 
-declare -a PROGRAMS
-declare -a CTXT_IDS
+# A script to compute gc time as pct of total time
+# for a given batch of benchmarks.
 
+declare -a DATA
+
+# these are from the trunk
 DATA=( 618 'barnes-hut' 
        620 'raytracer' 
        622 'mandelbrot' 
