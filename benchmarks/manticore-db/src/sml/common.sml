@@ -21,7 +21,7 @@ structure Common = struct
 	       minor        : gc,
 	       major        : gc,
 	       global       : gc,
-	       time         : real,
+	       time         : real, (* vproc lifetime *)
 	       promotion    : {n_promotions       : int,
 			       prom_bytes         : Int64.int,
 			       mean_prom_time_sec : real}} (* mean time *)
