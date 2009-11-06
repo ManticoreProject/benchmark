@@ -6,18 +6,31 @@
 declare -a DATA
 
 # these are from the trunk
-DATA=( 618 'barnes-hut' 
-       620 'raytracer' 
-       622 'mandelbrot' 
-       630 'pmergesort' 
-       626 'plus-reduce' 
-       624 'fib' 
-       628 'plus-scan' 
-       634 'pquicksort' 
-       632 'pquickhull' 
-       636 'smvm' 
-       638 'tree-add' 
-       640 'minimax' )
+# DATA=( 618 'barnes-hut' 
+#        620 'raytracer' 
+#        622 'mandelbrot' 
+#        630 'pmergesort' 
+#        626 'plus-reduce' 
+#        624 'fib' 
+#        628 'plus-scan' 
+#        634 'pquicksort' 
+#        632 'pquickhull' 
+#        636 'smvm' 
+#        638 'tree-add' 
+#        640 'minimax' )
+
+# these are from the flat heap branch
+DATA=( 666 'barnes-hut'
+       668 'raytracer'
+       670 'mandelbrot'
+       674 'plus-reduce'
+       672 'fib'
+       680 'pquicksort'
+       676 'plus-scan'
+       678 'pquickhull'
+       682 'smvm'
+       684 'tree-add'
+       686 'minimax' )
 
 DATA_LEN=${#DATA[@]}
 X=`expr "$DATA_LEN" / 2`
