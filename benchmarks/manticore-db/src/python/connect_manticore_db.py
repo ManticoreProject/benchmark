@@ -11,5 +11,23 @@ def connect_r():
   return c
 
 # connect_rw : unit -> pgobject
-# not yet implemented
+# left unimplemented for now...it's a sharp (ie dangerous) tool
 
+# select_values : string -> tuple list
+# consumes a select query
+# returns a list of tuples representing the result of that query
+def select_values(q):
+  c = connect_r()
+  r = c.query(q)
+  v = r.getresult()
+  c.close()
+  return v  
+
+# show_select : string -> _
+# consumes a select query
+# prints results as tuples, line by line
+def show_select(q):
+  v = select_values(q)
+  for rec in v:
+    print rec
+  print ""
