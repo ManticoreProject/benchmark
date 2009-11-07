@@ -80,7 +80,8 @@ function metadata_list {
 }
 
 DATETIME=$( date +"%F-%H-%M-%S" )
-LOG_FILE=$RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.sml
+LOG_FILE_NAME=$EXPERIMENT_NAME-$DATETIME.sml
+LOG_FILE=$RESULTS_DIR/$LOG_FILE_NAME
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -118,7 +119,8 @@ pushd $MANTICORE_ROOT > /dev/null
 popd > /dev/null
 
 EXPERIMENT_NAME_SML=${EXPERIMENT_NAME//"-"/"_"}
-echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML = struct" >> $LOG_FILE
+LOG_SML_MODULENAME="$EXPERIMENT_NAME_SML$DATETIME_SML"
+echo -e "structure $LOG_SML_MODULENAME : WORK_STEALING_EXPERIMENT = struct" >> $LOG_FILE
 
 echo "datatype gc = datatype Common.gc" >> $LOG_FILE
 echo "datatype gc_stats = datatype Common.gc_stats" >> $LOG_FILE
@@ -209,5 +211,7 @@ fi
 
 
 echo -e "end" >> $LOG_FILE # structure
+
+echo "$LOG_FILE_NAME,$LOG_SML_MODULENAME" >> $RESULTS_DIR/metadata
 
 popd > /dev/null
