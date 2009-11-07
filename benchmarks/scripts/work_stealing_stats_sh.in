@@ -174,12 +174,32 @@ fi
 	    echo "$PARALLEL_EXE -p $p $ARGS"
 	    RES=$( $PARALLEL_EXE -p $p $ARGS 2> gc-stats.sml )
 	    retcode=$?
+
+	    if [ ! -e "LOG" ]; then
+		echo "Cannot find log file"
+		exit 1
+	    fi
+	    $LOG_WORK_STEALING -log LOG -o ws-stats.sml
+	    if [ $retcode == "0" ]; then
+		retcode=$?
+	    fi
+
 	    nretries=0
 	    while [ $retcode != "0" ]; do
 		let nretries=nretries+1
 		echo "Benchmark failed unexpectedly with nonzero return code -- retrying."
 		RES=$( $PARALLEL_EXE -p $p $ARGS 2> gc-stats.sml )
 		retcode=$?
+
+		if [ ! -e "LOG" ]; then
+		    echo "Cannot find log file"
+		    exit 1
+		fi
+		$LOG_WORK_STEALING -log LOG -o ws-stats.sml
+		if [ $retcode == "0" ]; then
+		    retcode=$?
+		fi
+
 		if [ $nretries -gt 100 ]; then
 		    echo "Exceeded maximum number of failed executions of the benchmark"
 		    exit 1
@@ -193,14 +213,9 @@ fi
 	    else
 		echo -n -e "gc=" >> $LOG_FILE
 		cat gc-stats.sml >> $LOG_FILE
-		rm -rf gc-stats.sml
+		rm -rf gc-stats.sml LOG
 	    fi
-	    echo "," >> $LOG_FILE
-	    if [ ! -e "LOG" ]; then
-		echo "Cannot find log file"
-		exit 1
-	    fi
-	    $LOG_WORK_STEALING -log LOG -o ws-stats.sml
+	    echo "," >> $LOG_FILE	    
 	    echo -n -e "workStealing=" >> $LOG_FILE
 	    cat ws-stats.sml >> $LOG_FILE
 	    rm -rf ws-stats.sml
