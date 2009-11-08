@@ -75,10 +75,10 @@ def speedup_plot(pkgs):
     curr = max(xs)
     if curr > xmax:
       xmax = curr
-  plt.title('speedups', fontproperties=h1)
+  plt.title('speedups for three branches', fontproperties=h1)
   plt.xlabel('number of processors', fontproperties=h2)
   plt.xticks(np.arange(0, xmax+1.5, 1), fontproperties=h3)
-  plt.ylabel('speedup', fontproperties=h2)
+  plt.ylabel('speedup over mlton', fontproperties=h2)
   plt.yticks(np.arange(0, xmax+0.1, 1), fontproperties=h3)
   for pkg in pkgs:
     ttl  = pkg[0]
@@ -129,7 +129,7 @@ def extract_benchmark_name(url):
 most_recent_trunk=most_recent.most_recent_pars(most_recent.Trunk)
 most_recent_flat_heap=most_recent.most_recent_pars(most_recent.FlatHeap)
 most_recent_mlton=most_recent.most_recent_mlton()
-ids = []
+all_benchmarks = []
 for b in most_recent.most_recent_pars(most_recent.SWP):
   id, url, branch = b
   baseline = find_bench(url, most_recent_mlton)
@@ -138,43 +138,31 @@ for b in most_recent.most_recent_pars(most_recent.SWP):
   if (baseline != []) and (trunk != []) and (flat_heap != []):
     seq_id = baseline[0]
     bench_name = extract_benchmark_name(url)
-    ids.append((seq_id, id, trunk[0], flat_heap[0], bench_name))
+    all_benchmarks.append((seq_id, id, trunk[0], flat_heap[0], bench_name))
 
-print ids
+# explode_triples : (int * int * int * int * string) -> (triple * triple * triple)
+#   where the type triple = (int * int * string)
+def explode_triples(d):
+  baseline_id, swp_id, trunk_id, flat_heap_id, bench_name = d
+  return([ (baseline_id, swp_id, bench_name + ' - swp'), (baseline_id, trunk_id, bench_name + ' - trunk'), (baseline_id, flat_heap_id, bench_name + ' - flat-heap') ])
 
-# ids = [(645, 644, 'id-raytracer'),
-# (645, 644, 'id-raytracer'),
-# (645, 644, 'id-raytracer')]
-#           (649, 648, 'fib'),
-#           (643, 642, 'barnes-hut')]
-#            (647, 646, 'mandelbrot'), 
-#            (665, 664, 'minimax'), 
-#            (651, 650, 'plus-reduce')]
-#            (653, 652, 'plus-scan'), 
-#            (655, 654, 'pmergesort'), 
-#            (657, 656, 'pquickhull'), 
-#            (659, 658, 'pquicksort'), 
-#            (661, 660, 'smvm'), 
-#            (663, 662, 'tree-add')]
+print all_benchmarks
 
+def compare_branches(triples):
+  pkgs = []
+  i = 0
+  for t in triples:
+    baseline_ctxt = t[0]
+    par_ctxt = t[1]
+    ttl = t[2]
+    base = collect_data.med_baseline_time(baseline_ctxt)
+    pars = collect_data.parallel_times(par_ctxt)
+    sps  = speedups(base, pars)
+    devs = utils.stdevs(pars)
+    pkgs.append((ttl, fmts[i], sps, devs))
+    i = (i + 1) % len(fmts)
+  speedup_plot(pkgs)
 
-# ids =  [(643, 642, 'bh'),
-# (426, 423, 'mandelbrot')]
-          # [(52, 51, 'minimax'),
-          # (53, 54, 'plus scan')]
-
-
-# pkgs = []
-# i = 0
-# for t in ids:
-#   baseline_ctxt = t[0]
-#   par_ctxt = t[1]
-#   ttl = t[2]
-#   base = collect_data.med_baseline_time(baseline_ctxt)
-#   pars = collect_data.parallel_times(par_ctxt)
-#   sps  = speedups(base, pars)
-#   devs = utils.stdevs(pars)
-#   pkgs.append((ttl, fmts[i], sps, devs))
-#   i = (i + 1) % len(fmts)
-# speedup_plot(pkgs)
-
+for b in all_benchmarks:
+  compare_branches(explode_triples(b))
+  
