@@ -110,14 +110,13 @@ def speedups(base, pars):
 # context 53 is plus-scan seq, 54 is plus-scan par
 # context 436 is plus-reduce mlton, 434 is plus-reduce manticore
 
-# find the sequential baseline for the given parallel benchmark
-# find_baseline : (int * string * string) * (int * string * string) list -> (int * string * string)
-def find_baseline(par, seqs):
-  for b in seqs:
-    seq_id, seq_url, seq_branch = b
-    par_id, par_url, par_branch = par
-    if par_url == seq_url:
-      return([seq_id])
+# find the benchmark matching the given url contained in the benchmark list
+# find_bench : url * (int * string * string) list -> (int * string * string)
+def find_bench(url, xs):
+  for b in xs:
+    x_id, x_url, x_branch = b
+    if url == x_url:
+      return([x_id])
   return([])
 
 # extract the benchmark name from the given url, e.g.,
@@ -127,18 +126,23 @@ def extract_benchmark_name(url):
   toks.reverse()
   return(toks[0])
 
-triples = []
+most_recent_trunk=most_recent.most_recent_pars(most_recent.Trunk)
+most_recent_flat_heap=most_recent.most_recent_pars(most_recent.FlatHeap)
+most_recent_mlton=most_recent.most_recent_mlton()
+ids = []
 for b in most_recent.most_recent_pars(most_recent.SWP):
   id, url, branch = b
-  baseline = find_baseline(b, most_recent.most_recent_seqs(most_recent.SWP))
-  if baseline != []:
+  baseline = find_bench(url, most_recent_mlton)
+  trunk = find_bench(url, most_recent_trunk)
+  flat_heap = find_bench(url, most_recent_flat_heap)
+  if (baseline != []) and (trunk != []) and (flat_heap != []):
     seq_id = baseline[0]
     bench_name = extract_benchmark_name(url)
-    triples.append((seq_id, id, bench_name))
+    ids.append((seq_id, id, trunk[0], flat_heap[0], bench_name))
 
-print triples
+print ids
 
-# triples = [(645, 644, 'id-raytracer'),
+# ids = [(645, 644, 'id-raytracer'),
 # (645, 644, 'id-raytracer'),
 # (645, 644, 'id-raytracer')]
 #           (649, 648, 'fib'),
@@ -154,22 +158,23 @@ print triples
 #            (663, 662, 'tree-add')]
 
 
-# triples =  [(643, 642, 'bh'),
+# ids =  [(643, 642, 'bh'),
 # (426, 423, 'mandelbrot')]
           # [(52, 51, 'minimax'),
           # (53, 54, 'plus scan')]
 
-pkgs = []
-i = 0
-for t in triples:
-  baseline_ctxt = t[0]
-  par_ctxt = t[1]
-  ttl = t[2]
-  base = collect_data.med_baseline_time(baseline_ctxt)
-  pars = collect_data.parallel_times(par_ctxt)
-  sps  = speedups(base, pars)
-  devs = utils.stdevs(pars)
-  pkgs.append((ttl, fmts[i], sps, devs))
-  i = (i + 1) % len(fmts)
-speedup_plot(pkgs)
+
+# pkgs = []
+# i = 0
+# for t in ids:
+#   baseline_ctxt = t[0]
+#   par_ctxt = t[1]
+#   ttl = t[2]
+#   base = collect_data.med_baseline_time(baseline_ctxt)
+#   pars = collect_data.parallel_times(par_ctxt)
+#   sps  = speedups(base, pars)
+#   devs = utils.stdevs(pars)
+#   pkgs.append((ttl, fmts[i], sps, devs))
+#   i = (i + 1) % len(fmts)
+# speedup_plot(pkgs)
 

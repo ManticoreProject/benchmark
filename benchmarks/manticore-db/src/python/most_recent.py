@@ -84,12 +84,34 @@ def most_recent_pars(branch):
 def most_recent_seqs(branch):
   return(all_most_recent(branch, True))
 
-for b in [SWP, FlatHeap, Trunk]:
-  print "pars:"
-  for rec in most_recent_pars(b):
-    print rec
-  print "seqs:"
-  for rec in most_recent_seqs(b):
-    print rec
+# most_recent_mlton : unit -> list
+def most_recent_mlton():
+  retval = []
+  bs = distinct_bench_urls()
+  for b in bs:
+    q = "SELECT context_id \
+         FROM contexts \
+         WHERE bench_url='" + b + "' \
+         AND compiler='mlton' \
+         ORDER BY datetime DESC \
+         LIMIT 1;"
+    v = detup(db.select_values(q))
+    if len(v) == 0:
+      print ""
+    elif len(v) == 1:
+       retval.append([v[0], b, 'mlton'])
+    else:
+      raise Exception("too many")
+  return(retval)
 
-print "bye"
+#print (most_recent_mlton())  
+
+# for b in [SWP, FlatHeap, Trunk]:
+#   print "pars:"
+#   for rec in most_recent_pars(b):
+#     print rec
+#   print "seqs:"
+#   for rec in most_recent_seqs(b):
+#     print rec
+
+# print "bye"
