@@ -98,3 +98,13 @@ def medians(pairs):
 
 def stdevs(pairs):
   return agg_by(np.std, pairs)
+
+# url_last : string -> string
+# extract the last arc from the given url
+# ex: url_last('https://foo/bar/baz/scott/baio') ==> 'baio'
+
+def url_last(url):
+  toks = url.split('/')
+  toks.reverse()
+  return(toks[0])
+

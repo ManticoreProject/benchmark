@@ -83,7 +83,6 @@ def show_seq_elisions(problem):
        ORDER BY datetime ASC"
   db.show_select(q)
 
-
 # Tool to choose the most recent runs of each benchmark for each branch.
 
 # NOTE: These queries are fragile and depend on some assumptions:
@@ -93,11 +92,7 @@ def show_seq_elisions(problem):
 #     https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/flat-heap
 #     https://smlnj-gforge.cs.uchicago.edu/svn/manticore/branches/swp
 #     https://smlnj-gforge.cs.uchicago.edu/svn/manticore/trunk
-
-prefix = 'https://smlnj-gforge.cs.uchicago.edu/svn/manticore/'
-FlatHeap = prefix + 'branches/flat-heap'
-SWP = prefix + 'branches/swp'
-Trunk = prefix + 'trunk'
+# These branch names live in the module branches.py.
 
 # detup : singleton tuple list -> list
 # FIXME I'm getting lists of 1-tuples for certain return values
@@ -124,7 +119,7 @@ def most_recent(bench, branch, seq_elision):
   q = "SELECT context_id \
        FROM contexts \
        WHERE bench_url='" + bench + "' \
-       AND compiler_src_url='" + branch + "' \
+       AND compiler_src_url='" + branch.url() + "' \
        AND " + seq + " \
        ORDER BY datetime DESC \
        LIMIT 1;"
@@ -163,7 +158,7 @@ def most_recent_pars(branch):
 def most_recent_seqs(branch):
   return(all_most_recent(branch, True))
 
-# most_recent_mlton : unit -> list
+# most_recent_mlton : unit -> (int, string, 'mlton') list
 def most_recent_mlton():
   retval = []
   bs = distinct_bench_urls()
@@ -176,14 +171,14 @@ def most_recent_mlton():
          LIMIT 1;"
     v = detup(db.select_values(q))
     if len(v) == 0:
-      print ""
+      pass # that's a python noop
     elif len(v) == 1:
        retval.append([v[0], b, 'mlton'])
     else:
       raise Exception("too many")
   return(retval)
 
-# tests
+####################### tests
 
 # print (most_recent_mlton())  
 
