@@ -20,13 +20,13 @@ triples = []
 pars = get.most_recent_pars(get.SWP)
 seqs = get.most_recent_seqs(get.SWP)
 for b in pars:
-  id, url, branch = b
+  par_id, url, branch = b
   bench_name = extract_benchmark_name(url)
   seq_id = s.find_baseline(b, seqs)
   if (seq_id != False):
-    triples.append((seq_id, id, bench_name))
+    triples.append((bench_name, seq_id, par_id))
   else:
-    print (bench_name + ":\tdid not find baseline")
+    print (bench_name + ":\tdid not find baseline; will not plot this one")
 
 print triples
 
@@ -39,8 +39,7 @@ for base_ctxt, par_ctxt, ttl in triples:
   devs = utils.stdevs(pars)
   # FIXME fmts can live inside speedup.py and need not be directly used here
   # FIXME this is ready to cut loose....
-  pkgs.append((ttl, s.fmts[i], sps, devs))
-  i = (i + 1) % len(s.fmts)
+  pkgs.append((ttl, sps, devs))
 
 # Go!
 s.speedup_plot(pkgs)

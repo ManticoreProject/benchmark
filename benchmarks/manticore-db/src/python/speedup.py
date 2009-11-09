@@ -111,6 +111,49 @@ def speedups(base, pars):
     retval.append((n, speedup))
   return retval
 
+# maxX : (string, float, (int, float) list) list -> int
+# custom function
+def maxX(triples):
+  xmax = -1
+  for _, _, xyPairs in triples:
+    xs, ys = xyPairs
+    curr = max(xs)
+    if (curr > xmax):
+      xmax = curr
+  assert (xmax > -1)
+  return(xmax)
+
+# plotplotplot : (string, float, (int, float) list) list -> _
+# each item in the list is
+# - a title,
+# - a median baseline time, and
+# - a list of median parallel times, with num of procs
+def plotplotplot(triples):
+  # set up the axes and stuff
+  biggestX = maxX(triples)
+  plt.title('speedups', fontproperties=h1)
+  plt.xlabel('number of processors', fontproperties=h2)
+  plt.xticks(np.arange(0, biggestX + 1.5, 1), fontproperties=h3)
+  plt.ylabel('speedup', fontproperties=h2)
+  plt.yticks(np.arange(0, biggestX + 0.1, 1), fontproperties=h3)
+  # accumulators
+  legend_text  = []
+  speedupsList = []
+  stdevsList   = []
+  # plot each speedup curve and accumulate
+  for title, base, pars in triples:
+    sps = speedups(base, pars)
+    xs, ys = utils.unzip(sps)
+    plt.plot(xs, ys, next_fmt())
+    legend_text.append(title)
+    speedupsList.append(sps)
+    stdevsList.append(utils.stdevs(pars))
+  # make error bars
+  errorbars(speedupsList, stdevsList)
+  # build the legend
+  plt.legend(legend_text, prop=h3, loc='upper left')
+  plt.show()
+      
 # find_baseline : (int * string * string) * (int * string * string) list -> int or False
 # find the sequential baseline for the given parallel benchmark
 # the arguments are

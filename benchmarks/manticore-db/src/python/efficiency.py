@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-import collect_data
+import collect_data as get
 import utils
 
 h1 = fm.FontProperties()
@@ -56,8 +56,8 @@ plot_title = 'Minimax'
 base_context_id = 52
 par_context_id  = 51
 
-base = collect_data.med_baseline_time(base_context_id)
-pars = collect_data.med_parallel_times(par_context_id)
+base = get.med_baseline_time(base_context_id)
+pars = get.med_parallel_times(par_context_id)
 effs = efficiencies(base, pars)
 
 efficiency_plot(plot_title, effs)
