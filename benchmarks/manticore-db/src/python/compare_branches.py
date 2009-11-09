@@ -1,5 +1,6 @@
 # Adam Shaw, November 2009
-# run this with 'python speedup.py'
+
+# FIXME: Make this call speedup.py, and remove duplicated code.
 
 # Please see EDIT ME! below for customization.
 
