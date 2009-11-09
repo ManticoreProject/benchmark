@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import collect_data
 import utils
-import most_recent
+import most_recent as mr
 
 ### Cosmetics
 
@@ -39,8 +39,8 @@ def mash(colors, shapes):
     i = i+1
   return retval     
 
-fmts = mash(['c', 'm', 'k', 'b', 'r'], 
-            ['o', '^', 'x', '+', 'd', 'h'])
+fmts = mash(['g', 'c', 'm', 'k', 'b', 'r'], 
+            ['d', 'h', 'o', '^', '1', 's', 'p'])
 
 ### Plotting
 
@@ -68,7 +68,7 @@ def errorbars(spss, devss):
 # This is undesirable -- refactor sometime soon.
 def speedup_plot(pkgs):
   legend_text = []
-  (ttls, fmts, spss, devss) = utils.unzip4(pkgs)
+  ttls, fmts, spss, devss = utils.unzip4(pkgs)
   xmax = -1
   for sps in spss:
     (xs, ys) = utils.unzip(sps)
@@ -80,11 +80,8 @@ def speedup_plot(pkgs):
   plt.xticks(np.arange(0, xmax+1.5, 1), fontproperties=h3)
   plt.ylabel('speedup', fontproperties=h2)
   plt.yticks(np.arange(0, xmax+0.1, 1), fontproperties=h3)
-  for pkg in pkgs:
-    ttl  = pkg[0]
-    fmt  = pkg[1]
-    sps  = pkg[2]
-    (xs, ys) = utils.unzip(sps)
+  for ttl, fmt, sps, _ in pkgs:
+    xs, ys = utils.unzip(sps)
     plt.plot(xs, ys, fmt)
     legend_text.append(ttl)
   plt.legend(legend_text, prop=h3, loc='upper left')
@@ -103,40 +100,73 @@ def speedups(base, pars):
     retval.append((n, speedup))
   return retval
 
-# EDIT ME!
-# Each triple is a baseline context id, a par context id, and a title
-
-# context 52 is minimax seq, 51 is minimax par
-# context 53 is plus-scan seq, 54 is plus-scan par
-# context 436 is plus-reduce mlton, 434 is plus-reduce manticore
-
+# find_baseline : (int * string * string) * (int * string * string) list -> int or False
 # find the sequential baseline for the given parallel benchmark
-# find_baseline : (int * string * string) * (int * string * string) list -> (int * string * string)
+# the arguments are
+# - a context_id, url and compiler branch for a parallel benchmark
+# - a list of context_ids, urls and compiler branches for sequential benchmarks
+# a baseline is considered found when its url matches the par url exactly
 def find_baseline(par, seqs):
   for b in seqs:
     seq_id, seq_url, seq_branch = b
     par_id, par_url, par_branch = par
-    if par_url == seq_url:
-      return([seq_id])
-  return([])
+    assert (seq_branch == par_branch)
+    if (par_url == seq_url):
+      return(seq_id)
+  # if you make it this far...
+  return(False)
 
-# extract the benchmark name from the given url, e.g.,
-# extract_benchmark_name('http://.../bench-name') ==> 'bench-name'
+# extract_benchmark_name : string -> string
+# extract the benchmark name from the given url
+# ex: extract_benchmark_name('https://foo/bar/baz/scott-baio') ==> 'scott-baio'
+# pre: the input is a well-formed url
 def extract_benchmark_name(url):
   toks = url.split('/')
   toks.reverse()
   return(toks[0])
 
 triples = []
-for b in most_recent.most_recent_pars(most_recent.SWP):
+pars = mr.most_recent_pars(mr.SWP)
+seqs = mr.most_recent_seqs(mr.SWP)
+for b in pars:
   id, url, branch = b
-  baseline = find_baseline(b, most_recent.most_recent_seqs(most_recent.SWP))
-  if baseline != []:
-    seq_id = baseline[0]
-    bench_name = extract_benchmark_name(url)
+  bench_name = extract_benchmark_name(url)
+  seq_id = find_baseline(b, seqs)
+  if (seq_id != False):
     triples.append((seq_id, id, bench_name))
+  else:
+    print (bench_name + ":\tdid not find baseline")
 
 print triples
+
+pkgs = []
+i = 0
+for t in triples:
+  baseline_ctxt = t[0]
+  par_ctxt = t[1]
+  ttl = t[2]
+  base = collect_data.med_baseline_time(baseline_ctxt)
+  pars = collect_data.parallel_times(par_ctxt)
+  sps  = speedups(base, pars)
+  devs = utils.stdevs(pars)
+  pkgs.append((ttl, fmts[i], sps, devs))
+  i = (i + 1) % len(fmts)
+
+# Go!
+speedup_plot(pkgs)
+
+
+
+# sample data
+
+# EDIT ME!
+# PLEASE NOTE: this is currently dormant...don't bother editing...
+
+# Each triple is a baseline context id, a par context id, and a title
+
+# context 52 is minimax seq, 51 is minimax par
+# context 53 is plus-scan seq, 54 is plus-scan par
+# context 436 is plus-reduce mlton, 434 is plus-reduce manticore
 
 # triples = [(645, 644, 'id-raytracer'),
 # (645, 644, 'id-raytracer'),
@@ -158,18 +188,4 @@ print triples
 # (426, 423, 'mandelbrot')]
           # [(52, 51, 'minimax'),
           # (53, 54, 'plus scan')]
-
-pkgs = []
-i = 0
-for t in triples:
-  baseline_ctxt = t[0]
-  par_ctxt = t[1]
-  ttl = t[2]
-  base = collect_data.med_baseline_time(baseline_ctxt)
-  pars = collect_data.parallel_times(par_ctxt)
-  sps  = speedups(base, pars)
-  devs = utils.stdevs(pars)
-  pkgs.append((ttl, fmts[i], sps, devs))
-  i = (i + 1) % len(fmts)
-speedup_plot(pkgs)
 
