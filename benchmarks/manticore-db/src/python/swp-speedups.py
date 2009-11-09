@@ -38,6 +38,7 @@ for base_ctxt, par_ctxt, ttl in triples:
   sps  = s.speedups(base, pars)
   devs = utils.stdevs(pars)
   # FIXME fmts can live inside speedup.py and need not be directly used here
+  # FIXME this is ready to cut loose....
   pkgs.append((ttl, s.fmts[i], sps, devs))
   i = (i + 1) % len(s.fmts)
 

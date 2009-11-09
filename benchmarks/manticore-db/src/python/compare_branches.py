@@ -6,9 +6,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-import collect_data
+import collect_data as get
 import utils
-import most_recent
 
 ### Cosmetics
 
@@ -126,11 +125,11 @@ def extract_benchmark_name(url):
   toks.reverse()
   return(toks[0])
 
-most_recent_trunk=most_recent.most_recent_pars(most_recent.Trunk)
-most_recent_flat_heap=most_recent.most_recent_pars(most_recent.FlatHeap)
-most_recent_mlton=most_recent.most_recent_mlton()
+most_recent_trunk=get.most_recent_pars(get.Trunk)
+most_recent_flat_heap=get.most_recent_pars(get.FlatHeap)
+most_recent_mlton=get.most_recent_mlton()
 all_benchmarks = []
-for b in most_recent.most_recent_pars(most_recent.SWP):
+for b in get.most_recent_pars(get.SWP):
   id, url, branch = b
   baseline = find_bench(url, most_recent_mlton)
   trunk = find_bench(url, most_recent_trunk)
@@ -155,8 +154,8 @@ def compare_branches(triples):
     baseline_ctxt = t[0]
     par_ctxt = t[1]
     ttl = t[2]
-    base = collect_data.med_baseline_time(baseline_ctxt)
-    pars = collect_data.parallel_times(par_ctxt)
+    base = get.med_baseline_time(baseline_ctxt)
+    pars = get.parallel_times(par_ctxt)
     sps  = speedups(base, pars)
     devs = utils.stdevs(pars)
     pkgs.append((ttl, fmts[i], sps, devs))
