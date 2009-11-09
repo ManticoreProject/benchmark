@@ -42,6 +42,16 @@ def mash(colors, shapes):
 fmts = mash(['g', 'c', 'm', 'k', 'b', 'r'], 
             ['d', 'h', 'o', '^', '1', 's', 'p'])
 
+fmt_index = 0 
+
+# next_fmt : _ -> string
+def next_fmt():
+  global fmts
+  global fmt_index
+  f = fmts[fmt_index]
+  fmt_index = (fmt_index + 1) % len(fmts)
+  return f
+
 ### Plotting
 
 # errorbars : ((int, float) list, (int, float) list) -> _
@@ -80,7 +90,8 @@ def speedup_plot(pkgs):
   plt.xticks(np.arange(0, xmax+1.5, 1), fontproperties=h3)
   plt.ylabel('speedup', fontproperties=h2)
   plt.yticks(np.arange(0, xmax+0.1, 1), fontproperties=h3)
-  for ttl, fmt, sps, _ in pkgs:
+  for ttl, _, sps, _ in pkgs:
+    fmt = next_fmt()
     xs, ys = utils.unzip(sps)
     plt.plot(xs, ys, fmt)
     legend_text.append(ttl)
@@ -116,7 +127,7 @@ def find_baseline(par, seqs):
   # if you make it this far...
   return(False)
 
-print "THINGS HAVE CHANGED: please run 'python swp-speedups.py' instead."
+print "THINGS HAVE CHANGED: note 'python swp-speedups.py' does what 'python speedup.py' used to do."
 
 # sample data
 

@@ -4,7 +4,6 @@
 # Nov 2009
 
 import collect_data as get
-import most_recent as mr
 import speedup as s
 import utils
 
@@ -18,8 +17,8 @@ def extract_benchmark_name(url):
   return(toks[0])
 
 triples = []
-pars = mr.most_recent_pars(mr.SWP)
-seqs = mr.most_recent_seqs(mr.SWP)
+pars = get.most_recent_pars(get.SWP)
+seqs = get.most_recent_seqs(get.SWP)
 for b in pars:
   id, url, branch = b
   bench_name = extract_benchmark_name(url)
