@@ -7,6 +7,7 @@ import collect_data as get
 import speedup as s
 import utils
 import ratio_plot
+import branches
 
 # extract_benchmark_name : string -> string
 # extract the benchmark name from the given url
@@ -33,8 +34,8 @@ def findit(bench, seqs):
   return(False)
 
 triples = []
-swps = get.most_recent_seqs(get.SWP)
-trunks = get.most_recent_seqs(get.Trunk)
+swps = get.most_recent_seqs(branches.SWP)
+trunks = get.most_recent_seqs(branches.Trunk)
 for b in swps:
   swp_id, url, branch = b
   bench_name = extract_benchmark_name(url)
@@ -43,8 +44,6 @@ for b in swps:
     triples.append((trunk_id, swp_id, bench_name))
   else:
     print (bench_name + ":\tdid not find baseline")
-
-print triples
 
 # Go!
 ratio_plot.ratio_plot('Sequential Trunk / Sequential Swp',
