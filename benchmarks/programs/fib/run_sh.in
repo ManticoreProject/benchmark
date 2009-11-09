@@ -15,6 +15,17 @@ for i in {1..@NUM_PROCS@}; do
     PROCS_LIST="$PROCS_LIST -p $i"
 done
 
+LOG_WORK_STEALING="@LOG_WORK_STEALING@"
+
+if [ $LOG_WORK_STEALING != "" ]; then
+    PROCS_LIST=""
+    for i in {2..@NUM_PROCS@}; do
+	PROCS_LIST="$PROCS_LIST -p $i"
+    done
+    $MANTI_BENCH_ROOT/scripts/work-stealing-stats.sh $PROCS_LIST -f pfib -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS
+    exit 0
+fi
+
 # parallel 
 $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f pfib -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS
 
