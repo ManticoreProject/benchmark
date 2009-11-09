@@ -116,46 +116,7 @@ def find_baseline(par, seqs):
   # if you make it this far...
   return(False)
 
-# extract_benchmark_name : string -> string
-# extract the benchmark name from the given url
-# ex: extract_benchmark_name('https://foo/bar/baz/scott-baio') ==> 'scott-baio'
-# pre: the input is a well-formed url
-def extract_benchmark_name(url):
-  toks = url.split('/')
-  toks.reverse()
-  return(toks[0])
-
-triples = []
-pars = mr.most_recent_pars(mr.SWP)
-seqs = mr.most_recent_seqs(mr.SWP)
-for b in pars:
-  id, url, branch = b
-  bench_name = extract_benchmark_name(url)
-  seq_id = find_baseline(b, seqs)
-  if (seq_id != False):
-    triples.append((seq_id, id, bench_name))
-  else:
-    print (bench_name + ":\tdid not find baseline")
-
-print triples
-
-pkgs = []
-i = 0
-for t in triples:
-  baseline_ctxt = t[0]
-  par_ctxt = t[1]
-  ttl = t[2]
-  base = collect_data.med_baseline_time(baseline_ctxt)
-  pars = collect_data.parallel_times(par_ctxt)
-  sps  = speedups(base, pars)
-  devs = utils.stdevs(pars)
-  pkgs.append((ttl, fmts[i], sps, devs))
-  i = (i + 1) % len(fmts)
-
-# Go!
-speedup_plot(pkgs)
-
-
+print "THINGS HAVE CHANGED: please run 'python swp-speedups.py' instead."
 
 # sample data
 
