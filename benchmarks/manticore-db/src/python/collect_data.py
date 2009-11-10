@@ -111,6 +111,15 @@ def distinct_bench_urls():
        WHERE bench_url LIKE '%benchmarks/prog%'"
   return(detup(db.select_values(q)))
 
+# distinct_n_procs : int -> int list
+# takes a context id and returns a list of distinct values of n_procs
+# used by the runs corresponding to the context
+def distinct_n_procs(context_id):
+  q = "SELECT DISTINCT(n_procs) \
+       FROM runs \
+       WHERE context_id = " + str(context_id)
+  return(map(int, detup(db.select_values(q))))
+
 # most_recent : string * string * bool -> int
 def most_recent(bench, branch, seq_elision):
   seq = "seq_compilation"
@@ -177,6 +186,24 @@ def most_recent_mlton():
     else:
       raise Exception("too many")
   return(retval)
+
+# gc_stat : (string, int, int) -> (string * string)
+# takes a column name from the gc stats table, a context id, and a number of processors
+# and returns the average and standard deviation for that particular stat from the
+# database
+def gc_stat(column_name, context_id, n_procs):
+  q = "SELECT AVG(" + column_name + "), STDDEV(" + column_name + ") \
+       FROM gc INNER JOIN runs ON runs.run_id = gc.run_id \
+       WHERE runs.context_id = " + str(context_id) + " AND runs.n_procs = " + str(n_procs)
+  v = db.select_values(q)
+  if (len(v) == 0):
+    print ("no gc stats found for " + str(context_id) + " on nprocs= " + str(n_procs))
+    print ("halting")
+    sys.exit(1)
+  elif (len(v) == 1):
+    return v[0]
+  print ("get_gc_stat: bogus record")
+  sys.exit(1)
 
 ####################### tests
 

@@ -24,6 +24,7 @@ def main(branch):
   seqs = get.most_recent_seqs(branch)
   for b in pars:
     par_id, url, branch = b
+    print par_id
     bench_name = extract_benchmark_name(url)
     seq_id = s.find_baseline(b, seqs)
     if (seq_id != False):

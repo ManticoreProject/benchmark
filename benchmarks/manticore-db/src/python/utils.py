@@ -108,3 +108,16 @@ def url_last(url):
   toks.reverse()
   return(toks[0])
 
+# find_by_url : (int * string * string) * (int * string * string) list -> int or False
+# find the context id matching the given benchmark url
+# the arguments are
+# - a context_id, url and compiler branch for a benchmark
+# - a list of context_ids, urls and compiler branches for several benchmarks
+# a baseline is considered found when its url matches the par url exactly
+def find_by_url(bench_url, benchs):
+  for b in benchs:
+    x_id, x_url, x_branch = b
+    if (x_url == bench_url):
+      return(x_id)
+  # if you make it this far...
+  return(False)
