@@ -34,7 +34,7 @@ def compare_branches(base_ctxt, bench_name, branches):
   for par_ctxt, branch_name in branches:
     pars = get.parallel_times(par_ctxt)
     speedup_args.append((branch_name, base, pars))
-  speedup.plot("Branches Compared to MLton: " + bench_name, speedup_args)
+  speedup.plot(bench_name, "Branches Compared to MLton: " + bench_name, speedup_args)
 
 # the main action...
 most_recent_mlton     = get.most_recent_mlton()

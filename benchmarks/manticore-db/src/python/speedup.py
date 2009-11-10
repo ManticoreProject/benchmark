@@ -111,12 +111,13 @@ def speedups(base, pars):
     retval.append((n, speedup))
   return retval
 
-# plot : string * (string, float, (int, float) list) list -> _
+# plot : string * string * (string, float, (int, float) list) list -> _
 # each item in the list is
+# - a filename to output the plot
 # - a title,
 # - a median baseline time, and
 # - a list of median parallel times, with num of procs
-def plot(chart_title, triples):
+def plot(filename, chart_title, triples):
   # set up the axes and stuff
   biggestX = maxX(triples)
   plt.title(chart_title, fontproperties=h1)
@@ -140,6 +141,7 @@ def plot(chart_title, triples):
   errorbars(speedupsList, stdevsList)
   # build the legend
   plt.legend(legend_text, prop=h3, loc='upper left')
+  plt.savefig(filename + '.png', dpi=150)
   plt.show()
       
 ################ baggage

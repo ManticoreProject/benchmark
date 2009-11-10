@@ -34,7 +34,7 @@ def main(branch):
     else:
       print (bench_name + ":\tdid not find baseline; will not plot this one")
   # print triples
-  s.plot('Speedups over seq. Manticore baseline, SWP branch', triples)
+  s.plot('swp-speedups', 'Speedups over seq. Manticore baseline, SWP branch', triples)
 
 # go!
 main(branches.SWP)

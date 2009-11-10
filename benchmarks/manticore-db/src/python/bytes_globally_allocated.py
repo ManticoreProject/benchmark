@@ -23,9 +23,10 @@ def num_global_alloc_bytes(swp_id, swp_url):
     retval.append( (bench_name, n_procs, n_global_bytes_alloc_swp, n_global_bytes_alloc_trunk) )
   return retval
 
+print ('benchmark\t\tn_procs\t\tSWP avg\t\tSWP std. dev\t\tTrunk avg.\t\tTrunk std.')
 for swp_id, swp_url, _ in swp_benchmks:
   for bench_name, n_procs, bytes_swp, bytes_trunk in num_global_alloc_bytes(swp_id, swp_url):
     avg_swp, std_swp = bytes_swp
     avg_trunk, std_trunk = bytes_trunk
-    print (bench_name + '\t' + h.bytes(n_procs) + '\t' + h.bytes(avg_swp) + '\t' + h.bytes(std_swp) + '\t' + h.bytes(avg_trunk) + '\t' + h.bytes(std_trunk))
-  break
+    print (bench_name + '\t\t' + str(n_procs) + '\t\t' + h.bytes(avg_swp) + '\t\t' + h.bytes(std_swp) + '\t\t' + h.bytes(avg_trunk) + '\t\t' + h.bytes(std_trunk))
+
