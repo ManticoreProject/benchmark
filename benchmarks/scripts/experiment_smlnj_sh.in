@@ -38,6 +38,9 @@ NUM_BENCHMARK_EXES=`ls|grep "$BENCHMARK_EXE.x86"|wc -l`
 if [ "$NUM_BENCHMARK_EXES" -lt "1" ]; then
     echo "$BENCHMARK_EXE does not exist"
     exit 1
+elif [ ! -d "$RESULTS_DIR" ]; then
+    echo "Nonexistant results directory $RESULTS_DIR"
+    exit 1
 fi
 
 # avoid running this experiment within the same second as a previous experiment
@@ -59,7 +62,9 @@ function metadata_list {
 }
 
 DATETIME=$( date +"%F-%H-%M-%S" )
-LOG_FILE=$RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.sml
+EXPERIMENT_RESULTS_DIR="$RESULTS_DIR/$EXPERIMENT_NAME"
+mkdir $EXPERIMENT_RESULTS_DIR
+LOG_FILE=$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.sml
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -78,7 +83,7 @@ BENCHMARK_SVN_REVISION=$( svn info | grep Revision )
 BENCHMARK_SVN_REVISION=${BENCHMARK_SVN_REVISION:10}
 BENCHMARK_SVN_URL=$( svn info | grep URL )
 BENCHMARK_SVN_URL=${BENCHMARK_SVN_URL:5}
-BENCHMARK_SVN_STATUS=$( svn st -q | wc -l )
+BENCHMARK_SVN_STATUS=$( svn st -q | grep -v Fetching | wc -l )
 if [ $BENCHMARK_SVN_STATUS != "0" ]; then
     echo "WARNING: not all changes have been committed to the benchmark directory"
 fi
