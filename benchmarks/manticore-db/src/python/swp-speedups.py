@@ -7,6 +7,7 @@ import collect_data as get
 import speedup as s
 import branches
 import utils
+import matplotlib.pyplot as plt
 
 # extract_benchmark_name : string -> string
 # extract the benchmark name from the given url

@@ -121,6 +121,7 @@ def distinct_n_procs(context_id):
   return(map(int, detup(db.select_values(q))))
 
 # most_recent : string * string * bool -> int
+# grabs most recent with default problem size (i.e. empty input)
 def most_recent(bench, branch, seq_elision):
   seq = "seq_compilation"
   if (not(seq_elision)):
@@ -130,6 +131,7 @@ def most_recent(bench, branch, seq_elision):
        WHERE bench_url='" + bench + "' \
        AND compiler_src_url='" + branch.url() + "' \
        AND " + seq + " \
+       AND input='' \
        ORDER BY datetime DESC \
        LIMIT 1;"
   v = detup(db.select_values(q))

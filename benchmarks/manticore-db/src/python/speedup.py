@@ -115,12 +115,13 @@ def speedups(base, pars):
     retval.append((n, speedup))
   return retval
 
-# plot : string * string * (string, float, (int, float) list) list -> _
-# each item in the list is
-# - a filename to output the plot
+# plot : string * (string, float, (int, float) list) list -> _
+# args:
+# - a filename to output the plot,
+# and each item in the list is
 # - a title,
 # - a median baseline time, and
-# - a list of median parallel times, with num of procs
+# - a list of median parallel times, by num procs
 def plot(filename, triples, chart_title='Speedups', xax_label='number of processors', yax_label='speedup'):
   # set up the axes and stuff
   biggestX = maxX(triples)
