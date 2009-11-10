@@ -11,22 +11,29 @@ import human_readable as h
 trunk_benchmks=get.most_recent_pars(branches.Trunk)
 swp_benchmks=get.most_recent_pars(branches.SWP)
 
-# num_global_alloc_bytes : (string, string) -> _
-def num_global_alloc_bytes(swp_id, swp_url):
-  retval = []
+# report_global_bytes_allocd : int -> (int * float * float) list
+# takes a context id and returns for each value of n_procs the average and 
+# std. dev. of the number of  bytes copied to the global heap.
+def report_global_bytes_allocd(context_id):
+  q = "SELECT n_procs, AVG(ba_runs.global_alloc_bytes), STDDEV(ba_runs.global_alloc_bytes) \
+       FROM ( \
+         SELECT COUNT(run_id) AS n_procs, SUM(major_alloc_bytes + prom_bytes) AS global_alloc_bytes \
+         FROM gc WHERE run_id IN ( \
+           SELECT run_id FROM runs \
+           WHERE context_id = " + str(context_id) + ") \
+           GROUP BY run_id ORDER BY COUNT(run_id) ASC) AS ba_runs GROUP BY ba_runs.n_procs"
+  return(db.select_values(q))
+
+print (report_global_bytes_allocd(691))
+
+for swp_id, swp_url, _ in swp_benchmks:
   trunk_id = utils.find_by_url(swp_url, trunk_benchmks)
   bench_name = utils.url_last(swp_url)
-  n_procss = get.distinct_n_procs(swp_id)
-  for n_procs in n_procss:
-    n_global_bytes_alloc_swp = get.gc_stat('major_copied_bytes + prom_bytes', swp_id, n_procs)
-    n_global_bytes_alloc_trunk = get.gc_stat('major_copied_bytes + prom_bytes', trunk_id, n_procs)
-    retval.append( (bench_name, n_procs, n_global_bytes_alloc_swp, n_global_bytes_alloc_trunk) )
-  return retval
-
-print ('benchmark\t\tn_procs\t\tSWP avg\t\tSWP std. dev\t\tTrunk avg.\t\tTrunk std.')
-for swp_id, swp_url, _ in swp_benchmks:
-  for bench_name, n_procs, bytes_swp, bytes_trunk in num_global_alloc_bytes(swp_id, swp_url):
-    avg_swp, std_swp = bytes_swp
-    avg_trunk, std_trunk = bytes_trunk
-    print (bench_name + '\t\t' + str(n_procs) + '\t\t' + h.bytes(avg_swp) + '\t\t' + h.bytes(std_swp) + '\t\t' + h.bytes(avg_trunk) + '\t\t' + h.bytes(std_trunk))
-
+  swp_report=report_global_bytes_allocd(swp_id)
+  trunk_report=report_global_bytes_allocd(trunk_id)
+  print bench_name + ':'
+  print ('\t\tn_procs\t\tSWP avg\t\tSWP std dev\t\tTrunk avg\t\tTrunk std dev')
+  for i in range (len(swp_report)):
+    assert(swp_report[i][0] == trunk_report[i][0])  # swp and trunk n_procs match
+    print ('\t\t' + str(swp_report[i][0]) + '\t\t' + str(swp_report[i][1]) + '\t\t' + str(swp_report[i][2])
+                                       + '\t\t' + str(trunk_report[i][1]) + '\t\t' + str(trunk_report[i][2]))
