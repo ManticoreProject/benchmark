@@ -83,7 +83,7 @@ structure BarnesHutPar =
     (* split mass points according to their locations in the quadrants *)
     fun buildTree (box, particles : mass_point parray) : bh_tree =
 	let
-	    val maxDepth = log4 (lengthP particles) + 1
+	    val maxDepth = log4 (lengthP particles) - 1
 	    fun build (depth, BOX (llx, lly, rux, ruy), particles) =
 		(* note that the stopping condition is based on the depth of our recursion tree. if we did not
 		 * limit the depth, nontermination could occur when two or more particles lie on top of 
@@ -132,9 +132,8 @@ structure BarnesHutPar =
 				  reduceP (Double.max, x0, [| x | MP (x, _, _) in mspnts |]) + epsilon,
 				  reduceP (Double.max, y0, [| y | MP (_, y, _) in mspnts |]) + epsilon|)
 		val tree = buildTree (box0, mspnts)
-		val accels =  [| calcAccel (mspnt, tree) | mspnt in mspnts |]
 	    in
-		[| applyAccel (pt, acc) | pt in pts, acc in accels |]
+		[| applyAccel (pt, calcAccel (mspnt, tree)) | pt in pts, mspnt in mspnts |]
 	    end
 
   end

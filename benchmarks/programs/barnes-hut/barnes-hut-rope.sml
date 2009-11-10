@@ -88,7 +88,7 @@ structure BarnesHutSeq =
     (* split mass points according to their locations in the quadrants *)
     fun buildTree (box, particles : mass_point Rope.rope) : bh_tree =
 	let
-	    val maxDepth = log4 (Rope.length particles) + 1
+	    val maxDepth = log4 (Rope.length particles) - 1
 	    fun build (depth, BOX (llx, lly, rux, ruy), particles) =
 		(* note that the stopping condition is based on the depth of our recursion tree. if we did not
 		 * limit the depth, nontermination could occur when two or more particles lie on top of 
@@ -137,9 +137,9 @@ structure BarnesHutSeq =
 				Rope.foldl Real.max x0 (Rope.map (fn MP (x, _, _) => x) mspnts) + epsilon,
 				Rope.foldl Real.max y0 (Rope.map (fn MP (_, y, _) => y) mspnts) + epsilon)
 		val tree = buildTree (box0, mspnts)
-		val accels =  Rope.map (fn mspnt => calcAccel (mspnt, tree)) mspnts
+		fun ca (pt, mspnt) = applyAccel(pt, calcAccel (mspnt, tree))
 	    in
-		Rope.Pair.map applyAccel (pts, accels)
+		Rope.Pair.map ca (pts, mspnts)
 	    end
 
   end
