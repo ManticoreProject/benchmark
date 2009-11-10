@@ -14,14 +14,6 @@ def find_bench(url, xs):
       return(x_id)
   return(False)
 
-# explode_triples : (int * int * int * int * string) -> (triple * triple * triple)
-#   where the type triple = (int * int * string)
-def explode_triples(d):
-  baseline_id, swp_id, trunk_id, flat_heap_id, bench_name = d
-  return([(baseline_id, swp_id, 'swp'), 
-          (baseline_id, trunk_id, 'trunk'), 
-          (baseline_id, flat_heap_id, 'flat-heap') ])
-
 # compare_branches: int * string * (t list) -> unit
 # the int is a baseline context_id
 # the string is a benchmark program name
@@ -34,7 +26,9 @@ def compare_branches(base_ctxt, bench_name, branches):
   for par_ctxt, branch_name in branches:
     pars = get.parallel_times(par_ctxt)
     speedup_args.append((branch_name, base, pars))
-  speedup.plot(bench_name, "Branches Compared to MLton: " + bench_name, speedup_args)
+  ct = 'Branches vs. MLton Baseline: ' + bench_name
+  ylab = 'speedup (mlton / manticore)'
+  speedup.plot(bench_name, speedup_args, chart_title=ct, yax_label=ylab)
 
 # the main action...
 most_recent_mlton     = get.most_recent_mlton()

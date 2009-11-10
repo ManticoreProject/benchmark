@@ -1,19 +1,30 @@
 # Adam Shaw, Nov 2009
-# copied from www.5dollarwhitebox.org/drupal/node/84
+# based on sample from www.5dollarwhitebox.org/drupal/node/84
 
-# this goes up to 11
-def bytes(b):
+# units : (int * string) list
+# each pair is the power of 2 for each unit and its one-letter abbreviation
+units = [(80, 'Y'), # yottabytes 
+         (70, 'Z'), # zettabytes
+         (60, 'E'), # exabytes
+         (50, 'P'), # petabytes
+         (40, 'T'), # terabytes
+         (30, 'G'), # gigabytes
+         (20, 'M'), # megabytes
+         (10, 'k')] # kilobytes
+
+# bytes : int -> string
+# only abbreviates up to yottabytes :)
+# digits is the number of digits to the right of the decimal point
+# ex: bytes(1234567890) => '1.15G'
+# ex: bytes(1234567890, digits=1) => '1.1G'
+def bytes(b, digits=2):
+  global units
   bytes = float(b)
-  if (b >= (2 ** 50)):
-    size = '%.2fPB' % (bytes / 2 ** 50)
-  elif (b >= (2 ** 40)):
-    size = '%.2fTB' % (bytes / (2 ** 40))
-  elif (b >= (2 ** 30)):
-    size = '%.2fGB' % (bytes / (2 ** 30))
-  elif (b >= (2 ** 20)):
-    size = '%.2fMB' % (bytes / (2 ** 20))
-  elif (b >= (2 ** 10)):
-    size = '%.2fKB' % (bytes / 2 ** 10)
-  else:
-    size = '%.2fB' % bytes
-  return size
+  for exp, abbrev in units:
+    sz = 2 ** exp
+    if (bytes >= sz):
+      fmt = '%.' + str(digits) + 'f' + abbrev
+      return(fmt % (bytes / sz))
+    # end if
+  # end for
+  return(str(b)) # plain ol' bytes

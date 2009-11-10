@@ -40,11 +40,15 @@ def mash(colors, shapes):
   return retval     
 
 fmts = mash(['g', 'c', 'm', 'k', 'b', 'r'], 
-            ['d', 'h', 'o', '^', '1', 's', 'p'])
+            ['d', 'h', 'o', '^', 's', 'p', 'v'])
 
 fmt_index = 0 
 
 # next_fmt : _ -> string
+# cycles around the global list fmts, providing the next fmt string in it
+# maintains a stateful index into that list
+# side effect: increments that index on each call,
+#   wrapping around (to 0) at len(fmts)
 def next_fmt():
   global fmts
   global fmt_index
@@ -52,7 +56,7 @@ def next_fmt():
   fmt_index = (fmt_index + 1) % len(fmts)
   return f
 
-### utils
+### Utilities
 
 # maxX : (string, float, (int, float) list) list -> int
 # ad hoc computation to get maximum x value out of this particular data structure
@@ -96,7 +100,7 @@ def errorbars(spss, devss):
       (sx, sy) = sps[j]
       (dx, dy) = devs[j]
       assert sx == dx
-      plt.errorbar(sx, sy, yerr=dy)
+      plt.errorbar(sx, sy, yerr=dy, ecolor='black')
       # print (str(sx) + ' ' + str(sy) + ' ' + str(dy))
 
 # speedups : float * (int, float) list -> (int, float) list
@@ -117,13 +121,13 @@ def speedups(base, pars):
 # - a title,
 # - a median baseline time, and
 # - a list of median parallel times, with num of procs
-def plot(filename, chart_title, triples):
+def plot(filename, triples, chart_title='Speedups', xax_label='number of processors', yax_label='speedup'):
   # set up the axes and stuff
   biggestX = maxX(triples)
   plt.title(chart_title, fontproperties=h1)
-  plt.xlabel('number of processors', fontproperties=h2)
+  plt.xlabel(xax_label, fontproperties=h2)
   plt.xticks(np.arange(0, biggestX + 1.1, 1), fontproperties=h3)
-  plt.ylabel('speedup', fontproperties=h2)
+  plt.ylabel(yax_label, fontproperties=h2)
   plt.yticks(np.arange(0, biggestX + 0.1, 1), fontproperties=h3)
   # accumulators
   legend_text  = []
