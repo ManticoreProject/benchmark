@@ -160,6 +160,9 @@ AC_CONFIG_FILES(
   [programs/barnes-hut/gen-bodies.sh:programs/barnes-hut/gen_bodies_sh.in],
   [chmod +x programs/barnes-hut/gen-bodies.sh])
 AC_CONFIG_FILES(
+  [programs/barnes-hut/different-input-sizes.sh:programs/barnes-hut/different_input_sizes_sh.in],
+  [chmod +x programs/barnes-hut/different-input-sizes.sh])
+AC_CONFIG_FILES(
   [programs/fib/run.sh:programs/fib/run_sh.in],
   [chmod +x programs/fib/run.sh])
 AC_CONFIG_FILES(

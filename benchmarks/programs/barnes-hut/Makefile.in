@@ -36,7 +36,7 @@ $(TARGET)-rope-mlton:	barnes-hut-rope-mlton.mlb barnes-hut-rope.sml
 	$(MLTON) -output $(TARGET)-rope-mlton barnes-hut-rope-mlton.mlb
 
 gen-bodies:	gen-bodies.sml gen-bodies.cm
-	./gen-bodies.sh
+	./gen-bodies.sh 1000000
 
 .PHONY: clean
 clean:
