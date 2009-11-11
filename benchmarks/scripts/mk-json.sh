@@ -1,27 +1,25 @@
 #!/bin/sh
 
-for SMLF in $* ; do
-
-  echo $SMLF
-
-  if [[ $SMLF =~ (.*).sml ]]
-    then true
-    else 
-      echo "- $SMLF should have the suffix .sml"
-      echo "- proceeding to next file"
-      echo ""
-      continue
+function process_file {
+  echo "in p_f"
+  F=$1
+  echo "$F"
+  if [[ $F =~ (.*).sml ]] ; then 
+    true
+  else 
+    echo "- $F should have the suffix .sml"
+    echo "- proceeding to next file"
+    echo ""
+    return 0
   fi
-
-  rm -rf .cm
-
-  NEW_BASENAME=${SMLF%.sml}
-
-  STRUCTURE_NAME=`grep "^structure" $SMLF | cut -d " " -f 2`
-
-  FULL_SML=`realpath $SMLF`
+echo 1
+  NEW_BASENAME=${F%.sml}
+echo 2
+  STRUCTURE_NAME=`grep "^structure" $F | cut -d " " -f 2`
+echo 3
+  FULL_SML=`realpath $F`
+echo 4
   JSON_OUTFILE=${FULL_SML%.sml}.json
-
   (
       cat <<EOF
 local
@@ -38,25 +36,7 @@ in
   structure $STRUCTURE_NAME
 end
 EOF
-      ) > new-sources.mlb
-
-# (
-# cat <<EOF
-# Library
-#   signature EXPERIMENT
-#   functor MakeJSONFn
-#   structure Main
-#   structure $STRUCTURE_NAME
-# is
-#   \$/basis.cm
-#   common.sml
-#   experiment.sig
-#   make-json-fn.sml
-#   new-main.sml
-#   $NEW_BASENAME.sml
-# EOF
-# ) > new-sources.cm
-
+	    ) > new-sources.mlb
   (
       cat <<EOF
 structure Main = struct
@@ -65,22 +45,40 @@ structure Main = struct
 end
 EOF
       ) > new-main.sml
-
+  
   # # compile with sml sources.cm
   # echo "CM.make \"new-sources.cm\"" | sml
 
   # compile with mlton
   EXEC_NAME=jsonize-$STRUCTURE_NAME
-  
+	
   echo "Building $EXEC_NAME..."
   mlton -output $EXEC_NAME new-sources.mlb
-  
+	
   echo "Running $EXEC_NAME..."
   ./$EXEC_NAME
-  
+	
   echo "Deleting $EXEC_NAME."
   rm $EXEC_NAME
 
   echo ""
+}
 
+function process_file_or_dir {
+  echo "in p_f_or_d"
+  FD=$1
+  if [ -d $FD ] ; then
+    for INNER_FD in $FD/* ; do
+      process_file_or_dir $INNER_FD
+    done
+  else
+    process_file $FD
+  fi
+}
+
+rm -rf .cm
+
+for FD in $* ; do
+  echo "in main loop on $FD"
+  process_file_or_dir $FD
 done

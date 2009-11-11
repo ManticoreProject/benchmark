@@ -1,7 +1,5 @@
 signature EXPERIMENT = sig
 
-
-
 (* metadata *)
 
   val problem_name : string
