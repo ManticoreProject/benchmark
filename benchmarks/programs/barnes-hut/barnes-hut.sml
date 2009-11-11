@@ -164,7 +164,7 @@ structure Main =
   struct
 
     val dfltN = 20000    (* default number of bodies *)
-    val dfltI = 1        (* default number of iterations *)
+    val dfltI = 15       (* default number of iterations *)
 
     fun particle (mass, (xp, yp), (xv, yv)) = BarnesHut.PARTICLE(BarnesHut.MP(xp, yp, mass), xv, yv)
 

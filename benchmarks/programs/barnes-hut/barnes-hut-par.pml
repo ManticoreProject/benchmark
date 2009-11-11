@@ -142,7 +142,7 @@ structure Main =
   struct
 
     val dfltN = 200000   (* default number of bodies *)
-    val dfltI = 1        (* default number of iterations *)
+    val dfltI = 15       (* default number of iterations *)
 
     structure V = Vector2
     structure BH = BarnesHutPar
