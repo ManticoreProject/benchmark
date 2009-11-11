@@ -14,6 +14,7 @@ $PATH_TO_SWP/bin/pmlc $PMLCFLAGS -o barnes-hut-par-swp  barnes-hut-par.mlb
 $PATH_TO_TRUNK/bin/pmlc $PMLCFLAGS -o barnes-hut-par-trunk barnes-hut-par.mlb
 
 for i in 100 1000 10000 100000 1000000; do
+    rm bodies.txt                  # important: must remove the data first, ow the gen-bodies will leave the data as is
     ./gen-bodies.sh $i
     $MANTI_BENCH_ROOT/scripts/experiment.sh -p @NUM_PROCS@ -f barnes-hut-par-swp -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS -r $PATH_TO_SWP -i $i
     $MANTI_BENCH_ROOT/scripts/experiment.sh -p @NUM_PROCS@ -f barnes-hut-par-trunk -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS -r $PATH_TO_TRUNK -i $i
