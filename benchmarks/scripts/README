@@ -21,6 +21,8 @@ The benchmark script takes the following parameters:
     -n	      name of the experiment
     -d        brief description of the experiment
     -t	      number of repeated runs to do for each data point (default is 1)**
+    -r	      specify the manticore root directory (default is provided by configure script)
+    -i	      string used to report the input parameter used for the benchmark
 
 * zero or more instances of the argument may occur
 ** the argument is optional

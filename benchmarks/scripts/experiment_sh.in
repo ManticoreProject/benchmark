@@ -9,7 +9,7 @@ MANTICORE_ROOT="@MANTICORE_ROOT@"
 RESULTS_DIR="@MANTI_BENCH_RESULTS@"
 SCRIPTS_DIR="@MANTI_BENCH_SCRIPTS@"
 PMLC="@PMLC@"
-SIZE=""
+INPUT=""
 PROCS=""
 SEQUENTIAL_BINARY="false"
 BENCHMARK_PATH=""
@@ -18,19 +18,22 @@ DESCRIPTION=""
 GEN_GC_STATS="@GEN_GC_STATS@"
 PMLCFLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
+PRETTY_INPUT=""
 
 usage="See the README file for instructions"
 
-while getopts ":s:p:f:en:d:t:" options; 
+while getopts ":s:p:f:en:d:t:r:i:" options; 
 do
     case $options in
-	s ) SIZE="$OPTARG";;
+	s ) INPUT="$OPTARG";;
 	p ) PROCS="$PROCS $OPTARG";;
 	f ) BENCHMARK_PATH="$OPTARG";;
 	e ) SEQUENTIAL_BINARY="true";;
 	n ) EXPERIMENT_NAME="$OPTARG";;
 	d ) DESCRIPTION="$OPTARG";;
 	t ) NUM_TRIALS="$OPTARG";;
+	r ) MANTICORE_ROOT="$OPTARG";;
+	i ) PRETTY_INPUT="$OPTARG";;
 	\? ) echo $usage
             exit 1;;
 	* ) echo $usage
@@ -48,6 +51,10 @@ sleep 2
 
 if [ $SEQUENTIAL_BINARY == "true" ]; then
     PROCS="1"
+fi
+
+if [ "$PRETTY_INPUT" == "" ]; then
+    PRETTY_INPUT=$INPUT
 fi
 
 if [ -z "$PROCS" ] && [ $SEQUENTIAL_BINARY == "false" ]; then
@@ -148,7 +155,7 @@ metadata "version" "\"$PMLC_VERSION\""
 
 metadata "bench_url" "\"$BENCHMARK_SVN_URL\""
 metadata "bench_svn" "$BENCHMARK_SVN_REVISION"
-metadata "input" "\"$SIZE\""
+metadata "input" "\"$PRETTY_INPUT\""
 metadata "username" "\"$EXPERIMENTOR\""
 metadata "datetime" "\"$DATETIME_MD\""
 metadata "machine" "\"$MACHINE\""
@@ -164,9 +171,9 @@ metadata "nTrials" "$NUM_TRIALS"
 echo "Logging performance results to $LOG_FILE"
 
 if [ $GEN_GC_STATS == "false" ]; then
-    ARGS="$SIZE"
+    ARGS="$INPUT"
 else
-    ARGS="$SIZE -gcstats=all,sml"
+    ARGS="$INPUT -gcstats=all,sml"
 fi
 
 if [ $SEQUENTIAL_BINARY == "true" ]; then
