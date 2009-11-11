@@ -2,7 +2,6 @@
 
 # Set ENABLED to "true" to enable the script, "false" to disable it.
 # The disabled script reports on what it would do.
-
 ENABLED="true"
 #  ENABLED="false"
 
@@ -40,12 +39,12 @@ maybe_do "tar xvjf $ZIPPED"
 
 cd $MBENCH/benchmarks/manticore-db/src/sml
 echo "----- making json files from sml"
-maybe_do "mk-json.sh $UNZIPPED/*.sml"
+maybe_do "mk-json.sh $UNZIPPED/*"
 
 cd $MBENCH/benchmarks/manticore-db/src/java
 echo "----- pushing json files into the database"
 maybe_do "./compile.sh"
-maybe_do "./run.sh $UNZIPPED/*.json"
+maybe_do "./run.sh $UNZIPPED/*"
 
 echo "----- removing $UNZIPPED"
 maybe_do "rm -rf $UNZIPPED"

@@ -3,7 +3,7 @@ import java.sql.*;
 
 public class Utils {
 
-    static boolean STAGE_MODE = true;    // harmlessly write into the "stage" tables
+    static boolean STAGE_MODE = false;    // harmlessly write into the "stage" tables
 
     static boolean activeDBConnection = false;
 

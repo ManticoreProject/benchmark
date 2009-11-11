@@ -1,7 +1,8 @@
 #!/bin/sh
 
+# FIXME if the given arg is a directory, process * in it
+
 function process_file {
-  echo "in p_f"
   F=$1
   echo "$F"
   if [[ $F =~ (.*).sml ]] ; then 
@@ -12,13 +13,9 @@ function process_file {
     echo ""
     return 0
   fi
-echo 1
   NEW_BASENAME=${F%.sml}
-echo 2
   STRUCTURE_NAME=`grep "^structure" $F | cut -d " " -f 2`
-echo 3
   FULL_SML=`realpath $F`
-echo 4
   JSON_OUTFILE=${FULL_SML%.sml}.json
   (
       cat <<EOF
@@ -65,7 +62,6 @@ EOF
 }
 
 function process_file_or_dir {
-  echo "in p_f_or_d"
   FD=$1
   if [ -d $FD ] ; then
     for INNER_FD in $FD/* ; do
@@ -79,6 +75,6 @@ function process_file_or_dir {
 rm -rf .cm
 
 for FD in $* ; do
-  echo "in main loop on $FD"
+  echo "looking at $FD"
   process_file_or_dir $FD
 done
