@@ -35,7 +35,7 @@ functor RopeFn (
     structure S : SEQ
     val maxLeafSize : int
 
-  ) : ROPE = struct
+  ) (* : ROPE *) = struct
 
     structure S = S
     type 'a seq = 'a S.seq
@@ -409,11 +409,22 @@ functor RopeFn (
       | appendPairs (r0::r1::rs) = 
           appendWithoutBalancing (r0, r1) :: appendPairs rs
 
+  (* rev : 'a rope -> 'a rope *)
+  (* pre: the input is balanced *)
+  (* post: the output is balanced *)
+    fun rev (Leaf s) = mkLeaf (S.rev s)
+      | rev (Cat (d, len, r1, r2)) = Cat (d, len, rev r2, rev r1)
+
   (* fromList : 'a list -> 'a rope *)
   (* Given a list, construct a balanced rope. *)
   (* Balancing is unnecessary, since the algorithm ensures balance. *)
   (* The leaves will be packed to the left.  *)
-    fun fromList (xs : 'a list) : 'a rope = let
+(* NOTE: the fromList algorithm below performs terribly in smlnj and mlton,
+ * but for some reason seems to do ok in manticore. the alternative fromList
+ * below seems to fix this problem
+ * -- Mike Rainey (mrainey@cs.uchicago.edu)
+ *)
+(*    fun fromList (xs : 'a list) : 'a rope = let
       val ldata = chop (xs, maxLeafSize)
       val leaves = List.map leafFromList ldata
       fun build [] = mkLeaf (S.empty ())
@@ -422,6 +433,12 @@ functor RopeFn (
       in
         build leaves
       end
+*)
+
+    fun fromList (xs : 'a list) : 'a rope =
+	balanceIfNecessary (rev (
+          List.foldl appendWithoutBalancing (empty ())
+                 (List.map singleton xs)))
 
   (* fromSeq : 'a seq -> 'a rope *)
     fun fromSeq s = fromList (S.toList s)
@@ -564,12 +581,6 @@ functor RopeFn (
 		 end
 	     end
         (* end case *))
-
-  (* rev : 'a rope -> 'a rope *)
-  (* pre: the input is balanced *)
-  (* post: the output is balanced *)
-    fun rev (Leaf s) = mkLeaf (S.rev s)
-      | rev (Cat (d, len, r1, r2)) = Cat (d, len, rev r2, rev r1)
 
   (* map : ('a -> 'b) -> 'a rope -> 'b rope *)
   (* post : the output has the same shape as the input *)
