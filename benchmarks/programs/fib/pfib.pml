@@ -25,7 +25,7 @@ end
 structure Main =
   struct
 
-    val dfltN = 30
+    val dfltN = 39
 	
     fun main (_, args) =
 	let

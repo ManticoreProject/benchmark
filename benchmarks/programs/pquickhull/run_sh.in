@@ -17,7 +17,7 @@ done
 
 LOG_WORK_STEALING="@LOG_WORK_STEALING@"
 
-if [ $LOG_WORK_STEALING != "" ]; then
+if [ "$LOG_WORK_STEALING" != "" ]; then
     PROCS_LIST=""
     for i in {2..@NUM_PROCS@}; do
 	PROCS_LIST="$PROCS_LIST -p $i"
