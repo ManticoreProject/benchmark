@@ -53,6 +53,8 @@ structure Main =
 			     List.tabulate (Option.getOpt (Int.fromString arg, dfltN),
 					 fn _ => Random.randNat rand)
 			   | _ => readFromFile ())
+	    (* we do this map to maintain similarity with the Manticore version *)
+	    val x = Rope.map (fn x => x+1) x
 	    fun doit () = RopeQuicksort.quicksort x
 	    val res = RunSeq.run doit
 	in

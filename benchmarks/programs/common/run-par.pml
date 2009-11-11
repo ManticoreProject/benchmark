@@ -6,6 +6,7 @@
 
 structure RunPar (* sig
   val run : (unit -> 'a) -> 'a
+  val runSilent : (unit -> 'a) -> 'a
   end *) = struct
 
     fun run f =
@@ -21,5 +22,12 @@ structure RunPar (* sig
 	    Print.printLn (Time.toString (e - b));
 	    ans
 	end
+
+    fun runSilent f = 
+#ifndef SEQUENTIAL
+	ImplicitThread.runOnWorkGroup(WorkStealing.workGroup(), f)
+#else
+        f ()
+#endif
 
   end

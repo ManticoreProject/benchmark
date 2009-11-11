@@ -105,6 +105,8 @@ structure Main =
 		 of arg::_ => R.tabulate(Option.getOpt (Int.fromString arg, dfltN), 
 				      fn _ => Rand.range (0, 10000) 0w43343)
 		  | _ => R.fromList (readFromFile ()))
+	  (* we do this map to maintain similarity with the Manticore version *)
+	  val x = Rope.map (fn x => x+1, x)
 	  fun doit () = PMergesort.pMergesort Int.compare x
 	  val res = RunSeq.run doit
 	  in

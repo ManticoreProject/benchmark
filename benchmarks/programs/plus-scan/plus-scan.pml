@@ -18,6 +18,7 @@ structure Main =
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
 	    val a = Rope.fromList (List.tabulate (n, fn _ => (Rand.inRangeInt (0, 100))))
+	    val a = RunPar.runSilent (fn _ => Rope.mapP (fn x => x + 1, a))
 	    fun doit () = Scan.plusScan a
 	in
 	    RunPar.run doit

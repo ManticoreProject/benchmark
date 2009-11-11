@@ -21,7 +21,7 @@ structure Main =
 	    val n = (case args
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
-	    val a = Rope.fromList (List.tabulate (n, fn _ => Random.randNat rand mod 100))
+	    val a = Rope.tabulate (n, fn _ => Random.randNat rand mod 100)
 	    fun doit () = Rope.foldl (op +) 0 a
 	    val res = RunSeq.run doit
 	in

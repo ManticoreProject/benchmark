@@ -28,7 +28,7 @@ structure Main =
 
     structure T = TreeAdd
 
-    val dfltN = 13
+    val dfltN = 16
 
     fun mkTree d = let
 	  val r = Random.rand (0, 10000)

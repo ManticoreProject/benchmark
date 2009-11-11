@@ -151,9 +151,15 @@ structure Main =
     val dfltI = 1        (* default number of iterations *)
 
     structure V = Vector2
+    structure BH = BarnesHutSeq
 
     fun particle (mass, (xp, yp), (xv, yv)) = BarnesHutSeq.PARTICLE(BarnesHutSeq.MP(xp, yp, mass), xv, yv)
     fun genBodies n = List.map particle (GenBodies.testdata n)
+
+    val epsilon = 0.0000000001
+    fun bumpParticle (BH.PARTICLE (BH.MP(xp, yp, mass), xv, yv)) =
+	(BH.PARTICLE (BH.MP(xp+epsilon, yp+epsilon, mass+epsilon), xv+epsilon, yv+epsilon))
+
 
     fun readFromFile () =
 	let
@@ -184,6 +190,8 @@ structure Main =
 		  of arg :: _ => genBodies (Option.getOpt (Int.fromString arg, dfltN))
 		   | _ => readFromFile())
 	    val bodiesArray = Rope.fromList bodiesList
+	    (* we do this map to maintain similarity with the Manticore version *)
+	    val bodiesArray = Rope.map bumpParticle bodiesArray
 	    fun doit () = 
 		let
 		    fun iter (ps, i) =

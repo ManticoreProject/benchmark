@@ -145,9 +145,14 @@ structure Main =
     val dfltI = 1        (* default number of iterations *)
 
     structure V = Vector2
+    structure BH = BarnesHutPar
 
     fun particle (mass, (xp, yp), (xv, yv)) = BarnesHutPar.PARTICLE(BarnesHutPar.MP(xp, yp, mass), xv, yv)
     fun genBodies n = List.map particle (GenBodies.testdata n)
+
+    val epsilon = 0.0000000001
+    fun bumpParticle (BH.PARTICLE (BH.MP(xp, yp, mass), xv, yv)) =
+	(BH.PARTICLE (BH.MP(xp+epsilon, yp+epsilon, mass+epsilon), xv+epsilon, yv+epsilon))
 
     fun readFromFile () =
 	let
@@ -174,6 +179,10 @@ structure Main =
 		  of arg :: _ => genBodies (Option.getOpt (Int.fromString arg, dfltN))
 		   | _ => readFromFile())
 	    val bodiesArray = fromListP bodiesList
+	    (* the map below has the effect of distributing the parallel array across per-vproc nurseries, thereby
+	     * distributing subsequent GC load
+	     *)
+	    val bodiesArray = RunPar.runSilent (fn _ => mapP (bumpParticle, bodiesArray))
 	    fun doit () = 
 		let
 		    fun iter (ps, i) =

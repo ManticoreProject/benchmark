@@ -17,6 +17,7 @@ structure Main =
 		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		       | _ => dfltN)
 	    val a = fromListP (List.tabulate (n, fn _ => (Rand.inRangeInt (0, 100))))
+	    val a = RunPar.runSilent (fn _ => mapP (fn x => x + 1, a))
 	    fun plus (x, y) = x + y
 	    fun doit () = reduceP (plus, 0, a)
 	in

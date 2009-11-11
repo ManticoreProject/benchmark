@@ -91,6 +91,8 @@ structure Main =
 
     val dfltN = 1000000
 
+    val epsilon = 0.0000000001
+
     fun readFromFile () =
 	let
 	    val f = TextIO.openIn "points.txt"
@@ -115,6 +117,7 @@ structure Main =
 		  of arg :: _ => List.tabulate (Option.getOpt (Int.fromString arg, dfltN), 
 					     fn _ => (Rand.randDouble (~100000.0, 100000.0), Rand.randDouble (~100000.0, 100000.0)))
 		   | _ =>  readFromFile ())
+	    val points = RunPar.runSilent (fn _ => mapP (fn (x, y) => (x+epsilon-epsilon, y+epsilon-epsilon), points))
 	    fun doit () = PQuickhull.quickhull points
 		
 	in

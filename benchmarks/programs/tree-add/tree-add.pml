@@ -29,12 +29,12 @@ structure Main =
 
     structure T = TreeAdd
 
-    val dfltN = 13
+    val dfltN = 16
 
     fun mkTree d = let
 	  fun mk d' = if d' >= d
 		then T.LEAF (Rand.inRangeInt (0, 10))
-		else T.NODE ( mk (d'+1), mk (d'+1), mk (d'+1) )
+		else T.NODE (| mk (d'+1), mk (d'+1), mk (d'+1) |)
 	  in
 	    mk 0
 	  end
@@ -43,7 +43,7 @@ structure Main =
 	  val n = (case args
 		    of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
 		     | _ => dfltN)
-	  val t = mkTree n
+	  val t = RunPar.runSilent (fn _ => mkTree n)
 	  fun doit () = T.treeAdd t		
 	  in
 	    RunPar.run doit

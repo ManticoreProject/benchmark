@@ -51,11 +51,18 @@ structure Main =
 	end
 
     fun rows2sm rows = fromListP (List.tabulate (A.length rows, fn r => fromListP (A.sub (rows, r))))
+
+    val epsilon = 0.0000000001
+
+    fun bumpSV1 sv = [| (i+1, x+epsilon) | (i,x) in sv |]
+    fun bumpSV2 sv = [| (i-1, x-epsilon) | (i,x) in sv |]
+    fun bumpSM sm = [| bumpSV2 (bumpSV1 sv) | sv in sm |]
 	
     fun main (_, args) =
 	let
 	    val (mtx, C) = readFromFile ()
 	    val mtx = rows2sm mtx
+	    val mtx = RunPar.runSilent(fn _ => bumpSM mtx)
 	    val v = fromListP (List.tabulate (C, fn _ => Rand.randDouble (0.0, 10000.0)))
 	    fun doit () = SMVM.smvm (mtx, v)
 	in

@@ -48,6 +48,10 @@ structure Main =
 			     List.tabulate (Option.getOpt (Int.fromString arg, dfltN),
 					 fn _ => Rand.inRangeInt (0, 10000))
 			   | _ => readFromFile ())
+	    (* the map below has the effect of distributing the parallel array across per-vproc nurseries, thereby
+	     * distributing subsequent GC load
+	     *)
+	    val x = RunPar.runSilent (fn _ => mapP (fn y => y+1, x))
 	    fun doit () = PQuicksort.quicksort x
 		
 	in
