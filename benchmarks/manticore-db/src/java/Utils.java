@@ -3,7 +3,7 @@ import java.sql.*;
 
 public class Utils {
 
-    static boolean STAGE_MODE = false;
+    static boolean STAGE_MODE = true;    // harmlessly write into the "stage" tables
 
     static boolean activeDBConnection = false;
 
@@ -85,8 +85,8 @@ public class Utils {
     }
 
     static String stage(String tableName) {
-	if (STAGE_MODE == true) {
-	    System.out.println("WARNING: stage mode is enabled. Data will be written into the stage_ tables.");
+	if (STAGE_MODE) {
+	    System.out.println("WARNING: stage mode enabled. The stage_ tables will be used.");
 	    return("stage_" + tableName);
 	} else {
 	    return tableName;
@@ -102,8 +102,10 @@ public class Utils {
     }
 
     static void closeDBConnection() throws SQLException {
-	conn.close();
-	activeDBConnection = false;
+	if (activeDBConnection) {
+	    conn.close();
+	    activeDBConnection = false;
+	}
     }
 	
     private static void update(String query) 
@@ -139,6 +141,7 @@ public class Utils {
 	if (n == 0) {
 	    return null;
 	} else {
+	    System.out.println(query);
 	    throw new IllegalStateException("More than one record?");	       
 	}
     }

@@ -5,7 +5,7 @@ structure DummyExperiment : EXPERIMENT = struct
 
   val problem_name = "dummy"
   val username = "username"
-  val datetime = "datetime"
+  val datetime = "2000-01-01 01:02:03"
 
   val compiler_src_url = SOME "compiler src url"
   val compiler_svn = SOME 0
@@ -19,7 +19,7 @@ structure DummyExperiment : EXPERIMENT = struct
   val compiler = "foo"
   val version = "foo"
 
-  val description = "dummy experiment to test this code"
+  val description = "dummy experiment to test the sml and java db tools"
 
   val bench_url = "foo"
   val bench_svn = 0
