@@ -29,7 +29,7 @@ structure Main =
 
     structure T = TreeAdd
 
-    val dfltN = 16
+    val dfltN = 14
 
     fun mkTree d = let
 	  fun mk d' = if d' >= d
