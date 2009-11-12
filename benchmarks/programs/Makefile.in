@@ -94,7 +94,7 @@ mlton:
 	cd pmergesort && $(MAKE) pmergesort-mlton
 	cd pquicksort && $(MAKE) rope-quicksort-mlton
 	cd smvm && $(MAKE) smvm-mlton
-	cd tree-add && $(MAKE) tree-mlton
+	cd tree-add && $(MAKE) tree-add-mlton
 	cd pquickhull && $(MAKE) quickhull-mlton
 
 smlnj:
@@ -108,5 +108,5 @@ smlnj:
 	cd pmergesort && $(MAKE) pmergesort-smlnj
 	cd pquicksort && $(MAKE) rope-quicksort-smlnj
 	cd smvm && $(MAKE) smvm-smlnj
-	cd tree-add && $(MAKE) tree-smlnj
+	cd tree-add && $(MAKE) tree-add-smlnj
 	cd pquickhull && $(MAKE) quickhull-smlnj

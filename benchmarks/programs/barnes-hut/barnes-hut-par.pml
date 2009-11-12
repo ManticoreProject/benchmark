@@ -23,7 +23,7 @@ structure BarnesHutPar =
 
     val epsilon : double = 0.05
     val eClose : double = 0.01
-    val dt = 2.0
+    val dt = 0.025
 
     fun applyAccel (PARTICLE (mp, vx, vy), (ax, ay)) = PARTICLE (mp, vx+ax * dt, vy+ay * dt)
 
