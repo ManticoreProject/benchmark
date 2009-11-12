@@ -46,7 +46,9 @@ echo "----- pushing json files into the database"
 maybe_do "./compile.sh"
 maybe_do "./run.sh $UNZIPPED/*"
 
-echo "----- removing $UNZIPPED"
-maybe_do "rm -rf $UNZIPPED"
+#echo "----- removing $UNZIPPED"
+#maybe_do "rm -rf $UNZIPPED"
+
+echo "REMINDER: you might want to remove $UNZIPPED"
 
 echo "----- done"

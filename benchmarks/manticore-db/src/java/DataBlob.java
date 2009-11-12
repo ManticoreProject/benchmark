@@ -276,18 +276,28 @@ public class DataBlob {
 	    String currDesc = b.e.description;
 	    String currUser = b.e.username;
 	    if (!currDesc.equals(desc)) {
-		System.out.println("descriptions don't match in " + dirname + ":");
-		System.out.println("- in " + b0.c.data_source_file + ": " + desc);
-		System.out.println("- in " + b.c.data_source_file + ": " + currDesc);
-		System.out.println("leaving " + dirname);
-		return;
+		// warn
+		System.out.println("WARNING: descriptions don't all match in " + dirname);
+		desc = (currDesc.length() < desc.length()) ? currDesc : desc;
+		System.out.print("favoring " + desc);
+		// exit
+// 		System.out.println("descriptions don't match in " + dirname + ":");
+// 		System.out.println("- in " + b0.c.data_source_file + ": " + desc);
+// 		System.out.println("- in " + b.c.data_source_file + ": " + currDesc);
+// 		System.out.println("leaving " + dirname);
+//		return;
 	    }
 	    if (!currUser.equals(user)) {
-		System.out.println("usernames don't match in " + dirname + ":");
-		System.out.println("- in " + b0.c.data_source_file + ": " + user);
-		System.out.println("- in " + b.c.data_source_file + ": " + currUser);
-		System.out.println("leaving " + dirname);
-		return;
+		// warn
+		System.out.println("WARNING: usernames don't all match in " + dirname);
+		desc = (currUser.length() < user.length()) ? currUser : user;
+		System.out.print("favoring " + desc);
+		// exit
+// 		System.out.println("usernames don't match in " + dirname + ":");
+// 		System.out.println("- in " + b0.c.data_source_file + ": " + user);
+// 		System.out.println("- in " + b.c.data_source_file + ": " + currUser);
+// 		System.out.println("leaving " + dirname);
+// 		return;
 	    }
 	}
 	// create a new problem & experiment in the db
