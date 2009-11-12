@@ -33,7 +33,7 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $PROCS_LIST -f pfib -n $NAME -d "$DESCRI
 $MANTI_BENCH_ROOT/scripts/experiment.sh -e -f pfib-seq-elison -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS 
 
 # smlnj
-$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f fib-smlnj -n "fib" -d "$DESCRIPTION" -t $NUM_TRIALS
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f fib-smlnj -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS
 
 # mlton
-$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f fib-mlton -n "fib" -d "$DESCRIPTION" -t $NUM_TRIALS
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f fib-mlton -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS
