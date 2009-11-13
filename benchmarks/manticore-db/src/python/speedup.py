@@ -146,7 +146,7 @@ def plot(filename, triples, chart_title='Speedups', xax_label='number of process
   errorbars(speedupsList, stdevsList)
   # build the legend
   plt.legend(legend_text, prop=h3, loc='upper left')
-  plt.savefig(filename + '.png', dpi=150)
+  plt.savefig(filename + '.pdf', dpi=200)
   plt.show()
       
 ################ baggage
