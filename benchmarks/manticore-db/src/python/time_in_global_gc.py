@@ -56,23 +56,26 @@ def print_stats(fields):
     print ('%10f           '%(frac)),
 
 experiment_id=get.most_recent_experiment('global-allocd-bytes')
-for bench_url in get.different_bench_urls(experiment_id):
-  bench_name=utils.url_last(bench_url)
-  for bench_input in get.different_bench_inputs(experiment_id, bench_url):
-    bench_input = bench_input[0]
-    swp_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.SWP.url())
-    swp_report=report_gc_time(swp_context[0][0])
-    trunk_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.Trunk.url())
-    trunk_report=report_gc_time(trunk_context[0][0])
-    print bench_name + '(' + bench_input + ') (n_procs=' + str(swp_report[0][0]) + '):'
-    print 'swp'
-    print_fields()
-    print ''
-    print_stats(swp_report[0])
-    print ''
-    print 'trunk'
-    print_fields()
-    print ''
-    print_stats(trunk_report[0])
-    print ''
+
+for experiment_id in (711, 712):
+  for bench_url in get.different_bench_urls(experiment_id):
+    bench_url=bench_url[0]
+    bench_name=utils.url_last(bench_url)
+    for bench_input in get.different_bench_inputs(experiment_id, bench_url):
+      bench_input = bench_input[0]
+      swp_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.SWP.url())
+      swp_report=report_gc_time(swp_context[0][0])
+      trunk_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.Trunk.url())
+      trunk_report=report_gc_time(trunk_context[0][0])
+      print bench_name + '(' + bench_input + ') (n_procs=' + str(swp_report[0][0]) + '):'
+      print 'swp'
+      print_fields()
+      print ''
+      print_stats(swp_report[0])
+      print ''
+      print 'trunk'
+      print_fields()
+      print ''
+      print_stats(trunk_report[0])
+      print ''
 

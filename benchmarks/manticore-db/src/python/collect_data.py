@@ -272,7 +272,7 @@ def different_bench_urls(experiment_id):
   q = "SELECT DISTINCT(bench_url) FROM contexts \
        INNER JOIN experiments ON experiments.experiment_id = contexts.experiment_id \
        WHERE experiments.experiment_id = " + str(experiment_id)
-  return(db.select_values(q))[0]
+  return(db.select_values(q))
 
 # find_context_ids : (int, string, string) -> int list
 # find all the context ids corresponding to an experiment id, benchmark url, specific
