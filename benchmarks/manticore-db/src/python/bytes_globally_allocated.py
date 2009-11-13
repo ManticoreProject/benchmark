@@ -21,46 +21,14 @@ def report_global_bytes_allocd(context_id):
            GROUP BY run_id ORDER BY COUNT(run_id) ASC) AS ba_runs GROUP BY ba_runs.n_procs"
   return(db.select_values(q))
 
-#print (report_global_bytes_allocd(691))
-
-# different_bench_inputs : (int, string) -> string list
-# takes an experiment id and benchmark url and returns the different inputs used in the 
-# benchmark. each of these inputs are distinct from all the others.
-def different_bench_inputs(experiment_id, bench_url):
-  q = "SELECT DISTINCT(input) FROM contexts \
-       INNER JOIN experiments ON experiments.experiment_id = contexts.experiment_id \
-       WHERE experiments.experiment_id = " + str(experiment_id) + " \
-       AND bench_url = '" + bench_url + "'"
-  return(db.select_values(q))
-
-# different_bench_urls : int -> string list
-# takes an experiment id and returns the different bencharks used in the corresponding 
-# experiment. each of these urls are distinct from all the others.
-def different_bench_urls(experiment_id):
-  q = "SELECT DISTINCT(bench_url) FROM contexts \
-       INNER JOIN experiments ON experiments.experiment_id = contexts.experiment_id \
-       WHERE experiments.experiment_id = " + str(experiment_id)
-  return(db.select_values(q))[0]
-
-# find_context_ids : (int, string, string) -> int list
-# find all the context ids corresponding to an experiment id, benchmark url, specific
-# benchmark input value and compiler source url (or branch)
-def find_context_ids(experiment_id, bench_url, bench_input, compiler_src_url):
-  q = "SELECT DISTINCT(context_id) FROM contexts \
-       WHERE experiment_id = " + str(experiment_id) + " \
-       AND bench_url    = '" + bench_url         + "'" + " \
-       AND input        = '" + str(bench_input)       + "'" + " \
-       AND compiler_src_url = '" + compiler_src_url       + "'"
-  return(db.select_values(q))
-
 experiment_id=get.most_recent_experiment('global-allocd-bytes')
-for bench_url in different_bench_urls(experiment_id):
+for bench_url in get.different_bench_urls(experiment_id):
   bench_name=utils.url_last(bench_url)
-  for bench_input in different_bench_inputs(experiment_id, bench_url):
+  for bench_input in get.different_bench_inputs(experiment_id, bench_url):
     bench_input = bench_input[0]
-    swp_context=find_context_ids(experiment_id, bench_url, bench_input, branches.SWP.url())
+    swp_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.SWP.url())
     swp_report=report_global_bytes_allocd(swp_context[0][0])
-    trunk_context=find_context_ids(experiment_id, bench_url, bench_input, branches.Trunk.url())
+    trunk_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.Trunk.url())
     trunk_report=report_global_bytes_allocd(trunk_context[0][0])
     print bench_name + '(' + bench_input + '):'
     print ('\t\tn_procs\t\tSWP avg\t\tSWP std dev\tTrunk avg\tTrunk std dev\tTrunk avg-Swp avg')

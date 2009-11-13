@@ -254,3 +254,33 @@ def most_recent_mlton_bench(experiment_id):
        AND contexts.compiler = 'mlton' \
        ORDER BY experiments.datetime DESC LIMIT 1"
   return(detup(db.select_values(q)))
+
+# different_bench_inputs : (int, string) -> string list
+# takes an experiment id and benchmark url and returns the different inputs used in the 
+# benchmark. each of these inputs are distinct from all the others.
+def different_bench_inputs(experiment_id, bench_url):
+  q = "SELECT DISTINCT(input) FROM contexts \
+       INNER JOIN experiments ON experiments.experiment_id = contexts.experiment_id \
+       WHERE experiments.experiment_id = " + str(experiment_id) + " \
+       AND bench_url = '" + bench_url + "'"
+  return(db.select_values(q))
+
+# different_bench_urls : int -> string list
+# takes an experiment id and returns the different bencharks used in the corresponding 
+# experiment. each of these urls are distinct from all the others.
+def different_bench_urls(experiment_id):
+  q = "SELECT DISTINCT(bench_url) FROM contexts \
+       INNER JOIN experiments ON experiments.experiment_id = contexts.experiment_id \
+       WHERE experiments.experiment_id = " + str(experiment_id)
+  return(db.select_values(q))[0]
+
+# find_context_ids : (int, string, string) -> int list
+# find all the context ids corresponding to an experiment id, benchmark url, specific
+# benchmark input value and compiler source url (or branch)
+def find_context_ids(experiment_id, bench_url, bench_input, compiler_src_url):
+  q = "SELECT DISTINCT(context_id) FROM contexts \
+       WHERE experiment_id = " + str(experiment_id) + " \
+       AND bench_url    = '" + bench_url         + "'" + " \
+       AND input        = '" + str(bench_input)       + "'" + " \
+       AND compiler_src_url = '" + compiler_src_url       + "'"
+  return(db.select_values(q))
