@@ -25,5 +25,5 @@ for b in pldi10_benchmarks.benchmarks:
 
 
 ct = 'Speedups over sequential Manticore'
-s.plot('fishing-speedups', triples, chart_title=ct)
+s.plot('fishing-speedups', triples, chart_title=ct, connect_dots=True)
 

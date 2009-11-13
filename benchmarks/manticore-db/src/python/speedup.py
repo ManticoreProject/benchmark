@@ -118,11 +118,16 @@ def speedups(base, pars):
 # plot : string * (string, float, (int, float) list) list -> _
 # args:
 # - a filename to output the plot,
-# and each item in the list is
+# and each item in the list of triples is
 # - a title,
 # - a median baseline time, and
 # - a list of median parallel times, by num procs
-def plot(filename, triples, chart_title='Speedups', xax_label='number of processors', yax_label='speedup'):
+def plot(filename, 
+         triples, 
+         connect_dots=False,
+         chart_title='Speedups', 
+         xax_label='number of processors', 
+         yax_label='speedup'):
   # set up the axes and stuff
   biggestX = maxX(triples)
   plt.title(chart_title, fontproperties=h1)
@@ -138,7 +143,10 @@ def plot(filename, triples, chart_title='Speedups', xax_label='number of process
   for title, base, pars in triples:
     sps = speedups(base, pars)
     xs, ys = utils.unzip(sps)
-    plt.plot(xs, ys, next_fmt())
+    f = next_fmt()
+    if connect_dots:
+      f = f + "-"
+    plt.plot(xs, ys, f)
     legend_text.append(title)
     speedupsList.append(sps)
     stdevsList.append(utils.stdevs(pars))
