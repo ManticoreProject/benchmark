@@ -64,7 +64,7 @@ def find_context_ids(experiment_id, bench_url, bench_input, compiler_src_url):
              "compiler_src_url = '" + compiler_src_url       + "'"
   return(db.select_values(q))
 
-experiment_id=find_latest_experiment('global_allocd_bytes')[0]
+experiment_id=find_latest_experiment('global-bytes-allocd')[0]
 for bench_url in different_bench_urls(experiment_id):
   bench_name=utils.url_last(bench_url)
   for input in different_bench_inputs(experiment_id, bench_url):

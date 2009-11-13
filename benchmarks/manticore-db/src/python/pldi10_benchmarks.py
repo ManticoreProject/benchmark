@@ -1,0 +1,14 @@
+benchmarks=[
+     'barnes-hut',
+     'pfib',
+     'id-raytracer',
+     'mandelbrot',
+     'ttt',
+     'plus-reduce',
+     'plus-scan',
+     'pmergesort',
+     'pquicksort',
+     'pquickhull',
+     'smvm',
+     'tree-add'
+     ]

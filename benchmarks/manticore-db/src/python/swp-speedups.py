@@ -8,36 +8,22 @@ import speedup as s
 import branches
 import utils
 import matplotlib.pyplot as plt
+import pldi10_benchmarks
 
-# extract_benchmark_name : string -> string
-# extract the benchmark name from the given url
-# ex: extract_benchmark_name('https://foo/bar/baz/scott-baio') ==> 'scott-baio'
-# pre: the input is a well-formed url
-def extract_benchmark_name(url):
-  toks = url.split('/')
-  toks.reverse()
-  return(toks[0])
+triples = []
+for b in pldi10_benchmarks.benchmarks:
+  print b
+  experiment_id=get.most_recent_experiment(b)
+  seq_id=get.most_recent_pml_bench(experiment_id, branches.SWP, 'true')
+  par_id=get.most_recent_pml_bench(experiment_id, branches.SWP, 'false')
+  if seq_id != [] and par_id != []:
+    base = get.med_baseline_time(seq_id[0])
+    pars = get.parallel_times(par_id[0])
+    triples.append((b, base, pars))
+  else :
+    print ('missing numbers for ' + b)
 
-# main : unit -> unit
-def main(branch):
-  triples = []
-  pars = get.most_recent_pars(branch)
-  seqs = get.most_recent_seqs(branch)
-  for b in pars:
-    par_id, url, branch = b
-    print par_id
-    bench_name = extract_benchmark_name(url)
-    seq_id = s.find_baseline(b, seqs)
-    if (seq_id != False):
-      base = get.med_baseline_time(seq_id)
-      pars = get.parallel_times(par_id)
-      triples.append((bench_name, base, pars))
-    else:
-      print (bench_name + ":\tdid not find baseline; will not plot this one")
-  # print triples
-  ct = 'Speedups over sequential Manticore (SWP branch)'
-  s.plot('swp-speedups', triples, chart_title=ct)
 
-# go!
-main(branches.SWP)
+ct = 'Speedups over sequential Manticore'
+s.plot('fishing-speedups', triples, chart_title=ct)
 

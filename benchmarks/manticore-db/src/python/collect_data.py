@@ -220,3 +220,37 @@ def gc_stat(column_name, context_id, n_procs):
 #     print rec
 
 # print "bye"
+
+# most_recent_experiment : string -> int list
+# takes a problem name and returns the experiment id of the most recent experiment
+# matching the given name
+def most_recent_experiment(problem_name):
+  q = "SELECT experiment_id FROM experiments \
+       INNER JOIN problems ON experiments.problem_id = problems.problem_id \
+       WHERE problems.problem_name = '" + problem_name + "' \
+       ORDER BY experiments.datetime DESC LIMIT 1"
+  return(detup(db.select_values(q)))[0]
+
+# most_recent_pml_bench : (string, string, string) -> int list
+# takes an experiment id and a branch and a sequential compilation option (true for
+# sequential and false for parallel and returns a list containing the most recent context id
+def most_recent_pml_bench(experiment_id, branch, seq_compilation):
+  q = "SELECT context_id \
+       FROM contexts \
+       INNER JOIN experiments ON contexts.experiment_id = experiments.experiment_id \
+       WHERE experiments.experiment_id = " + str(experiment_id) + " \
+       AND contexts.compiler_src_url = '" + branch.url() + "' \
+       AND contexts.seq_compilation = " + seq_compilation + " \
+       ORDER BY experiments.datetime DESC LIMIT 1"
+  return(detup(db.select_values(q)))
+
+# most_recent_mlton_bench : (string, string) -> int list
+# takes an experiment id and returns a list containing the most context id
+def most_recent_mlton_bench(experiment_id):
+  q = "SELECT context_id \
+       FROM contexts \
+       INNER JOIN experiments ON contexts.experiment_id = experiments.experiment_id \
+       WHERE experiments.experiment_id = " + str(experiment_id) + " \
+       AND contexts.compiler = 'mlton' \
+       ORDER BY experiments.datetime DESC LIMIT 1"
+  return(detup(db.select_values(q)))
