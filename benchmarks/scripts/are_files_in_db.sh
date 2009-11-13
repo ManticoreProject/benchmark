@@ -1,11 +1,13 @@
 #!/bin/sh
 
+# Adam Shaw, Nov 2009
+
 # are_files_in_db.sh
 
-# usage: are_files_in_db.sh [file-and-dir-names]
+USAGE="Usage : are_files_in_db.sh FILE..."
 
 # recursively walks directory tree, and checks if
-#   each file is already in the database
+#   each json file is already in the database
 
 # NOTE only considers json files
 
@@ -45,8 +47,11 @@ if [ -f $TMPFILE ] ; then
   exit 1
 fi
 
+if [[ $# == 0 ]] ; then
+  echo $USAGE
+fi
+
 # go!
 for FD in $* ; do
-  echo $FD
   munge_file_or_dir $FD
 done
