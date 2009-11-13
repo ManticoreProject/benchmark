@@ -21,8 +21,10 @@ def report_global_bytes_allocd(context_id):
            GROUP BY run_id ORDER BY COUNT(run_id) ASC) AS ba_runs GROUP BY ba_runs.n_procs"
   return(db.select_values(q))
 
-experiment_id=get.most_recent_experiment('global-allocd-bytes')
+experiment_id=get.most_recent_experiment('gc-breakdown')
+
 for bench_url in get.different_bench_urls(experiment_id):
+  bench_url=bench_url[0]
   bench_name=utils.url_last(bench_url)
   for bench_input in get.different_bench_inputs(experiment_id, bench_url):
     bench_input = bench_input[0]
