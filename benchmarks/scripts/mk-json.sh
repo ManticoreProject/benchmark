@@ -3,6 +3,10 @@
 # FIXME if the given arg is a directory, process * in it
 
 function process_file {
+
+  # FIXME see if the given file is in the db yet...
+  # if so, this processing can be skipped
+
   F=$1
   echo "$F"
   if [[ $F =~ (.*).sml ]] ; then 
