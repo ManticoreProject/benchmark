@@ -166,6 +166,9 @@ AC_CONFIG_FILES(
   [programs/fib/run.sh:programs/fib/run_sh.in],
   [chmod +x programs/fib/run.sh])
 AC_CONFIG_FILES(
+  [programs/fib/different-input-sizes.sh:programs/fib/different_input_sizes_sh.in],
+  [chmod +x programs/fib/different-input-sizes.sh])
+AC_CONFIG_FILES(
   [programs/fib-array/run.sh:programs/fib-array/run_sh.in],
   [chmod +x programs/fib-array/run.sh])
 AC_CONFIG_FILES(
@@ -202,6 +205,9 @@ AC_CONFIG_FILES(
   [programs/pmergesort/run.sh:programs/pmergesort/run_sh.in],
   [chmod +x programs/pmergesort/run.sh])
 AC_CONFIG_FILES(
+  [programs/pmergesort/different-input-sizes.sh:programs/pmergesort/different_input_sizes_sh.in],
+  [chmod +x programs/pmergesort/different-input-sizes.sh])
+AC_CONFIG_FILES(
   [programs/pquickhull/run.sh:programs/pquickhull/run_sh.in],
   [chmod +x programs/pquickhull/run.sh])
 AC_CONFIG_FILES(
@@ -213,6 +219,9 @@ AC_CONFIG_FILES(
 AC_CONFIG_FILES(
   [programs/tree-add/run.sh:programs/tree-add/run_sh.in],
   [chmod +x programs/tree-add/run.sh])
+AC_CONFIG_FILES(
+  [programs/tree-add/different-input-sizes.sh:programs/tree-add/different_input_sizes_sh.in],
+  [chmod +x programs/tree-add/different-input-sizes.sh])
 AC_CONFIG_FILES(
   [programs/smvm/run.sh:programs/smvm/run_sh.in],
   [chmod +x programs/smvm/run.sh])

@@ -1,6 +1,9 @@
 #!/bin/bash
 
-LIST_LEN=1000000
+LIST_LEN=$1
+if [ $LIST_LEN == "" ]; then
+    LIST_LEN="1000000"
+fi
 SMLNJ="@SMLNJ_CMD@"
 
 if [ ! -f random-int-list.txt ]; then
