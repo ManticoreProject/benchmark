@@ -33,6 +33,7 @@ def report_gc_time(context_id):
   return(db.select_values(q))
 
 field_names=[
+  'avg total time (sec) ',
   'avg % minor gc       ',
   'stddev % minor gc    ',
   'avg % major gc       ',
@@ -48,9 +49,10 @@ def print_fields():
     print ('' + f),
 
 def print_stats(fields):
+  print ('%10f           '%(fields[1])),
   for f in range(len(fields) - 3):
     i=f+3
-    frac=fields[i] / fields[1]   # total time / gc time
+    frac=(fields[i] / fields[1]) * 100.0   # total time / gc time
     print ('%10f           '%(frac)),
 
 experiment_id=get.most_recent_experiment('global-allocd-bytes')
@@ -62,7 +64,7 @@ for bench_url in get.different_bench_urls(experiment_id):
     swp_report=report_gc_time(swp_context[0][0])
     trunk_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.Trunk.url())
     trunk_report=report_gc_time(trunk_context[0][0])
-    print bench_name + '(' + bench_input + '):'
+    print bench_name + '(' + bench_input + ') (n_procs=' + str(swp_report[0][0]) + '):'
     print 'swp'
     print_fields()
     print ''
