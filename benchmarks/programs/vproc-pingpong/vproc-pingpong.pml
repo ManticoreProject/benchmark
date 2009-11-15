@@ -105,15 +105,14 @@ structure Main =
 
     val otherVP = List.hd(List.tl(VProcExtras.vprocs()))
 	
-    fun main (_, args) =
-	let
-	    val n = (case args
-		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
-		       | _ => dfltN)
-	    fun doit () = VProcPingPong.run (n, otherVP)		
-	in
+    fun main (_, args) = let
+	  val n = (case args
+		 of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
+		  | _ => dfltN)
+	  fun doit () = VProcPingPong.run (n, otherVP)		
+	  in
 	    RunSeq.run doit
-	end
+	  end
 
   end
 
