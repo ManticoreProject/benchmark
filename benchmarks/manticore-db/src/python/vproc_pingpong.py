@@ -30,19 +30,20 @@ def parse_input(input):
 def all_contexts_for_branch(experiment_id, branch_url):
   q = "SELECT DISTINCT(context_id) FROM contexts \
        WHERE experiment_id = " + str(experiment_id) + " \
-       AND compiler_src_url = '" + branch_url + "'"
+       AND compiler_src_url = '" + branch_url + "' \
+       AND input LIKE '1000000%'"
   return(get.detup(db.select_values(q)))
 
 experiment_id=get.most_recent_experiment('vproc-pingpong')
 print 'layout\t\tn_messages\t\tavg_time_sec\t\tstd_dev_time_sec\t\t \
-       avg_nsecs_per_message\t\tstd_dev_nsecs_per_message'
+       avg_num_secs_per_message\t\tstd_dev_num_secs_per_message'
 for branch in [branches.SWP, branches.Trunk]:
   print branch.suffix
   for context_id in all_contexts_for_branch(experiment_id, branch.url()):
     input, avg_time_sec, std_dev_time_sec=messages_per_sec(context_id)
     vp_layout, nmessages=parse_input(input)
-    avg_nsecs_per_message=avg_time_sec / float(nmessages)
-    std_dev_nsecs_per_message=std_dev_time_sec / float(nmessages)
-    print (vp_layout + '\t\t' + str(nmessages) + '\t\t' + 
-           str(avg_time_sec) + '\t\t' + str(std_dev_time_sec) + '\t\t' +
-           str(avg_nsecs_per_message) + '\t\t' + str(std_dev_nsecs_per_message))
+    avg_num_secs_per_message=avg_time_sec / float(nmessages)
+    std_dev_num_secs_per_message=std_dev_time_sec / float(nmessages)
+    print (vp_layout + '\t\t\t' + str(nmessages) + '\t\t\t' + 
+           str(avg_time_sec) + '\t\t\t' + str(std_dev_time_sec) + '\t\t\t' +
+           str(avg_num_secs_per_message) + '\t\t\t' + str(std_dev_num_secs_per_message))
