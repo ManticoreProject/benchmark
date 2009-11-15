@@ -1,5 +1,8 @@
 #!/bin/bash
 
+PATH_TO_SWP=$1
+PATH_TO_TRUNK=$2
+
 NAME="vproc-pingpong"
 DESCRIPTION="synthetic benchmark: signals are repeatedly exchanged between two vprocs"
 
@@ -9,28 +12,17 @@ DESCRIPTION="synthetic benchmark: signals are repeatedly exchanged between two v
 NUM_TRIALS="@NUM_TRIALS@"
 MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
 
-NUM_PINGPONGS="1 2 3 4 5 6 7 8 9 10 100 300 1000 10000 100000 1000000"
+NUM_PINGPONGS="10000 100000 1000000"
+
+$PATH_TO_SWP/bin/pmlc $PMLCFLAGS -o vproc-pingpong-swp vproc-pingpong.mlb
+$PATH_TO_TRUNK/bin/pmlc $PMLCFLAGS -o vproc-pingpong-trunk vproc-pingpong-trunk.mlb
 
 ## run the experiment for the swp branch
 
-# dense processor placement
 for i in $NUM_PINGPONGS; do
-    $MANTI_BENCH_ROOT/scripts/experiment.sh -f vproc-pingpong -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -p 2 -s "-dense $i"
-done
-
-# sparse processor placement
-for i in $NUM_PINGPONGS; do
-    $MANTI_BENCH_ROOT/scripts/experiment.sh -f vproc-pingpong -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -p 2 -s "-sparse $i"
-done
-
-## run the experiment for the trunk
-
-# dense processor placement
-for i in $NUM_PINGPONGS; do
-    $MANTI_BENCH_ROOT/scripts/experiment.sh -f vproc-pingpong-trunk -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -p 2 -s "-dense $i"
-done
-
-# sparse processor placement
-for i in $NUM_PINGPONGS; do
-    $MANTI_BENCH_ROOT/scripts/experiment.sh -f vproc-pingpong-trunk -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -p 2 -s "-sparse $i"
+    for proc_config in "-dense" "-sparse"; do
+	echo "$i $proc_config"
+	$MANTI_BENCH_ROOT/scripts/experiment.sh -p 2 -f vproc-pingpong-swp -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS -r $PATH_TO_SWP -s "$i $proc_config"
+	$MANTI_BENCH_ROOT/scripts/experiment.sh -p 2 -f vproc-pingpong-trunk -n "$NAME" -d "$DESCRIPTION" -t $NUM_TRIALS -r $PATH_TO_TRUNK -s "$i $proc_config"
+    done
 done
