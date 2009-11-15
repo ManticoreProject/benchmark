@@ -3,8 +3,7 @@
  * COPYRIGHT (c) 2009 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
  *
- * Benchmark to measure the latency of signaling vprocs. The input is the number
- * of rounds, which involves twice that many signals.
+ * Benchmark to measure the latency of inter-vproc signaling. 
  *)
 
 #include "prim.def"
@@ -13,6 +12,8 @@
 structure VProcPingPong =
   struct
 
+    structure PT = PrimTypes
+
     _primcode(
 
       define @run (arg : [[int], [vproc]] / exh : exh) : unit =
@@ -20,65 +21,70 @@ structure VProcPingPong =
 	  let vp1 : vproc = host_vproc
 	  let vp2 : vproc = #0(#1(arg))
 
-	  let n1 : ![int] = alloc(0)
-	  let n1 : ![int] = promote(n1)
-	  let n2 : ![int] = alloc(0)
-	  let n2 : ![int] = promote(n2)
+	  cont done () = return (UNIT)
 
-          fun wait (x : int, n : ![int]) : () =
-	      if I32Eq(x, #0(n))
-		 then 
-		  apply wait (x, n)
-	      else
-		  return()
+	  cont error () =
+	    do ccall M_Print ("VProcPingpong: error occurred\n")
+	    return (UNIT)
+
+	  cont doNothing (_ : unit) = SchedulerAction.@stop ()
 
 	  fun ping () : () =
-              do assert (Equal(host_vproc, vp1))
-	      let i : int = #0(n1)
-	      if I32Lt(i, n)
-		 then
-		  cont k (_ : unit) =
-		      do #0(n2) := I32Add(#0(n2), 1)
-		      do SchedulerAction.@stop()
-		      return()
-                  let self : vproc = SchedulerAction.@atomic-begin()
-                  let fls : FLS.fls = FLS.@get ()
-#ifdef TRUNK
-		  do VProc.@send-and-preempt-from-atomic(vp1, vp2, fls, k)
-#else /* SWP */
-	          do VProc.@send-from-atomic(vp1, vp2, fls, k)
-#endif
-                  do SchedulerAction.@atomic-end(self)
-		  do apply wait (i, n1)
-		  apply ping ()
-	      else 
-		  return()
+	      cont lp (_ : unit) = 
+		do Pause ()
+		throw lp (UNIT)
+	      let pingCnt : ![int] = alloc (n)
+	      cont act (sign : PT.signal) =    
+		case sign
+		 of PT.PREEMPT (k : PT.fiber) =>
+		    let cnt : int = #0(pingCnt)
+		    if I32Gt (cnt, 0) then
+			do #0(pingCnt) := I32Sub (cnt, 1)
+			(* signal the other vproc *)
+			let fls : FLS.fls = FLS.@get ()
+	  #ifdef TRUNK
+			do VProc.@send-and-preempt-from-atomic(vp1, vp2, fls, doNothing)
+	  #else /* SWP */
+			do VProc.@send-from-atomic(vp1, vp2, fls, doNothing)
+	  #endif
+			do SchedulerAction.@run (host_vproc, act, k)
+			throw error ()
+		    else
+			throw done ()
+		  | _ =>
+		    throw error ()
+		end
+	      let self : vproc = SchedulerAction.@atomic-begin ()
+	      do SchedulerAction.@run (self, act, lp)
+	      throw error ()
 
-	  fun pong (i : int) : () =
-              do assert (Equal(host_vproc, vp2))
-	      if I32Lt(i, n)
-		 then
-		  do apply wait (i, n2)
-		  cont k (_ : unit) =
-		      do #0(n1) := I32Add(#0(n1), 1)
-		      do SchedulerAction.@stop()
-		      return()
-                  let self : vproc = SchedulerAction.@atomic-begin()
-                  let fls : FLS.fls = FLS.@get ()
-#ifdef TRUNK
-		  do VProc.@send-and-preempt-from-atomic(vp2, vp1, fls, k)
-#else /* SWP */
-	          do VProc.@send-from-atomic(vp2, vp1, fls, k)
-#endif
-                  do SchedulerAction.@atomic-end(self)
-		  apply pong (I32Add(i, 1))
-	      else
-		  return()
+	  fun pong () : () =
+	      cont lp (_ : unit) = 
+		do Pause ()
+		throw lp (UNIT)
+	      cont act (sign : PT.signal) =    
+		case sign
+		 of PT.PREEMPT (k : PT.fiber) =>
+		    (* signal the other vproc *)
+		    let fls : FLS.fls = FLS.@get ()
+	  #ifdef TRUNK
+		    do VProc.@send-and-preempt-from-atomic(vp2, vp1, fls, doNothing)
+	  #else /* SWP */
+		    do VProc.@send-from-atomic(vp2, vp1, fls, doNothing)
+	  #endif
+		    do SchedulerAction.@run (host_vproc, act, k)
+		    throw error ()
+		  | _ =>
+		    throw error ()
+		end
+	      let self : vproc = SchedulerAction.@atomic-begin ()
+	      do SchedulerAction.@run (self, act, lp)
+	      throw error ()
 
-	  cont k2 (_ : unit) =
-	      do apply pong (0)
+
+          cont k2 (_ : unit) =
+	      do apply pong ()
 	      SchedulerAction.@stop()
-
           let self : vproc = SchedulerAction.@atomic-begin()
           let fls : FLS.fls = FLS.@get ()
 #ifdef TRUNK
@@ -86,8 +92,7 @@ structure VProcPingPong =
 #else /* SWP */
           do VProc.@send-from-atomic(vp1, vp2, fls, k2)
 #endif
-          do SchedulerAction.@atomic-end(self)
-	  do apply ping ()
+          do apply ping ()
 
 	  return(UNIT)
 	;
