@@ -1,22 +1,30 @@
 benchmark_data=[
-     ("barnes-hut", "barnes-hut"),
-     ("pfib", "fib"),
-     ("id-raytracer", "raytracer"),
-     ("mandelbrot", "mandelbrot"),
-     ("ttt", "ttt"),
-     ("plus-reduce", "plus-reduce"),
-     ("plus-scan", "plus-scan"),
-     ("pmergesort", "mergesort"),
-     ("pquicksort", "quicksort"),
-     ("pquickhull", "quickhull"),
-     ("smvm", "smvm"),
-     ("tree-add", "tree-add")
+#    ( <name>        <pretty print> <directory>
+     ("barnes-hut", "barnes-hut", "barnes-hut"),
+     ("pfib", "fib", "fib"),
+     ("id-raytracer", "raytracer", "id-raytracer"),
+#     ("mandelbrot", "mandelbrot", "mandelbrot"),
+#     ("ttt", "ttt", "minimax"),
+#     ("plus-reduce", "plus-reduce", "plus-reduce"),
+#     ("plus-scan", "plus-scan", "plus-scan"),
+#     ("pmergesort", "mergesort", "pmergesort"),
+     ("pquicksort", "quicksort", "pquicksort"),
+     ("pquickhull", "quickhull", "pquickhull"),
+     ("smvm", "smvm", "smvm"),
+     ("tree-add", "tree-add", "tree-add")
 ]
 
-def fst(tup):
+def bench_name(tup):
   return(tup[0])
 
-benchmarks=map(fst, benchmark_data)
+def directory(tup):
+  return(tup[2])
+
+benchmarks=map(bench_name, benchmark_data)
+
+def url(bench):
+  return("https://svn.smlnj-gforge.cs.uchicago.edu/svn/manti-bench/benchmarks/programs/" + directory(bench))
+benchmark_urls=map(url, benchmarks)
 
 def pretty_name(benchmark):
   for b, n in benchmark_data:

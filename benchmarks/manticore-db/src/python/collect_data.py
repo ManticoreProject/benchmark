@@ -277,10 +277,11 @@ def different_bench_urls(experiment_id):
 # find_context_ids : (int, string, string) -> int list
 # find all the context ids corresponding to an experiment id, benchmark url, specific
 # benchmark input value and compiler source url (or branch)
-def find_context_ids(experiment_id, bench_url, bench_input, compiler_src_url):
+def find_context_ids(experiment_id, bench_url, bench_input, compiler_src_url, seq_compilation):
   q = "SELECT DISTINCT(context_id) FROM contexts \
        WHERE experiment_id = " + str(experiment_id) + " \
        AND bench_url    = '" + bench_url         + "'" + " \
        AND input        = '" + str(bench_input)       + "'" + " \
-       AND compiler_src_url = '" + compiler_src_url       + "'"
+       AND compiler_src_url = '" + compiler_src_url       + "' \
+       AND seq_compilation = " + seq_compilation
   return(db.select_values(q))
