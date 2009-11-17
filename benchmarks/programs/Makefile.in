@@ -64,7 +64,7 @@ mc-plus-prefix:
 	cd plus-prefix && $(MAKE) plus-prefix
 
 mc-par1: mc-barnes-hut-par mc-fib-par mc-mandelbrot-par mc-ttt-par mc-plus-reduce-par \
-	mc-plus-scan-par mc-pmergesort-par mc-pquicksort-par mc-pquicksort-par mc-smvm-par mc-tree-add-par \
+	mc-plus-scan-par mc-pmergesort-par mc-pquicksort-par mc-smvm-par mc-tree-add-par \
 	mc-pquickhull-par
 
 # it is unsafe to compile id-raytracer in parallel with other benchmarks, since the build process for
@@ -74,7 +74,7 @@ mc-par: mc-par1
 	@cd id-raytracer && $(MAKE) id-raytracer-par
 
 mc-seq1: mc-barnes-hut-seq mc-fib-seq mc-mandelbrot-seq mc-ttt-seq mc-plus-reduce-seq \
-	mc-plus-scan-seq mc-pmergesort-seq mc-pquicksort-seq mc-pquicksort-seq mc-smvm-seq mc-tree-add-seq \
+	mc-plus-scan-seq mc-pmergesort-seq mc-pquicksort-seq mc-smvm-seq mc-tree-add-seq \
 	mc-pquickhull-seq
 
 mc-seq: mc-seq1
@@ -110,3 +110,18 @@ smlnj:
 	cd smvm && $(MAKE) smvm-smlnj
 	cd tree-add && $(MAKE) tree-add-smlnj
 	cd pquickhull && $(MAKE) quickhull-smlnj
+
+pldi10-par1: mc-barnes-hut-par mc-fib-par mc-pquicksort-par mc-tree-add-par mc-pquickhull-par mc-smvm-par
+pldi10-par: pldi10-par1
+	@cd id-raytracer && $(MAKE) id-raytracer-par
+pldi10-seq1: mc-barnes-hut-seq mc-fib-seq mc-pquicksort-seq mc-tree-add-seq mc-pquickhull-seq mc-smvm-seq
+pldi10-seq: pldi10-seq1
+	@cd id-raytracer && $(MAKE) id-raytracer-seq
+pldi10-mlton:
+	cd barnes-hut && $(MAKE) barnes-hut-rope-mlton
+	cd fib && $(MAKE) fib-mlton
+	cd id-raytracer && $(MAKE) id-raytracer-mlton
+	cd pquicksort && $(MAKE) rope-quicksort-mlton
+	cd smvm && $(MAKE) smvm-mlton
+	cd tree-add && $(MAKE) tree-add-mlton
+	cd pquickhull && $(MAKE) quickhull-mlton
