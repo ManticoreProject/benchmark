@@ -46,9 +46,7 @@ for bench in pldi10_benchmarks.benchmark_data:
     print ('\t\tn_procs\t\tSWP avg\t\std dev\tTrunk avg\tTrunk std dev\tTrunk avg-Swp avg')
     for x in range(16):
       n_procs=x+1
-      swp_report=report_gc_load(swp_context[0][0], n_procs)
-      print swp_report
-      swp_report=swp_report[0]
+      swp_report=report_gc_load(swp_context[0][0], n_procs)[0]
       trunk_report=report_gc_load(trunk_context[0][0], n_procs)[0]
       print 'Minor GC'
       printit( (swp_report[0], swp_report[1], swp_report[2]),
