@@ -158,18 +158,21 @@ public class DataBlob {
 	
 		    int minor_n_collections    = minor.getInt("num");
 		    long minor_alloc_bytes     = minor.getLong("alloc");
+		    long minor_collected_bytes = minor.getLong("collected");
 		    long minor_copied_bytes    = minor.getLong("copied");
 		    double minor_time_coll_sec = minor.getDouble("time");
 
 		    JSONObject major = currGC.getJSONObject("major");
 		    int major_n_collections    = major.getInt("num");
 		    long major_alloc_bytes     = major.getLong("alloc");
+		    long major_collected_bytes = minor.getLong("collected");
 		    long major_copied_bytes    = major.getLong("copied");
 		    double major_time_coll_sec = major.getDouble("time");
 
 		    JSONObject global = currGC.getJSONObject("global");
 		    int global_n_collections    = global.getInt("num");
 		    long global_alloc_bytes     = global.getLong("alloc");
+		    long global_collected_bytes = minor.getLong("collected");
 		    long global_copied_bytes    = global.getLong("copied");
 		    double global_time_coll_sec = global.getDouble("time");
 
@@ -181,14 +184,17 @@ public class DataBlob {
 		    GC gc = new GC(processor,
 				   minor_n_collections,
 				   minor_alloc_bytes,
+				   minor_collected_bytes,
 				   minor_copied_bytes,
 				   minor_time_coll_sec,
 				   major_n_collections,
 				   major_alloc_bytes,
+				   major_collected_bytes,
 				   major_copied_bytes,
 				   major_time_coll_sec,
 				   global_n_collections,
 				   global_alloc_bytes,
+				   global_collected_bytes,
 				   global_copied_bytes,
 				   global_time_coll_sec,
 				   n_promotions,

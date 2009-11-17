@@ -8,10 +8,6 @@ signature EXPERIMENT = sig
 
 (* Manticore info *)
 
-(* TODO maybe these should all be part of a record, so they're 
- *      all always present together
- *)
-
 (* the following are optional since they apply only to manticore contexts, *)
 (* as opposed to contexts for runs in other languages (sml, etc.) *)
   val compiler_src_url : string option (* manticore compiler, of course *)
@@ -21,20 +17,6 @@ signature EXPERIMENT = sig
   val seq_compilation  : bool option   (* sequential compilation? yes or no *)
   val max_leaf_size    : int option
   val seq_cutoff       : int option 
-
-(* proposed alternative:
-
-  type manticore_data = {compiler_src_url : string,
-                         compiler_svn : int,
-                         script_url : string,
-                         script_svn : int,
-                         seq_compilation : bool,
-                         max_leaf_size : int,
-                         seq_cutoff : int option} (* seq_cutoff isn't always there? *)
-
-  val manticore = manticore_data option  
-
- *)
 
 (* Common info *)
 
@@ -54,3 +36,18 @@ signature EXPERIMENT = sig
   val runs : Common.run list
 
 end
+
+(* proposed alternative:
+
+  type manticore_data = {compiler_src_url : string,
+                         compiler_svn : int,
+                         script_url : string,
+                         script_svn : int,
+                         seq_compilation : bool,
+                         max_leaf_size : int,
+                         seq_cutoff : int option} (* seq_cutoff isn't always there? *)
+
+  val manticore = manticore_data option  
+
+ *)
+

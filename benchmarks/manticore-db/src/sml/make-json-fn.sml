@@ -52,33 +52,19 @@ functor MakeJSONFn (E : EXPERIMENT) = struct
 
   fun buildJSON () = let
     fun buildGC (C.GC info) : json_value = let
-      val {n_collections=num, alloc_bytes=alloc, 
-	   copied_bytes=copied, time_coll_sec=time} = info
+      val {num, alloc, collected, copied, time} = info
       in
 	Object [("num", Int num),
 		("alloc", BigInt alloc),
+		("collected", BigInt collected),
 		("copied", BigInt copied),
 		("time", Real time)]
       end
-    fun buildGCStats (C.GCS info) : string = let
-          val {processor, minor, major, global, promotion} = info
-	  val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=prom_time} = promotion
-	  val promotionObj = Object [("num", Int num), 
-				     ("bytes", BigInt bytes), 
-				     ("time", Real prom_time)]
-	  val pairs = [mkPair (Int processor) "processor",
-		       mkPair (buildGC minor) "minor",
-		       mkPair (buildGC major) "major",
-		       mkPair (buildGC global) "global",
-		       mkPair promotionObj "promotion"]
-          in
-            pairsToJSON pairs
-          end
-      | buildGCStats (C.GCST info) : string = let
-          val {processor, minor, major, global, time, promotion} = info
-	  val {n_promotions=num, prom_bytes=bytes, mean_prom_time_sec=prom_time} = promotion
-	  val promotionObj = Object [("num", Int num), 
-				     ("bytes", BigInt bytes), 
+    fun buildGCStats (C.GCST info) : string = let
+          val {processor, time, minor, major, promotion, global} = info
+	  val {num=prom_num, bytes=prom_bytes, time=prom_time} = promotion
+	  val promotionObj = Object [("num", Int prom_num), 
+				     ("bytes", BigInt prom_bytes), 
 				     ("time", Real prom_time)]
           val pairs = [mkPair (Int processor) "processor",
 		       mkPair (buildGC minor) "minor",

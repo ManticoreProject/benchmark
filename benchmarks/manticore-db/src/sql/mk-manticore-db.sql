@@ -100,25 +100,28 @@ CREATE TABLE runs
 
 CREATE TABLE gc
 (
-  gc_id                SERIAL PRIMARY KEY,
-  run_id               integer REFERENCES runs (run_id),
-  processor            integer,
-  minor_n_collections  integer,
-  minor_alloc_bytes    bigint,
-  minor_copied_bytes   bigint,
-  minor_time_coll_sec  double precision,
-  major_n_collections  integer,
-  major_alloc_bytes    bigint,
-  major_copied_bytes   bigint,
-  major_time_coll_sec  double precision,
-  global_n_collections integer,
-  global_alloc_bytes   bigint,
-  global_copied_bytes  bigint,
-  global_time_coll_sec double precision,
-  n_promotions         integer,
-  prom_bytes           bigint,
-  mean_prom_time_sec   double precision,  
-  elapsed_time_sec     double precision
+  gc_id                  SERIAL PRIMARY KEY,
+  run_id                 integer REFERENCES runs (run_id),
+  processor              integer,
+  minor_n_collections    integer,
+  minor_alloc_bytes      bigint,
+  minor_collected_bytes  bigint,
+  minor_copied_bytes     bigint,
+  minor_time_coll_sec    double precision,
+  major_n_collections    integer,
+  major_alloc_bytes      bigint,
+  major_collected_bytes  bigint,
+  major_copied_bytes     bigint,
+  major_time_coll_sec    double precision,
+  global_n_collections   integer,
+  global_alloc_bytes     bigint,
+  global_collected_bytes bigint,
+  global_copied_bytes    bigint,
+  global_time_coll_sec   double precision,
+  n_promotions           integer,
+  prom_bytes             bigint,
+  mean_prom_time_sec     double precision,  
+  elapsed_time_sec       double precision
 );
 
 CREATE VIEW view_runs AS

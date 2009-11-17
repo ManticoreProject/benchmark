@@ -3,28 +3,21 @@ structure Common = struct
 (* garbage collection stats *)
 
   datatype gc 
-    = GC of {n_collections : int,       (* number of collections *)
-	     alloc_bytes   : Int64.int, (* bytes allocated *)
-	     copied_bytes  : Int64.int, (* bytes copied *)
-	     time_coll_sec : real}      (* elapsed time *)
-
+    = GC of {num       : int,       (* number of collections *)
+	     alloc     : Int64.int, (* bytes allocated *)
+	     collected : Int64.int, (* bytes collected *)
+	     copied    : Int64.int, (* bytes copied *)
+	     time      : real}      (* elapsed time *)
 
   datatype gc_stats 
-    = GCS of {processor    : int,
-	      minor        : gc,
-	      major        : gc,
-	      global       : gc,
-	      promotion    : {n_promotions       : int,
-			      prom_bytes         : Int64.int,
-			      mean_prom_time_sec : real}} (* mean time *)
-    | GCST of {processor    : int,
+    = GCST of {processor    : int,
+	       time         : real, (* vproc lifetime *)       
 	       minor        : gc,
 	       major        : gc,
-	       global       : gc,
-	       time         : real, (* vproc lifetime *)
-	       promotion    : {n_promotions       : int,
-			       prom_bytes         : Int64.int,
-			       mean_prom_time_sec : real}} (* mean time *)
+	       promotion    : {num   : int,
+			       bytes : Int64.int,
+			       time  : real},
+	       global       : gc} (* mean time *)
 	      
   type run 
     = {n_procs         : int, 
