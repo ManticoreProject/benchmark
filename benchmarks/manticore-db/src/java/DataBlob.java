@@ -165,14 +165,14 @@ public class DataBlob {
 		    JSONObject major = currGC.getJSONObject("major");
 		    int major_n_collections    = major.getInt("num");
 		    long major_alloc_bytes     = major.getLong("alloc");
-		    long major_collected_bytes = minor.getLong("collected");
+		    long major_collected_bytes = major.getLong("collected");
 		    long major_copied_bytes    = major.getLong("copied");
 		    double major_time_coll_sec = major.getDouble("time");
 
 		    JSONObject global = currGC.getJSONObject("global");
 		    int global_n_collections    = global.getInt("num");
 		    long global_alloc_bytes     = global.getLong("alloc");
-		    long global_collected_bytes = minor.getLong("collected");
+		    long global_collected_bytes = global.getLong("collected");
 		    long global_copied_bytes    = global.getLong("copied");
 		    double global_time_coll_sec = global.getDouble("time");
 
