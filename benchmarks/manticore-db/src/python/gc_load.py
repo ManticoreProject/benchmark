@@ -42,8 +42,8 @@ for bench in pldi10_benchmarks.benchmark_data:
     experiment_id=get.most_recent_experiment(bench_name)
     swp_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.SWP.url(), "false")
     trunk_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.Trunk.url(), "false")
-    print bench_name
-    print ('\t\tn_procs\t\tSWP avg\t\std dev\tTrunk avg\tTrunk std dev\tTrunk avg-Swp avg')
+    print ('*********' + bench_name)
+    print ('\t\tn_procs\t\tSWP avg\t\tstd dev\t\tTrunk avg\t\tstd dev\tTrunk avg-Swp avg')
     for x in range(16):
       n_procs=x+1
       swp_report=report_gc_load(swp_context[0][0], n_procs)[0]
@@ -57,3 +57,4 @@ for bench in pldi10_benchmarks.benchmark_data:
       print 'Global GC'
       printit( (swp_report[0], swp_report[5], swp_report[6]),
                (trunk_report[0], trunk_report[5], trunk_report[6]))
+      print '--------------------------------------'
