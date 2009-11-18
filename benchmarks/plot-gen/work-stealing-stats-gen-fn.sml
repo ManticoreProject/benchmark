@@ -40,4 +40,37 @@ functor WorkStealingStatsGenFn (
       val loadBreakdowns : {n_procs : int, avgTimeBusyOverall : real, stdDevTimeOverall : real} list =
 	  List.map loadBreakdown E.n_procs
 
+      fun steal n =
+	  let 
+	      fun get ({workStealing={numSteals, ...}, ...} : Common.run) = List.foldl (op +) 0 numSteals
+	      val nProcRuns = List.filter (fn {n_procs, ...} : Common.run => n_procs = n) E.runs
+	      val {avg, std} = stats (List.map (real o get) nProcRuns)
+	  in
+	      {n_procs=n, avg=avg, std=std}
+	  end
+      val steals = List.map steal E.n_procs
+
+      fun failedSteal n =
+	  let 
+	      fun get ({workStealing={numFailedStealAttempts, ...}, ...} : Common.run) = List.foldl (op +) 0 numFailedStealAttempts
+	      val nProcRuns = List.filter (fn {n_procs, ...} : Common.run => n_procs = n) E.runs
+	      val {avg, std} = stats (List.map (real o get) nProcRuns)
+	  in
+	      {n_procs=n, avg=avg, std=std}
+	  end
+      val failedSteals = List.map failedSteal E.n_procs
+
+      fun timeToSteal n =
+	  let 
+	      fun max x = List.foldl Real.max 0.0 x
+	      fun getAvg ({workStealing={timeStealing, ...}, ...} : Common.run) = max (List.map #avg timeStealing)
+	      fun getMax ({workStealing={timeStealing, ...}, ...} : Common.run) = max (List.map #max timeStealing)
+	      val nProcRuns = List.filter (fn {n_procs, ...} : Common.run => n_procs = n) E.runs
+	      val {avg=avgAvg, std=stdAvg} = stats (List.map (getAvg) nProcRuns)
+	      val {avg=avgMax, std=stdMax} = stats (List.map ( getMax) nProcRuns)
+	  in
+	      {n_procs=n, avgAvg=avgAvg, stdAvg=stdAvg, avgMax=avgMax, stdMax=stdMax}
+	  end
+      val timeSpentStealing = List.map timeToSteal E.n_procs
+
   end

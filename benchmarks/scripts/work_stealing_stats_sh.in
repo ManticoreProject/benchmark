@@ -180,8 +180,9 @@ fi
 		exit 1
 	    fi
 	    $LOG_WORK_STEALING -log LOG -o ws-stats.sml
+	    rc2=$?
 	    if [ $retcode == "0" ]; then
-		retcode=$?
+		retcode=$rc2
 	    fi
 
 	    nretries=0
@@ -196,8 +197,9 @@ fi
 		    exit 1
 		fi
 		$LOG_WORK_STEALING -log LOG -o ws-stats.sml
+		rc2=$?
 		if [ $retcode == "0" ]; then
-		    retcode=$?
+		    retcode=$rc2
 		fi
 
 		if [ $nretries -gt 100 ]; then
