@@ -65,11 +65,13 @@ functor WorkStealingStatsGenFn (
 	      fun max x = List.foldl Real.max 0.0 x
 	      fun getAvg ({workStealing={timeStealing, ...}, ...} : Common.run) = max (List.map #avg timeStealing)
 	      fun getMax ({workStealing={timeStealing, ...}, ...} : Common.run) = max (List.map #max timeStealing)
+	      fun getTotTime ({time_sec, ...} : Common.run) = time_sec
 	      val nProcRuns = List.filter (fn {n_procs, ...} : Common.run => n_procs = n) E.runs
 	      val {avg=avgAvg, std=stdAvg} = stats (List.map (getAvg) nProcRuns)
 	      val {avg=avgMax, std=stdMax} = stats (List.map ( getMax) nProcRuns)
+	      val {avg=avgTotTime, std=stdTotTime} = stats (List.map getTotTime nProcRuns)
 	  in
-	      {n_procs=n, avgAvg=avgAvg, stdAvg=stdAvg, avgMax=avgMax, stdMax=stdMax}
+	      {n_procs=n, avgTotTime=avgTotTime, stdTotTime=stdTotTime, avgAvg=avgAvg, stdAvg=stdAvg, avgMax=avgMax, stdMax=stdMax}
 	  end
       val timeSpentStealing = List.map timeToSteal E.n_procs
 

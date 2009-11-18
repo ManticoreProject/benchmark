@@ -35,6 +35,49 @@ while read line; do
 done
 )
 echo "nil" >> work-stealing-stats.sml
+
+echo "val steals =" >> work-stealing-stats.sml
+cat metadata |
+(
+while read line; do
+
+    benchmark_filename=${line%%,*}
+    benchmark_smlname=${line##*,}
+    stats_smlname=$benchmark_smlname$stats_ext
+
+    echo "($stats_smlname.problem_name, $stats_smlname.steals) ::" >> work-stealing-stats.sml
+done
+)
+echo "nil" >> work-stealing-stats.sml
+
+echo "val failedSteals =" >> work-stealing-stats.sml
+cat metadata |
+(
+while read line; do
+
+    benchmark_filename=${line%%,*}
+    benchmark_smlname=${line##*,}
+    stats_smlname=$benchmark_smlname$stats_ext
+
+    echo "($stats_smlname.problem_name, $stats_smlname.failedSteals) ::" >> work-stealing-stats.sml
+done
+)
+echo "nil" >> work-stealing-stats.sml
+
+echo "val timeSpentStealing =" >> work-stealing-stats.sml
+cat metadata |
+(
+while read line; do
+
+    benchmark_filename=${line%%,*}
+    benchmark_smlname=${line##*,}
+    stats_smlname=$benchmark_smlname$stats_ext
+
+    echo "($stats_smlname.problem_name, $stats_smlname.timeSpentStealing) ::" >> work-stealing-stats.sml
+done
+)
+echo "nil" >> work-stealing-stats.sml
+
 echo "end" >> work-stealing-stats.sml
 
 #generate the cm file

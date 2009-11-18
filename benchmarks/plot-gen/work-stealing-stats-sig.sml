@@ -125,6 +125,6 @@ signature WORK_STEALING_STATS = sig
   val steals : {n_procs : int, avg : real, std : real} list
   val failedSteals : {n_procs : int, avg : real, std : real} list
   val loadBreakdowns : {n_procs : int, avgTimeBusyOverall : real, stdDevTimeOverall : real} list
-  val timeSpentStealing : {n_procs : int, avgAvg : real, stdAvg : real, avgMax : real, stdMax : real} list
+  val timeSpentStealing : {n_procs : int, avgTotTime : real, stdTotTime : real, avgAvg : real, stdAvg : real, avgMax : real, stdMax : real} list
 
 end
