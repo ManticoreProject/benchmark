@@ -114,15 +114,24 @@ for benchmark in pldi10_benchmarks.benchmark_data:
     print (str(n_procs)),
     for branch in branches:
 
-      experiment_id = most_recent_experiment(bench_name, branch[0])
-
+      # summary of time
+      experiment_id = pldi10_benchmarks.experiment_id(benchmark)
       context_id = get.find_context_ids(experiment_id, bench_url, bench_input, 
                                         branch[0], "false")[0][0]
-      # summary time
       e,es,g,gs,r,rs = report_summary_time(context_id, n_procs)
-      print (' & %.2f'%(e)),
-      print (' & %.2f'%(g)),
-      print (' & %.2f'%(r)),
+
+      # summary of initialization time (used to correct summary above)
+      iexperiment_id = pldi10_benchmarks.init_id(benchmark)
+      icontext_id = get.find_context_ids(iexperiment_id, bench_url, bench_input, 
+                                        branch[0], "false")[0][0]
+      ie,ies,ig,igs,ir,irs = report_summary_time(icontext_id, n_procs)
+
+      re=e-ie
+      rg=g-ig
+      ra=rg / re
+      print (' & %.2f'%(re)),
+      print (' & %.2f'%(rg)),
+      print (' & %.2f'%(ra)),
     i = i + 1
     print '\\\\'
   print '\\end{tabular}'

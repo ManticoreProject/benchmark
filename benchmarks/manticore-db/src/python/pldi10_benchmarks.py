@@ -1,14 +1,14 @@
 benchmark_data=[
 #    ( <name>        <pretty print> <directory>
-     ("barnes-hut", "barnes-hut", "barnes-hut"),
+     ("barnes-hut", "barnes-hut", "barnes-hut", 740, 736),
 #     ("pfib", "fib", "fib"),
-     ("id-raytracer", "raytracer", "id-raytracer"),
+     ("id-raytracer", "raytracer", "id-raytracer", 741, 737),
 #     ("mandelbrot", "mandelbrot", "mandelbrot"),
 #     ("ttt", "ttt", "minimax"),
 #     ("plus-reduce", "plus-reduce", "plus-reduce"),
 #     ("plus-scan", "plus-scan", "plus-scan"),
 #     ("pmergesort", "mergesort", "pmergesort"),
-     ("pquicksort", "quicksort", "pquicksort"),
+     ("pquicksort", "quicksort", "pquicksort", 742, 739),
 #     ("pquickhull", "quickhull", "pquickhull"),
 #     ("smvm", "smvm", "smvm")
 #     ("tree-add", "tree-add", "tree-add")
@@ -19,6 +19,12 @@ def bench_name(tup):
 
 def directory(tup):
   return(tup[2])
+
+def experiment_id(tup):
+  return(tup[3])
+
+def init_id(tup):
+  return(tup[4])
 
 benchmarks=map(bench_name, benchmark_data)
 
