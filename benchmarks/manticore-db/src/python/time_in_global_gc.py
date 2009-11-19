@@ -7,13 +7,14 @@ import utils
 import collect_data as get
 import branches
 import human_readable as h
+import pldi10_benchmarks
 
 # report_gc_tiem : int -> float^10 list
 # takes a context id and returns average and std dev over several stats:
 #  - total elapsed time
 #  - total minor, major collection and promotion time over all vprocs
 #  - total global collection time
-def report_gc_time(context_id):
+def report_gc_time(context_id, n_procs):
   q = "SELECT n_procs, AVG(ba_runs.elapsed_time_sec), STDDEV(ba_runs.elapsed_time_sec), \
                        AVG(ba_runs.minor_gc_time_sec), STDDEV(ba_runs.minor_gc_time_sec), \
                        AVG(ba_runs.major_gc_time_sec), STDDEV(ba_runs.major_gc_time_sec), \
@@ -28,7 +29,7 @@ def report_gc_time(context_id):
                 SUM(global_time_coll_sec) AS global_gc_time_sec \
          FROM gc WHERE run_id IN ( \
            SELECT run_id FROM runs \
-           WHERE context_id = " + str(context_id) + ") \
+           WHERE context_id = " + str(context_id) + " AND runs.n_procs = " + str(n_procs) + ") \
            GROUP BY run_id ORDER BY COUNT(run_id) ASC) AS ba_runs GROUP BY ba_runs.n_procs"
   return(db.select_values(q))
 
@@ -55,27 +56,27 @@ def print_stats(fields):
     frac=(fields[i] / fields[1]) * 100.0   # total time / gc time
     print ('%10f           '%(frac)),
 
-experiment_id=get.most_recent_experiment('gc-breakdown')
+n_procs=16
 
-
-for bench_url in get.different_bench_urls(experiment_id):
-  bench_url=bench_url[0]
-  bench_name=utils.url_last(bench_url)
-  for bench_input in get.different_bench_inputs(experiment_id, bench_url):
-    bench_input = bench_input[0]
-    swp_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.SWP.url())
-    swp_report=report_gc_time(swp_context[0][0])
-    trunk_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.Trunk.url())
-    trunk_report=report_gc_time(trunk_context[0][0])
-    print bench_name + '(' + bench_input + ') (n_procs=' + str(swp_report[0][0]) + '):'
-    print 'swp'
-    print_fields()
-    print ''
-    print_stats(swp_report[0])
-    print ''
-    print 'trunk'
-    print_fields()
-    print ''
-    print_stats(trunk_report[0])
-    print ''
+for bench in pldi10_benchmarks.benchmark_data:
+  bench_name=pldi10_benchmarks.bench_name(bench)
+  bench_url=pldi10_benchmarks.url(bench)
+  bench_input=''
+  print bench_name
+  experiment_id=get.most_recent_experiment(bench_name)
+  swp_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.SWP.url(), "false")
+  swp_report=report_gc_time(swp_context[0][0], n_procs)
+  trunk_context=get.find_context_ids(experiment_id, bench_url, bench_input, branches.Trunk.url(), "false")
+  trunk_report=report_gc_time(trunk_context[0][0], n_procs)
+  print bench_name + '(' + bench_input + ') (n_procs=' + str(swp_report[0][0]) + '):'
+  print 'swp'
+  print_fields()
+  print ''
+  print_stats(swp_report[0])
+  print ''
+  print 'trunk'
+  print_fields()
+  print ''
+  print_stats(trunk_report[0])
+  print ''
 

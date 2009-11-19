@@ -27,4 +27,5 @@ def bytes(b, digits=2):
       return(fmt % (bytes / sz))
     # end if
   # end for
-  return(str(b)) # plain ol' bytes
+  fmt = '%.' + str(digits) + 'f' + 'B'
+  return(fmt) # plain ol' bytes

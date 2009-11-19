@@ -1,7 +1,7 @@
 benchmark_data=[
 #    ( <name>        <pretty print> <directory>
      ("barnes-hut", "barnes-hut", "barnes-hut"),
-     ("pfib", "fib", "fib"),
+#     ("pfib", "fib", "fib"),
      ("id-raytracer", "raytracer", "id-raytracer"),
 #     ("mandelbrot", "mandelbrot", "mandelbrot"),
 #     ("ttt", "ttt", "minimax"),
@@ -9,9 +9,9 @@ benchmark_data=[
 #     ("plus-scan", "plus-scan", "plus-scan"),
 #     ("pmergesort", "mergesort", "pmergesort"),
      ("pquicksort", "quicksort", "pquicksort"),
-     ("pquickhull", "quickhull", "pquickhull"),
-     ("smvm", "smvm", "smvm"),
-     ("tree-add", "tree-add", "tree-add")
+#     ("pquickhull", "quickhull", "pquickhull"),
+#     ("smvm", "smvm", "smvm")
+#     ("tree-add", "tree-add", "tree-add")
 ]
 
 def bench_name(tup):
@@ -27,8 +27,8 @@ def url(bench):
 benchmark_urls=map(url, benchmarks)
 
 def pretty_name(benchmark):
-  for b, n in benchmark_data:
-      if b == benchmark:
-          return(n)
-  raise Exception("nonexistant benchmark name " + benchmark)
+  for b in benchmark_data:
+      if b[0] == benchmark:
+          return(b[1])
+  raise Exception("nonexistant benchmark name " + benchmark[0])
 
