@@ -189,6 +189,26 @@ def most_recent_mlton():
       raise Exception("too many")
   return(retval)
 
+# most_recent_mlton : unit -> (int, string, 'mlton') list
+def most_recent_smlnj():
+  retval = []
+  bs = distinct_bench_urls()
+  for b in bs:
+    q = "SELECT context_id \
+         FROM contexts \
+         WHERE bench_url='" + b + "' \
+         AND compiler='SMLNJ' \
+         ORDER BY datetime DESC \
+         LIMIT 1;"
+    v = detup(db.select_values(q))
+    if len(v) == 0:
+      pass # that's a python noop
+    elif len(v) == 1:
+       retval.append([v[0], b, 'mlton'])
+    else:
+      raise Exception("too many")
+  return(retval)
+
 # gc_stat : (string, int, int) -> (string * string)
 # takes a column name from the gc stats table, a context id, and a number of processors
 # and returns the average and standard deviation for that particular stat from the
@@ -252,6 +272,17 @@ def most_recent_mlton_bench(experiment_id):
        INNER JOIN experiments ON contexts.experiment_id = experiments.experiment_id \
        WHERE experiments.experiment_id = " + str(experiment_id) + " \
        AND contexts.compiler = 'mlton' \
+       ORDER BY experiments.datetime DESC LIMIT 1"
+  return(detup(db.select_values(q)))
+
+# most_recent_smlnj_bench : (string, string) -> int list
+# takes an experiment id and returns a list containing the most context id
+def most_recent_smlnj_bench(experiment_id):
+  q = "SELECT context_id \
+       FROM contexts \
+       INNER JOIN experiments ON contexts.experiment_id = experiments.experiment_id \
+       WHERE experiments.experiment_id = " + str(experiment_id) + " \
+       AND contexts.compiler = 'SMLNJ' \
        ORDER BY experiments.datetime DESC LIMIT 1"
   return(detup(db.select_values(q)))
 

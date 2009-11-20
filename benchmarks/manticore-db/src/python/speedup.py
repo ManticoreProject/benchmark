@@ -39,8 +39,8 @@ def mash(colors, shapes):
     i = i+1
   return retval     
 
-fmts = mash(['g', 'c', 'm', 'k', 'b', 'r'], 
-            ['d', 'h', 'o', '^', 's', 'p', 'v'])
+fmts = mash(['r', 'g', 'b', 'k', 'm', 'r'], 
+            ['d', 'v', 'o', '^', 's', 'p', 'h'])
 
 fmt_index = 0 
 

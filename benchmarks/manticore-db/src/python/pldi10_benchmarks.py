@@ -1,14 +1,14 @@
 benchmark_data=[
 #    ( <name>        <pretty print> <directory>
-     ("barnes-hut", "barnes-hut", "barnes-hut", 740, 736),
+     ("barnes-hut", "Barnes-Hut", "barnes-hut", 740, 736),
 #     ("pfib", "fib", "fib"),
-     ("id-raytracer", "raytracer", "id-raytracer", 741, 737),
+     ("id-raytracer", "Raytracer", "id-raytracer", 741, 737),
 #     ("mandelbrot", "mandelbrot", "mandelbrot"),
 #     ("ttt", "ttt", "minimax"),
 #     ("plus-reduce", "plus-reduce", "plus-reduce"),
 #     ("plus-scan", "plus-scan", "plus-scan"),
 #     ("pmergesort", "mergesort", "pmergesort"),
-     ("pquicksort", "quicksort", "pquicksort", 742, 739),
+     ("pquicksort", "Quicksort", "pquicksort", 742, 739),
 #     ("pquickhull", "quickhull", "pquickhull"),
 #     ("smvm", "smvm", "smvm")
 #     ("tree-add", "tree-add", "tree-add")

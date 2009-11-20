@@ -21,6 +21,7 @@ def report_summary_time(context_id, n_procs):
                       MAX(gc.elapsed_time_sec) AS elapsed_time_sec, \
                       MAX(gc.minor_time_coll_sec + \
                           gc.major_time_coll_sec + \
+                          gc.mean_prom_time_sec + \
                           gc.global_time_coll_sec) AS gc_time_sec \
          FROM gc WHERE run_id IN ( \
            SELECT run_id FROM runs \
@@ -74,7 +75,7 @@ def most_recent_experiment(problem_name, branch):
 #       prom_bytes major_bytes global_collected global_copied 
 #       minor_time major_time prom_time global_time
 
-n_procs_to_report=[1,2,4,8,12,16]
+n_procs_to_report=[16,14,12,10,8,4,2,1]
 
 branches=[(branches.SWP.url(), branches.SWP.pretty_name()),
           (branches.Trunk.url(), branches.Trunk.pretty_name()), 
@@ -98,15 +99,15 @@ for benchmark in pldi10_benchmarks.benchmark_data:
 
   pretty_name= pldi10_benchmarks.pretty_name(bench_name)
 
-  print '\\begin{tabular}{c | c c c | c c c | c c c}'
-  print ('\\multicolumn{10}{c}{' + pretty_name + '}\\\\')
+  print '\\begin{tabular}{c | c c | c c | c c}'
+  print ('\\multicolumn{7}{c}{' + pretty_name + '}\\\\')
   for branch in branches:
-    print ' & \\multicolumn{3}{c}{' + branch[1] + '}',
+    print ' & \\multicolumn{2}{c}{' + branch[1] + '}',
   print '\\\\'
   print '\\hline'
   print 'n-procs ',
   for branch in branches:
-    print ' & time & gc-time & ratio',
+    print ' & time & gc + non-gc ',
   print '\\\\'
   print '\\hline'
   i = 0
@@ -128,10 +129,9 @@ for benchmark in pldi10_benchmarks.benchmark_data:
 
       re=e-ie
       rg=g-ig
-      ra=rg / re
+      rng=re-rg
       print (' & %.2f'%(re)),
-      print (' & %.2f'%(rg)),
-      print (' & %.2f'%(ra)),
+      print (' & %.2f + %.2f'%(rg,rng)),
     i = i + 1
     print '\\\\'
   print '\\end{tabular}'
