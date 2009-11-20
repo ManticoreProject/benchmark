@@ -28,4 +28,4 @@ def bytes(b, digits=2):
     # end if
   # end for
   fmt = '%.' + str(digits) + 'f' + 'B'
-  return(fmt) # plain ol' bytes
+  return(fmt % bytes) # plain ol' bytes

@@ -13,6 +13,7 @@ import pldi10_benchmarks
 triples = []
 for b in pldi10_benchmarks.benchmark_data:
   bench_name = pldi10_benchmarks.bench_name(b)
+  pretty_name = pldi10_benchmarks.pretty_name(bench_name)
   print bench_name
   experiment_id=pldi10_benchmarks.experiment_id(b)
   print experiment_id
@@ -22,9 +23,9 @@ for b in pldi10_benchmarks.benchmark_data:
     base = get.med_baseline_time(seq_id[0])
     pars = get.parallel_times(par_id[0])
     print base
-    triples.append((bench_name, base, pars))
+    triples.append((pretty_name, base, pars))
   else :
-    print ('missing numbers for ' + bench_name)
+    print ('missing numbers for ' + pretty_name)
 
 
 ct = 'Speedups over MLton'

@@ -53,10 +53,10 @@ def report_gc_time(context_id, n_procs):
                        AVG(ba_runs.global_gc_time_sec), STDDEV(ba_runs.global_gc_time_sec) \
        FROM ( \
          SELECT COUNT(run_id) AS n_procs, \
-                SUM(minor_time_coll_sec) AS minor_gc_time_sec, \
-                SUM(major_time_coll_sec) AS major_gc_time_sec, \
-                SUM(mean_prom_time_sec) AS prom_time_sec, \
-                SUM(global_time_coll_sec) AS global_gc_time_sec \
+                MAX(minor_time_coll_sec) AS minor_gc_time_sec, \
+                MAX(major_time_coll_sec) AS major_gc_time_sec, \
+                MAX(mean_prom_time_sec) AS prom_time_sec, \
+                MAX(global_time_coll_sec) AS global_gc_time_sec \
          FROM gc WHERE run_id IN ( \
            SELECT run_id FROM runs \
            WHERE context_id = " + str(context_id) + " AND runs.n_procs = " + str(n_procs) + ") \
@@ -78,7 +78,7 @@ def most_recent_experiment(problem_name, branch):
 n_procs_to_report=[16,14,12,10,8,4,2,1]
 
 branches=[(branches.SWP.url(), branches.SWP.pretty_name()),
-          (branches.Trunk.url(), branches.Trunk.pretty_name()), 
+          (branches.Trunk.url(), branches.Trunk.pretty_name()),
           (branches.FlatHeap.url(), branches.FlatHeap.pretty_name())]
 
 for benchmark in pldi10_benchmarks.benchmark_data:
@@ -92,21 +92,21 @@ for benchmark in pldi10_benchmarks.benchmark_data:
 
   pretty_name= pldi10_benchmarks.pretty_name(bench_name)
 
-  print '\\begin{tabular}{c | c r@{+}l | c r@{+}l | c r@{+}l}'
-  print ('\\multicolumn{10}{c}{\\textbf{' + pretty_name + '}}\\\\\\hline')
+  print '\\begin{tabular}{c | c c c c | c c c c | c c c c}'
+  print ('\\multicolumn{13}{c}{\\textbf{' + pretty_name + '}}\\\\\\hline')
 
   swp, trunk, flat_heap = branches
-  print ' & \\multicolumn{3}{c|}{' + swp[1] + '}',
-  print ' & \\multicolumn{3}{c|}{' + trunk[1] + '}',
-  print ' & \\multicolumn{3}{c|}{' + flat_heap[1] + '}',
+  print ' & \\multicolumn{4}{c|}{' + swp[1] + '}',
+  print ' & \\multicolumn{4}{c|}{' + trunk[1] + '}',
+  print ' & \\multicolumn{4}{c}{' + flat_heap[1] + '}',
 
   print '\\\\'
   print '\\hline'
   print 'n-procs ',
 
-  print ' & time & \\multicolumn{2}{c|}{gc + non-gc} ',
-  print ' & time & \\multicolumn{2}{c|}{gc + non-gc} ',
-  print ' & time & \\multicolumn{2}{c}{gc + non-gc} ',
+  print ' & promoted & glob-alloc-bytes & glbl collected & glbl copied ',
+  print ' & promoted & glob-alloc-bytes & glbl collected & glbl copied ',
+  print ' & promoted & glob-alloc-bytes & glbl collected & glbl copied ',
 
   print '\\\\'
   print '\\hline'
@@ -119,22 +119,24 @@ for benchmark in pldi10_benchmarks.benchmark_data:
       experiment_id = pldi10_benchmarks.experiment_id(benchmark)
       context_id = get.find_context_ids(experiment_id, bench_url, bench_input, 
                                         branch[0], "false")[0][0]
-      e,es,g,gs,r,rs = report_summary_time(context_id, n_procs)
+      prom,_,gc_all,_,gc_coll,_,gc_cop,_ = report_gc_bytes(context_id, n_procs)
 
       # summary of initialization time (used to correct summary above)
       iexperiment_id = pldi10_benchmarks.init_id(benchmark)
       icontext_id = get.find_context_ids(iexperiment_id, bench_url, bench_input, 
                                         branch[0], "false")[0][0]
-      ie,ies,ig,igs,ir,irs = report_summary_time(icontext_id, n_procs)
+      iprom,_,igc_all,_,igc_coll,_,igc_cop,_ = report_gc_bytes(icontext_id, n_procs)
 
-      re=e-ie
-      rg=g-ig
-      rng=re-rg
-      print (' & %.2f & %.2f & %.2f '%(re,rg,rng)),
+      rprom = h.bytes(prom - iprom)
+      rgc_all = h.bytes(gc_all - igc_all)
+      rgc_coll = h.bytes(gc_coll - igc_coll)
+      rgc_cop = h.bytes(gc_cop - igc_cop)
+      print (' & ' + rprom + ' & ' + rgc_all + ' & ' + rgc_coll + ' & ' + rgc_cop),
+
     i = i + 1
     print '\\\\'
   print '\\hline'
-  print '\\multicolumn{10}{c}{} \\\\'
+  print '\\multicolumn{13}{c}{} \\\\'
   print '\\end{tabular}'
 
 

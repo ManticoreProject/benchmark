@@ -151,7 +151,7 @@ def plot(filename,
     speedupsList.append(sps)
     stdevsList.append(utils.stdevs(pars))
   # make error bars
-  errorbars(speedupsList, stdevsList)
+  #errorbars(speedupsList, stdevsList)
   # build the legend
   plt.legend(legend_text, prop=h3, loc='upper left')
   plt.savefig(filename + '.pdf', dpi=200)
