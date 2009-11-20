@@ -18,8 +18,8 @@ for b in pldi.benchmark_data:
   eid = pldi.experiment_id(b)
   print eid
   seq_id = get.most_recent_mlton_bench(eid)
-  par_id = get.most_recent_pml_bench(eid, branches.SWP, 'false')
-  if seq_id != False and par_id != False:
+  par_id = get.most_recent_pml_bench(eid, branches.SWP, False)
+  if isinstance(seq_id, int) and isinstance(par_id, int):
     base = get.med_baseline_time(seq_id)
     pars = get.parallel_times(par_id)
     print base

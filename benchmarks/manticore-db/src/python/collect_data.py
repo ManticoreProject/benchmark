@@ -251,16 +251,23 @@ def most_recent_experiment(problem_name):
        ORDER BY experiments.datetime DESC LIMIT 1"
   return(detup(db.select_values(q)))[0]
 
+def strictIf(c, t, f):
+  if c:
+    return t
+  else:
+    return f
+
 # most_recent_pml_bench : (string, string, string) -> int list
 # takes an experiment id and a branch and a sequential compilation option (true for
 # sequential and false for parallel and returns a list containing the most recent context id
 def most_recent_pml_bench(experiment_id, branch, seq):
+  seqStr = strictIf(seq, 'true', 'false')
   q = "SELECT context_id \
        FROM contexts \
        INNER JOIN experiments ON contexts.experiment_id = experiments.experiment_id \
        WHERE experiments.experiment_id = " + str(experiment_id) + " \
        AND contexts.compiler_src_url = '" + branch.url() + "' \
-       AND contexts.seq_compilation = " + seq + " \
+       AND contexts.seq_compilation = " + seqStr + " \
        ORDER BY experiments.datetime DESC LIMIT 1"
   res = detup(db.select_values(q))
   if (len(res) == 0):
@@ -315,7 +322,7 @@ def different_bench_inputs(experiment_id, bench_url):
   return(db.select_values(q))
 
 # different_bench_urls : int -> string list
-# takes an experiment id and returns the different bencharks used in the corresponding 
+# takes an experiment id and returns the different benchmarks used in the corresponding 
 # experiment. each of these urls are distinct from all the others.
 def different_bench_urls(experiment_id):
   q = "SELECT DISTINCT(bench_url) FROM contexts \

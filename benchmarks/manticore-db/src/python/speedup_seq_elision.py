@@ -1,6 +1,6 @@
 # Mike Rainey, Adam Shaw, November 2009
 
-import branches
+import branches as br
 import collect_data as get
 import speedup
 import utils
@@ -47,11 +47,10 @@ for b in pldi.benchmark_data:
   pretty_name = pldi.pretty_name(bench_name)
   eid         = pldi.experiment_id(b)
   # get.most_recent_smlnj_bench(eid)
-  seq_id       = get.most_recent_mlton_bench(eid)
-  # seq_id       = get.most_recent_pml_bench(eid, branches.SWP, 'true')
-  swp_id       = get.most_recent_pml_bench(eid, branches.SWP, 'false')
-  trunk_id     = get.most_recent_pml_bench(eid, branches.Trunk, 'false')
-  flat_heap_id = get.most_recent_pml_bench(eid, branches.FlatHeap, 'false')
+  seq_id       = get.most_recent_pml_bench(eid, br.SWP,      True)
+  swp_id       = get.most_recent_pml_bench(eid, br.SWP,      False)
+  trunk_id     = get.most_recent_pml_bench(eid, br.Trunk,    False)
+  flat_heap_id = get.most_recent_pml_bench(eid, br.FlatHeap, False)
   if all(isInt, [seq_id, swp_id, trunk_id, flat_heap_id]):
     pars = [(swp_id,       'lazy promotion'), 
             (trunk_id,     'eager promotion'), 
