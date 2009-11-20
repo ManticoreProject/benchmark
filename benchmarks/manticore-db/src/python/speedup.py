@@ -160,20 +160,20 @@ def plot(filename,
       else:
         f = f + "-"
     if (marker == None):
-      plt.plot(xs, ys, f, linewidth=0.4)
+      plt.plot(xs, ys, f)
     else:
       sz, wd = marker
       plt.plot(xs, ys, f, 
                markersize=sz, 
                markeredgewidth=wd,
-               linewidth=0.4)
+               linewidth=0.5)
     legend_text.append(title)
     speedupsList.append(sps)
     stdevsList.append(utils.stdevs(pars))
   # make error bars
   # errorbars(speedupsList, stdevsList)
   # build the legend
-  plt.legend(legend_text, prop=h3, loc='upper left')
+  plt.legend(legend_text, prop=h2, loc='upper left')
   fl = filename + '.pdf'
   plt.savefig(fl, dpi=200)
   print ('GENERATED and SAVED file ' + fl)
