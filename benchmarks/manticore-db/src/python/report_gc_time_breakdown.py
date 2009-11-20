@@ -91,19 +91,19 @@ for benchmark in pldi10_benchmarks.benchmark_data:
 
   pretty_name= pldi10_benchmarks.pretty_name(bench_name)
 
-  print '\\begin{tabular}{c | c c c c | c c c c}'
-  print ('\\multicolumn{9}{c}{\\textbf{' + pretty_name + '}}\\\\\\hline')
+  print '\\begin{tabular}{c | c c c | c c c}'
+  print ('\\multicolumn{7}{c}{\\textbf{' + pretty_name + '}}\\\\\\hline')
 
   swp, trunk = branches
-  print ' & \\multicolumn{4}{c|}{' + swp[1] + '}',
-  print ' & \\multicolumn{4}{c}{' + trunk[1] + '}',
+  print ' & \\multicolumn{3}{c|}{' + swp[1] + '}',
+  print ' & \\multicolumn{3}{c}{' + trunk[1] + '}',
 
   print '\\\\'
   print '\\hline'
   print 'n-procs ',
 
-  print ' & minor & major & promote & global '
-  print ' & minor & major & promote & global '
+  print ' & local & promote & global ',
+  print ' & local & promote & global ',
 
   print '\\\\'
   print '\\hline'
@@ -132,11 +132,11 @@ for benchmark in pldi10_benchmarks.benchmark_data:
         rmaj=maj-imaj
       rprom = prom-iprom
       rglbl = glbl-iglbl
-      print (' & %.2f & %.2f & %.2f & %.2f '%(rmin,rmaj,rprom,rglbl)),
+      print (' & %.2f & %.2f & %.2f '%(rmin+rmaj,rprom,rglbl)),
     i = i + 1
     print '\\\\'
   print '\\hline'
-  print '\\multicolumn{9}{c}{} \\\\'
+  print '\\multicolumn{7}{c}{} \\\\'
   print '\\end{tabular}'
 
 

@@ -104,9 +104,9 @@ for benchmark in pldi10_benchmarks.benchmark_data:
   print '\\hline'
   print 'n-procs ',
 
-  print ' & time & \\multicolumn{2}{c|}{gc + non-gc} ',
-  print ' & time & \\multicolumn{2}{c|}{gc + non-gc} ',
-  print ' & time & \\multicolumn{2}{c}{gc + non-gc} ',
+  print ' & time & \\multicolumn{2}{c|}{non-gc + gc} ',
+  print ' & time & \\multicolumn{2}{c|}{non-gc + gc} ',
+  print ' & time & \\multicolumn{2}{c}{non-gc + gc} ',
 
   print '\\\\'
   print '\\hline'
@@ -130,7 +130,7 @@ for benchmark in pldi10_benchmarks.benchmark_data:
       re=e-ie
       rg=g-ig
       rng=re-rg
-      print (' & %.2f & %.2f & %.2f '%(re,rg,rng)),
+      print (' & %.2f & %.2f & %.2f '%(re,rng,rg)),
     i = i + 1
     print '\\\\'
   print '\\hline'
