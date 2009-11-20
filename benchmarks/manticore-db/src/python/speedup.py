@@ -174,7 +174,9 @@ def plot(filename,
   # errorbars(speedupsList, stdevsList)
   # build the legend
   plt.legend(legend_text, prop=h3, loc='upper left')
-  plt.savefig(filename + '.pdf', dpi=200)
+  fl = filename + '.pdf'
+  plt.savefig(fl, dpi=200)
+  print ('GENERATED and SAVED file ' + fl)
   plt.show()
       
 ################ baggage
