@@ -1,8 +1,8 @@
 benchmark_data=[
 #    ( <name>        <pretty print> <directory>
+     ("id-raytracer", "Raytracer", "id-raytracer", 741, 737),
      ("barnes-hut", "Barnes-Hut", "barnes-hut", 740, 736),
 #     ("pfib", "fib", "fib"),
-     ("id-raytracer", "Raytracer", "id-raytracer", 741, 737),
 #     ("mandelbrot", "mandelbrot", "mandelbrot"),
 #     ("ttt", "ttt", "minimax"),
 #     ("plus-reduce", "plus-reduce", "plus-reduce"),

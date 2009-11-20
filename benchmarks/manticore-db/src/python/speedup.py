@@ -13,18 +13,18 @@ import most_recent as mr
 ### Cosmetics
 
 h1 = fm.FontProperties()
-h1.set_size(16)
+h1.set_size(18)
 
 h2 = fm.FontProperties()
-h2.set_size(12)
+h2.set_size(16)
 
 h3 = fm.FontProperties()
-h3.set_size(10)
+h3.set_size(14)
 
 for h in [h1, h2, h3]:
   h.set_family('Times New Roman')
 
-# total HACK for generating a big list of distinct format strings
+# generates a big list of distinct format strings
 # pre: len(colors) == len(shapes) - 1
 # if precondition isn't met, this iteration pattern doesn't necessarily work!
 def mash(colors, shapes):
@@ -55,6 +55,11 @@ def next_fmt():
   f = fmts[fmt_index]
   fmt_index = (fmt_index + 1) % len(fmts)
   return f
+
+# reset_fmts : _ -> _
+def reset_fmts():
+  global fmt_index
+  fmt_index = 0
 
 ### Utilities
 
@@ -127,7 +132,9 @@ def plot(filename,
          connect_dots=False,
          chart_title='Speedups', 
          xax_label='number of processors', 
-         yax_label='speedup'):
+         yax_label='speedup',
+         formats=fmts,
+         marker=None):
   # set up the axes and stuff
   biggestX = maxX(triples)
   plt.title(chart_title, fontproperties=h1)
@@ -139,19 +146,32 @@ def plot(filename,
   legend_text  = []
   speedupsList = []
   stdevsList   = []
+  # if formats are given, use them:
+  fmtIdx = 0
   # plot each speedup curve and accumulate
   for title, base, pars in triples:
     sps = speedups(base, pars)
     xs, ys = utils.unzip(sps)
-    f = next_fmt()
+    f = formats[fmtIdx]
+    fmtIdx = (fmtIdx + 1) % len(formats)
     if connect_dots:
-      f = f + "-"
-    plt.plot(xs, ys, f)
+      if f.endswith('-'):
+        pass
+      else:
+        f = f + "-"
+    if (marker == None):
+      plt.plot(xs, ys, f, linewidth=0.4)
+    else:
+      sz, wd = marker
+      plt.plot(xs, ys, f, 
+               markersize=sz, 
+               markeredgewidth=wd,
+               linewidth=0.4)
     legend_text.append(title)
     speedupsList.append(sps)
     stdevsList.append(utils.stdevs(pars))
   # make error bars
-  #errorbars(speedupsList, stdevsList)
+  # errorbars(speedupsList, stdevsList)
   # build the legend
   plt.legend(legend_text, prop=h3, loc='upper left')
   plt.savefig(filename + '.pdf', dpi=200)

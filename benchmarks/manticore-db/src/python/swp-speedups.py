@@ -23,7 +23,6 @@ for b in pldi10_benchmarks.benchmarks:
   else :
     print ('missing numbers for ' + b)
 
-
 ct = 'Speedups over sequential Manticore'
 s.plot('fishing-speedups', triples, chart_title=ct, connect_dots=True)
 

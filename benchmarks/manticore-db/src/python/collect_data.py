@@ -254,15 +254,21 @@ def most_recent_experiment(problem_name):
 # most_recent_pml_bench : (string, string, string) -> int list
 # takes an experiment id and a branch and a sequential compilation option (true for
 # sequential and false for parallel and returns a list containing the most recent context id
-def most_recent_pml_bench(experiment_id, branch, seq_compilation):
+def most_recent_pml_bench(experiment_id, branch, seq):
   q = "SELECT context_id \
        FROM contexts \
        INNER JOIN experiments ON contexts.experiment_id = experiments.experiment_id \
        WHERE experiments.experiment_id = " + str(experiment_id) + " \
        AND contexts.compiler_src_url = '" + branch.url() + "' \
-       AND contexts.seq_compilation = " + seq_compilation + " \
+       AND contexts.seq_compilation = " + seq + " \
        ORDER BY experiments.datetime DESC LIMIT 1"
-  return(detup(db.select_values(q)))
+  res = detup(db.select_values(q))
+  if (len(res) == 0):
+    return False
+  elif (len(res) == 1):
+    return res[0]
+  else:
+    raise Exception("expected 0 or 1 values, got more!")
 
 # most_recent_mlton_bench : (string, string) -> int list
 # takes an experiment id and returns a list containing the most context id
@@ -273,7 +279,13 @@ def most_recent_mlton_bench(experiment_id):
        WHERE experiments.experiment_id = " + str(experiment_id) + " \
        AND contexts.compiler = 'mlton' \
        ORDER BY experiments.datetime DESC LIMIT 1"
-  return(detup(db.select_values(q)))
+  res = detup(db.select_values(q))
+  if (len(res) == 0):
+    return False
+  elif (len(res) == 1):
+    return res[0]
+  else:
+    raise Exception("expected 0 or 1 values, got more!")
 
 # most_recent_smlnj_bench : (string, string) -> int list
 # takes an experiment id and returns a list containing the most context id
@@ -284,7 +296,13 @@ def most_recent_smlnj_bench(experiment_id):
        WHERE experiments.experiment_id = " + str(experiment_id) + " \
        AND contexts.compiler = 'SMLNJ' \
        ORDER BY experiments.datetime DESC LIMIT 1"
-  return(detup(db.select_values(q)))
+  res = detup(db.select_values(q))
+  if (len(res) == 0):
+    return False
+  elif (len(res) == 1):
+    return res[0]
+  else:
+    raise Exception("expected 0 or 1 values; got more!")
 
 # different_bench_inputs : (int, string) -> string list
 # takes an experiment id and benchmark url and returns the different inputs used in the 
