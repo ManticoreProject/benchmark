@@ -32,7 +32,10 @@ def compare_branches(base_ctxt, bench_name, branches):
                speedup_args, 
                chart_title='', 
                yax_label=ylab, 
-               connect_dots=True)
+               connect_dots=True,
+               dimensions=(5,5),
+               prefix='/home/adamshaw')
+  return
 
 def isInt(x) : return isinstance(x, int)
 

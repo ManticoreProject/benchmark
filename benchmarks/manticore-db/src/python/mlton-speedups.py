@@ -31,6 +31,6 @@ s.plot('speedups-over-mlton',
        triples, 
        chart_title='', 
        connect_dots=True,
-       formats=['k+', 'kx', 'k|'],
+       formats=['r+', 'gx', 'b|'],
        marker=(8.0, 1.5))
 

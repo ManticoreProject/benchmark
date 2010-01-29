@@ -19,7 +19,7 @@ h2 = fm.FontProperties()
 h2.set_size(16)
 
 h3 = fm.FontProperties()
-h3.set_size(14)
+h3.set_size(12)
 
 for h in [h1, h2, h3]:
   h.set_family('Times New Roman')
@@ -94,10 +94,26 @@ def find_baseline(par, seqs):
 
 ### Plotting
 
+# # stdev_adhockery
+# def stdev_adhockery(pars):
+#   indexed_medians = utils.medians(pars)
+#   stdevs = utils.stdevs(pars)
+#   assert(len(indexed_medians) == len(stdevs))
+#   for i in range(0, len(stdevs)):
+#     mx, my = indexed_medians[i]
+#     dx, dy = stdevs[i]
+#     assert(mx == dx)
+#     my_str  = "%.6f" % my
+#     dy_str  = "%.6f" % dy
+#     pct_str = "%.6f" % (dy/my)
+#     print (str(mx) + '\t' + my_str + '\t' + dy_str + '\t' + pct_str)
+
 # errorbars : ((int, float) list, (int, float) list) -> _
 def errorbars(spss, devss):
   assert len(spss) == len(devss)
+  foo = ['lazy', 'eager', 'flat']
   for i in range(0, len(spss)):
+    print foo[i]
     sps  = spss[i]
     devs = devss[i]
     assert len(sps) == len(devs)
@@ -106,7 +122,6 @@ def errorbars(spss, devss):
       (dx, dy) = devs[j]
       assert sx == dx
       plt.errorbar(sx, sy, yerr=dy, ecolor='black')
-      # print (str(sx) + ' ' + str(sy) + ' ' + str(dy))
 
 # speedups : float * (int, float) list -> (int, float) list
 # Given a baseline time and a data set, compute the speedup as
@@ -114,8 +129,7 @@ def errorbars(spss, devss):
 def speedups(base, pars):
   retval = []
   indexed_medians = utils.medians(pars)
-  for nm in indexed_medians:
-    (n, m) = nm
+  for n, m in indexed_medians:
     speedup = base / m
     retval.append((n, speedup))
   return retval
@@ -134,14 +148,25 @@ def plot(filename,
          xax_label='number of processors', 
          yax_label='speedup',
          formats=fmts,
-         marker=None):
+         marker=None, # (markersize, markeredgewidth)
+         dimensions=None, # (width, height) in inches
+         heightIn=None,
+         prefix=None,
+         show_errorbars=False):
+  # size of the figure if dimensions are specified
+  if (dimensions != None):
+    plt.figure(figsize=dimensions)
   # set up the axes and stuff
   biggestX = maxX(triples)
+  axes = plt.gca()
+  axes.set_xlim([0, biggestX + 0.5])
+  axes.set_ylim([0, biggestX + 0.01])
+  axes.xaxis.set_ticks_position('bottom') # as opposed to 'top' or 'both'
   plt.title(chart_title, fontproperties=h1)
   plt.xlabel(xax_label, fontproperties=h2)
-  plt.xticks(np.arange(0, biggestX + 1.1, 1), fontproperties=h3)
+  plt.xticks(np.append(np.arange(1,2,1), np.arange(2, biggestX+1, 2)), fontproperties=h3)
   plt.ylabel(yax_label, fontproperties=h2)
-  plt.yticks(np.arange(0, biggestX + 0.1, 1), fontproperties=h3)
+  plt.yticks(np.append(np.arange(1,2,1), np.arange(2, biggestX+1, 2)), fontproperties=h3)
   # accumulators
   legend_text  = []
   speedupsList = []
@@ -160,7 +185,7 @@ def plot(filename,
       else:
         f = f + "-"
     if (marker == None):
-      plt.plot(xs, ys, f)
+      plt.plot(xs, ys, f, markeredgecolor=f[0])
     else:
       sz, wd = marker
       plt.plot(xs, ys, f, 
@@ -169,12 +194,16 @@ def plot(filename,
                linewidth=0.5)
     legend_text.append(title)
     speedupsList.append(sps)
-    stdevsList.append(utils.stdevs(pars))
+    stdevs = utils.stdevs(pars)
+    stdevsList.append(stdevs)
   # make error bars
-  # errorbars(speedupsList, stdevsList)
+  if show_errorbars:
+    errorbars(speedupsList, stdevsList)
   # build the legend
   plt.legend(legend_text, prop=h2, loc='upper left')
   fl = filename + '.pdf'
+  if (prefix != None):
+    fl = prefix + '/' + fl
   plt.savefig(fl, dpi=200)
   print ('GENERATED and SAVED file ' + fl)
   plt.show()
