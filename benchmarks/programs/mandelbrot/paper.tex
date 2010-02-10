@@ -48,7 +48,7 @@ fun elt (i, j) = let
 \end{lstlisting}
 
 \paragraph{Issue \#1 (CPS)}
-Arity raising is only run once. The first time that analysis is done, the return continuation, \texttt{CFA1}, is of type \texttt{[int]}, so we think that is required. After the return continuation is flattened into just type \texttt{int}, though, we no longer need to keep the boxed integer around and could remove the allocation from the function altogether. Consider running arity raising to a fixpoint.
+Arity raising is only run once. The first time that analysis is done, the return continuation, \texttt{CFA1}, is of type \texttt{cont([int])}, so we think that is required. After the return continuation is flattened into just type \texttt{cont(int)}, though, we no longer need to keep the boxed integer around and could remove the allocation from the function altogether. Consider running arity raising to a fixpoint.
 
 \begin{lstlisting}
 fun manloop<CF9F>#2.2 (cnt<CFA3>#1:[int],_t<CFA7>#3:float,_t<CFAA>#3:float / retK<CFA1>#3.2:cont(int)) =
