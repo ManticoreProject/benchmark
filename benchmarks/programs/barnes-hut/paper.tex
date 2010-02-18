@@ -1,0 +1,178 @@
+\documentclass[11pt]{article}
+%
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,language=ML,breaklines=true,tabsize=2}
+
+\begin{document}
+
+This document covers the performance of the parallel barnes-hut benchmark.
+Almost none of the processor time is spent doing useful work toward the benchmark --- all of the top consumers of processor time are on overhead related to garbage collection or parallel execution.
+Further, limitations on our ability to flatten functions passed to generic parallel constructs like \texttt{filterP} and \texttt{mapP} due to sharing of call sites requires us to maintain the default calling convention and allocation strategy even for very small functions.
+
+\begin{center}
+\begin{tabular}{r|c}
+\texttt{\_\_semwait\_signal} & 52.9\% \\
+\texttt{else<118CA>} & 5.1\% \\
+\texttt{ForwardObj} (\texttt{StartGloalGC}) & 2.5\%\\
+\texttt{ForwardObj} (\texttt{MinorGC}) & 2.5\% \\
+\texttt{letjoinK<14AB6>} & 1.5\% \\
+\texttt{inBoxTmp<10F19>} & 1.5\%\\
+\texttt{anon<10F15>} & 1.5\%\\ %anon<10084> in CPS
+\end{tabular}
+\end{center}
+
+We need to determine a strategy for dealing with functions that we would like to see flattened even though they are used in a higher-order manner at heavily shared call sites.
+We may want to either inline or monomorphize functions like \texttt{filterP} and \texttt{mapP}.
+It may also be worth switching to reference-counted control-flow analysis to improve the quality of our call site identification.
+
+I believe that if we can reduce the number of allocations we are performing, we will reduce the amount of time spent in the garbage collector.
+I do not have any ideas as to how to reduce the amount of time processors are spending either idle or spinning looking for work.
+
+\paragraph{Scheduler Work Loop}
+
+The most-called function, \texttt{else<118CA>}, corresponds to the \texttt{else} clause within the function \texttt{lp2} in the schedule function that is waiting for work to be made available to execute on a VProc.
+
+\begin{lstlisting}
+fun waitForWork () : () =
+    cont workIsAvailable () = return ()  (* leave the waitForWork loop *)
+    fun lp1 (i : int) : () =
+        let w : bool = VProcQueue.@poll-landing-pad-from-atomic (self)
+        do case w
+    	of true => throw workIsAvailable ()
+    	 | false => return ()
+           end
+        do Pause ()
+        fun lp2 (j : int) : () = 
+    	if I32Gt (j, 500) then return () else apply lp2 (I32Add (j, 1))
+        do apply lp2 (0)
+        if I32Gt (i, 2000) then return () else apply lp1 (I32Add (i, 1))
+    do apply lp1 (0)
+    let w : bool = apply wakeupSleepingThreads ()
+    do case w
+        of true => throw workIsAvailable ()
+         | false => return ()
+       end
+    let _ : bool = VProc.@nanosleep-from-atomic (self, 1000000:long)
+    apply waitForWork ()
+\end{lstlisting}
+
+Fortunately, flattening has removed allocations from this function, so it is just spinning on a counter waiting for work to be made available.
+This function is probably in fine shape.
+
+\begin{lstlisting}
+fun waitForWork<EC89>#2.2 (-; retK<EC8A>#2.1:cont()) =
+    cont workIsAvailable<EC8B>#2.2 () =
+        throw retK<EC8A>#2.1 ()
+    fun lp1<EC8C>#2.2 (i<EC8D>#2:int / retK<EC8E>#2.1:cont()) =
+        cont letJoinK<EC90>#1 (landingPadItems<EC8F>#2:[[int,any,int,any],cont(enum(0)),any]) =
+            let _t<EC91>#1:enum(0) = enum(0):enum(0)
+            let _t<EC92>#1:[[int,any,int,any],cont(enum(0)),any] = ([[int,any,int,any],cont(enum(0)),any])_t<EC91>#1
+            cont letJoinK<EC94>#2.2 (w<EC93>#1:enum(1)) =
+                switch w<EC93>#1
+                  case 0x0:
+                    do Pause()
+                    fun lp2<EC96>#2.2 (j<EC97>#2:int / retK<EC98>#2.1:cont()) =
+                        let _t<EC99>#1:int = 500:int
+                        if I32Gt(j<EC97>#2,_t<EC99>#1) then
+                          throw retK<EC98>#2.1 ()
+                        else
+                          let _t<EC9A>#1:int = 1:int
+                          let _t<EC9B>#1:int = I32Add(j<EC97>#2,_t<EC9A>#1)
+                          apply lp2<EC96>#2.2 (_t<EC9B>#1 / retK<EC98>#2.1)
+                    let _t<EC9C>#1:int = 0:int
+                    cont letJoinK<EC9D>#1 () =
+                        let _t<EC9E>#1:int = 2000:int
+                        if I32Gt(i<EC8D>#2,_t<EC9E>#1) then
+                          throw retK<EC8E>#2.1 ()
+                        else
+                          let _t<EC9F>#1:int = 1:int
+                          let _t<ECA0>#1:int = I32Add(i<EC8D>#2,_t<EC9F>#1)
+                          apply lp1<EC8C>#2.2 (_t<ECA0>#1 / retK<EC8E>#2.1)
+                    apply lp2<EC96>#2.2 (_t<EC9C>#1 / letJoinK<EC9D>#1)
+                  case 0x1:
+                    throw workIsAvailable<EC8B>#2.2 ()
+                  end
+\end{lstlisting}
+
+\paragraph{inBox}
+
+The first pieces of code in the profiler corresponding to code in the source program are \texttt{letjoinK<14AB6>} and \texttt{inBoxTmp<10F19>}.
+Both of these blocks are related to the inner set of floating point comparisons in the \texttt{inBox} function below.
+
+\begin{lstlisting}
+fun inBox (BOX (llx, lly, rux, ruy)) (MP (px, py, _)) =
+    (px > llx) andalso (px <= rux) andalso (py > lly) andalso (py <= ruy)
+\end{lstlisting}
+
+Unfortunately, this code is subject to a huge number of memory references.
+The CPS code below corresponds to the block \texttt{inBoxTmp}.
+This code shows a large number of selections from parameters to the function.
+Even worse, all of the targets of the floating point comparisons that are from the enclosing scope are being stored into a closure record and turn into selections in the CFG.\footnote{Code not included because deeply nested conditionals turn into many pages of barely readable CFG.} 
+The outer function, \texttt{inBox}, is eligible for flattening  because it is called within the body of \texttt{filterP}, but due to incompatible signatures with other functions called from \texttt{filterP} does not have its signature modified.
+Our control-flow analysis is unable to determine where \texttt{inBoxTmp} is called, so this function is not a candidate for flattening.
+ 
+\begin{lstlisting}
+fun inBoxTmp<100AC>#1 (param<100AD>#1:[double,double,double] / retK<100AE>#5.5:cont(enum(1))) =
+    let param<100B0>#2:[double,double,double] = ([double,double,double])param<100AD>#1
+    let _t<100B1>#2:double = #0(param<100B0>#2)
+    let _t<100B2>#2:double = #1(param<100B0>#2)
+    if F64Lte(_t<100B2>#2,_t<100AB>#1) then
+      if F64Gt(_t<100B2>#2,_t<100A9>#1) then
+        if F64Lte(_t<100B1>#2,_t<100AA>#1) then
+          if F64Gt(_t<100B1>#2,_t<100A8>#1) then
+            let con_true<100B3>#1:enum(1) = enum(1):enum(1)
+            throw retK<100AE>#5.5 con_true<100B3>#1
+          else
+            let con_false<100B4>#1:enum(1) = enum(0):enum(1)
+            throw retK<100AE>#5.5 con_false<100B4>#1
+        else
+          let con_false<100B5>#1:enum(1) = enum(0):enum(1)
+          throw retK<100AE>#5.5 con_false<100B5>#1
+      else
+        let con_false<100B6>#1:enum(1) = enum(0):enum(1)
+        throw retK<100AE>#5.5 con_false<100B6>#1
+    else
+      let con_false<100B7>#1:enum(1) = enum(0):enum(1)
+      throw retK<100AE>#5.5 con_false<100B7>#1
+\end{lstlisting}
+
+The join continuation block is the one that packages up all of those pieces of data into a heap-allocated structure for use in the \texttt{inBoxTmp} block.
+
+\paragraph{CalcCentroid}
+
+The anonymous generated function, appearing last on the table in the introduction, corresponds to the inner set of multiplications within the parallel array expression in the function below, \texttt{calcCentroid}.
+
+\begin{lstlisting}
+fun calcCentroid (mpts : mass_point parray) : mass_point = 
+    let
+        fun circlePlus ((mx0,my0,m0), (mx1,my1,m1)) = (mx0+mx1, my0+my1, m0+m1)
+        val (sum_mx, sum_my, sum_m) = 
+    	reduceP (circlePlus, (0.0, 0.0, 0.0), [| (m*x, m*y, m) | MP (x, y, m) in mpts |])
+    in
+        MP (sum_mx / sum_m, sum_my / sum_m, sum_m)
+    end
+\end{lstlisting}
+
+Unfortunately, flattening is unable to remove any of the standard calling convention-related allocations on this function.
+These allocations cannot be removed because the function is passed as an argument into \texttt{mapP}, and due to the shared call sites within the body of \texttt{mapP},\footnote{6 anonymous functions and \texttt{bumpParticle}.} the calling convention of \texttt{anon<10084>} is a candidate for flattening but cannot share a modified convention with the others.
+There are a large number of selections into allocated data as well as a large number of allocations.
+
+\begin{lstlisting}
+fun anon<10084>#1 (x1<10085>#1:[double,double,double] / retK<10086>#1.1:cont(any),_exh<10087>#0:cont(any)) =
+    let x1<10088>#3:[double,double,double] = ([double,double,double])x1<10085>#1
+    let _t<10089>#1:double = #0(x1<10088>#3)
+    let _t<1008A>#1:double = #1(x1<10088>#3)
+    let _t<1008B>#3:double = #2(x1<10088>#3)
+    let _anon_<1008C>#1:[double] = alloc (_t<1008B>#3)
+    let _t<1008D>#1:double = F64Mul(_t<1008B>#3,_t<10089>#1)
+    let res<1008E>#1:[double] = alloc (_t<1008D>#1)
+    let _t<1008F>#1:double = F64Mul(_t<1008B>#3,_t<1008A>#1)
+    let res<10090>#1:[double] = alloc (_t<1008F>#1)
+    let _tpl<10091>#1:[[double],[double],[double]] = alloc (res<1008E>#1,res<10090>#1,_anon_<1008C>#1)
+    throw retK<10086>#1.1 _tpl<10091>#1
+\end{lstlisting}
+
+
+\end{document}
