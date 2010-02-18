@@ -29,7 +29,7 @@ structure MandelbrotPar =
 	        val delta = side / (Float.fromInt (N-1))
 		val c_re = xBase + (delta * Float.fromInt j)
 		val c_im = yBase - (delta * Float.fromInt i)
-		fun loop (cnt, z_re, z_im) = 
+		fun manloop (cnt, z_re, z_im) = 
 		    if (cnt < maxCount)
 		      then let
 			val z_re_sq = z_re * z_re
@@ -40,26 +40,26 @@ structure MandelbrotPar =
 			    else let
 			      val z_re_im = z_re * z_im
 			      in
-				loop(cnt+1, (z_re_sq - z_im_sq) + c_re, z_re_im + z_re_im + c_im)
+				manloop(cnt+1, (z_re_sq - z_im_sq) + c_re, z_re_im + z_re_im + c_im)
 			      end
 			end
 		      else cnt
 		in
-		  loop (0, c_re, c_im)
+		  manloop (0, c_re, c_im)
 		end
 	  val pixels = [| [| pix2rgb (elt (i, j)) | j in [| 0 to N-1 |] |] | i in [| 0 to N-1 |] |]
 	  val image = Image.new (N, N)
 	  fun output (i, j, (r, g, b)) = Image.update3f (image, i, j, r, g, b);
 	  fun outputImg i = if i < N
 		  then let
-		    fun loop j = if j < N
+		    fun lp j = if j < N
 			then (
 			     output (i, j, subP(subP(pixels, i), j));
-			     loop (j+1)
+			     lp (j+1)
 			  )
 			else outputImg (i+1)
 		    in
-		       loop 0
+		       lp 0
 		    end
 		  else ()
 	  in
