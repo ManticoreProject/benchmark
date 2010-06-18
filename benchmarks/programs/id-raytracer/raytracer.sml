@@ -9,13 +9,14 @@ struct
     val itod = real
     val dtos = Real.toString
     val tand = Math.tan
+    val clampd = fn d => if d < 0.0 then 0.0 else if d > 1.0 then 1.0 else d
     val gettimeofday = Time.toReal o Time.now
 
     abstype image = IMG of (Word8.word * Word8.word * Word8.word) Array2.array
     with
     fun newImage (wid, ht) = IMG(Array2.array(ht, wid, (0w0, 0w0, 0w0)))
     fun updateImage3d (IMG img, i, j, r, g, b) = let
-	  fun cvt x = Word8.fromInt(Real.round(x * 255.0))
+	  fun cvt x = Word8.fromInt(Real.round((clampd x) * 255.0))
 	  in
 	    Array2.update(img, j, i, (cvt r, cvt g, cvt b))
 	  end
@@ -207,7 +208,7 @@ struct
     val rand = Random.rand (0, 1)
     fun randSphere _ = 
 	Sphere ((Random.randReal rand, Random.randReal rand, Random.randReal rand),
-		Random.randReal rand, s2)
+		(Random.randReal rand) * 0.07 + 0.01, s2)
 
     val testspheres =
 	 Sphere((0.0,0.0,0.0), 0.5, s3) ::
