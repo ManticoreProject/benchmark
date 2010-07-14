@@ -471,12 +471,12 @@ structure RaytracerPar =
             img
         end
 
-        val img = render (0.0)
         fun loop (m) = let
             val _ = ImageSock.read (sock)
+            val img = render (m)
             val _ = ImageSock.write (sock, img)
         in
-            (* Image.free img; *)
+            Image.free img;
             loop (m+0.1)
         end
     in
