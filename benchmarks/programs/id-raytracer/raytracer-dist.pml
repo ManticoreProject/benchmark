@@ -442,7 +442,7 @@ structure RaytracerPar =
     (* parallel version *)
     fun ray winsize = let
                     
-        val sock = ImageSock.open ("128.135.11.133", 8080)
+        val sock = ImageSock.open ("128.135.11.69", 8080)
 
         fun render (m) = let
             val lookfrom = (2.1, 1.3, 1.7+m);
@@ -472,7 +472,17 @@ structure RaytracerPar =
         end
 
         fun loop (m) = let
-            val _ = ImageSock.read (sock)
+            fun readChars () = let
+                (* integer. -1=no pending input,
+                 0=quit, 1=send image, 
+                 anything else=input character *)
+                val i = ImageSock.read (sock)
+            in
+                if i = ~1 orelse i = 0 orelse i = 1
+                then ()
+                else (print (Int.toString i); print " "; readChars())
+            end
+            val _ = readChars ()
             val img = render (m)
             val _ = ImageSock.write (sock, img)
         in
