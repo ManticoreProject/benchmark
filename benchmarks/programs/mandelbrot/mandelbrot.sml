@@ -1,4 +1,4 @@
-(* mandelbrot-seq.pml
+(* mandelbrot.sml
  *
  * COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
@@ -6,7 +6,7 @@
  * Sequential version of mandelbrot-set computation. The output goes to out.ppm.
  *)
 
-structure MandelbrotSeq =
+structure Mandelbrot =
   struct
 
     val xBase = ~2.0
@@ -72,13 +72,19 @@ structure Main =
   struct
 
     val dfltN = 1024
+
+    fun getSizeArg args =
+	(case args
+	  of arg1 :: arg2 :: args =>
+	     if String.compare (arg1, "-size") = EQUAL then Int.fromString arg2
+	     else getSizeArg (arg2 :: args)
+	   | _ => NONE
+	(* end case *))
 	
     fun main (_, args) =
 	let
-	    val n = (case args
-		      of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
-		       | _ => dfltN)
-	    fun doit () = MandelbrotSeq.mandelbrot n
+	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
+	    fun doit () = Mandelbrot.mandelbrot n
 	    val image = RunSeq.run doit
 	in
 	    (* Image.output("mand.ppm", image); Image.free image;*)

@@ -6,11 +6,11 @@
 
 structure SMVM = struct
 
-  val sumP = (fn a => reduceP (fn (x,y) => x + y, 0.0, a))
+  fun sum a = Rope.reduce (fn (x,y) => x + y) 0.0 a
 
-  fun dotp (sv, v) = sumP [| x * subP(v, i) | (i,x) in sv |]
+  fun dotp (sv, v) = sum (Rope.map (fn (i, x) => x * Rope.sub (v, i)) sv)
 
-  fun smvm (sm, v) = [| dotp (sv, v) | sv in sm |]
+  fun smvm (sm, v) = Rope.map (fn sv => dotp (sv, v)) sm
 
 end
 
@@ -22,7 +22,7 @@ structure Main =
   (* reads from any matrix-market named mtx.txt -- just strip off the header comments first *)
     fun readFromFile () =
 	let
-	    val f = TextIO.openIn "mtx.txt"
+	    val f = TextIO.openIn "../../../input-data/mtx.txt"
 	    fun rdd d = Option.valOf (Double.fromString d)
 	    fun rdi d = Option.valOf (Int.fromString d)
 	  (* number of rows, number of columns, number of nonzeros *)
@@ -50,20 +50,19 @@ structure Main =
 	    (rows, C)
 	end
 
-    fun rows2sm rows = fromListP (List.tabulate (A.length rows, fn r => fromListP (A.sub (rows, r))))
+    fun rows2sm rows = Rope.fromList (List.tabulate (A.length rows, fn r => Rope.fromList (A.sub (rows, r))))
 
     val epsilon = 0.0000000001
 
-    fun bumpSV1 sv = [| (i+1, x+epsilon) | (i,x) in sv |]
-    fun bumpSV2 sv = [| (i-1, x-epsilon) | (i,x) in sv |]
-    fun bumpSM sm = [| bumpSV2 (bumpSV1 sv) | sv in sm |]
+    fun bumpSV1 sv = Rope.map (fn (i,x) => (i+1, x+epsilon)) sv
+    fun bumpSV2 sv = Rope.map (fn (i,x) => (i-1, x-epsilon)) sv
+    fun bumpSM sm = Rope.map (fn sv => bumpSV2 (bumpSV1 sv)) sm
 	
     fun main (_, args) =
 	let
 	    val (mtx, C) = readFromFile ()
-	    val mtx = rows2sm mtx
-	    val mtx = RunPar.runSilent(fn _ => bumpSM mtx)
-	    val v = fromListP (List.tabulate (C, fn _ => Rand.randDouble (0.0, 10000.0)))
+	    val (mtx, v) = RunPar.runSilent(fn _ => (bumpSM (rows2sm mtx),
+				Rope.fromList (List.tabulate (C, fn _ => Rand.randDouble (0.0, 10000.0)))))
 	    fun doit () = SMVM.smvm (mtx, v)
 	in
 	    RunPar.run doit

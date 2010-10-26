@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
+# COPYRIGHT (c) 2010 The Manticore Project (http://manticore.cs.uchicago.edu)
 # All rights reserved.
 #
 # See the README file for instructions.
@@ -16,7 +16,7 @@ BENCHMARK_PATH=""
 EXPERIMENT_NAME="experiment"
 DESCRIPTION=""
 GEN_GC_STATS="@GEN_GC_STATS@"
-PMLCFLAGS="@PMLCFLAGS@"
+PMLC_FLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
 PRETTY_INPUT=""
 
@@ -76,22 +76,35 @@ fi
 # Gather metadata
 
 function metadata {
-    echo -e "val $1 = $2" >> $LOG_FILE
+    echo -e "\"$1\" : $2," >> $LOG_FILE
 }
 
 function metadata_list {
-    echo -e "val $2 = " >> $LOG_FILE
+    echo -e "\"$2\" : [" >> $LOG_FILE
+    n=0
     for x in $1
     do
-	echo -n -e " $x :: " >> $LOG_FILE
+	n=$(( n + 1 ))
     done
-    echo -e "nil" >> $LOG_FILE
+    cnt=0
+    for x in $1
+    do
+	if [ $cnt -lt $(( n - 1 )) ]; then
+	    echo -n -e " $x, " >> $LOG_FILE
+	else 
+	    echo -n -e " $x " >> $LOG_FILE
+	fi
+	cnt=$(( cnt + 1 ))
+    done
+    echo -e "]," >> $LOG_FILE
 }
 
 DATETIME=$( date +"%F-%H-%M-%S" )
 EXPERIMENT_RESULTS_DIR="$RESULTS_DIR/$EXPERIMENT_NAME"
-mkdir $EXPERIMENT_RESULTS_DIR
-LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.sml"
+if [ ! -e $EXPERIMENT_RESULTS_DIR ]; then
+    mkdir $EXPERIMENT_RESULTS_DIR
+fi
+LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.json"
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -129,26 +142,23 @@ pushd $MANTICORE_ROOT > /dev/null
 popd > /dev/null
 
 EXPERIMENT_NAME_SML=${EXPERIMENT_NAME//"-"/"_"}
-echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
+echo -e "{" >> $LOG_FILE
 
-echo "datatype gc = datatype Common.gc" >> $LOG_FILE
-echo "datatype gc_stats = datatype Common.gc_stats" >> $LOG_FILE
 metadata "problem_name" "\"$EXPERIMENT_NAME\""
 
-metadata "compiler_src_url" "SOME \"$COMPILER_SVN_URL\""
-metadata "compiler_svn" "SOME $COMPILER_SVN_REVISION"
-metadata "script_url" "SOME \"$SCRIPT_SVN_URL\""
-metadata "script_svn" "SOME $SCRIPT_SVN_REVISION"
+metadata "compiler_src_url" "\"$COMPILER_SVN_URL\""
+metadata "compiler_svn" "$COMPILER_SVN_REVISION"
+metadata "script_url" "\"$SCRIPT_SVN_URL\""
+metadata "script_svn" "$SCRIPT_SVN_REVISION"
 if [ $SEQUENTIAL_BINARY == "true" ]; then
-    metadata "seq_compilation" "SOME true"
+    metadata "seq_compilation" "true"
 else
-    metadata "seq_compilation" "SOME false"
+    metadata "seq_compilation" "false"
 fi
-MAX_LEAF_SIZE=$( $SCRIPTS_DIR/print-max-leaf-size.sh )
-metadata "max_leaf_size" "SOME $MAX_LEAF_SIZE"
-metadata "seq_cutoff" "NONE"
+metadata "max_leaf_size" "0"
+metadata "seq_cutoff" "0"
 
-metadata "language" "Common.Manticore"
+metadata "language" "\"Manticore\""
 metadata "compiler" "\"pmlc\""
 PMLC_VERSION=$( $PMLC -version 2>&1 )
 metadata "version" "\"$PMLC_VERSION\""
@@ -173,68 +183,85 @@ echo "Logging performance results to $LOG_FILE"
 if [ $GEN_GC_STATS == "false" ]; then
     ARGS="$INPUT"
 else
-    ARGS="$INPUT -gcstats=all,sml"
+    ARGS="$INPUT -gcstats=all,json"
 fi
 
 if [ $SEQUENTIAL_BINARY == "true" ]; then
+    cnt=0
     SEQUENTIAL_EXE=$BENCHMARK_PATH
-    echo "val runs =" >> $LOG_FILE
+    echo "\"runs\" : [" >> $LOG_FILE
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	echo "$SEQUENTIAL_EXE $ARGS"
-	RES=$( $SEQUENTIAL_EXE $ARGS 2> stats.sml )
+	RES=$( $SEQUENTIAL_EXE $ARGS 2> stats.json )
 	if [ $? == "0" ]; then
-	    echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
+	    echo -n -e "\t\t{ \"n_procs\" : 0,\t\t\"time_sec\" : " >> $LOG_FILE
 	    echo -n -e "$RES" >> $LOG_FILE
 	    echo -n -e ",\t\t" >> $LOG_FILE
 	    if [ $GEN_GC_STATS == "false" ]; then
-		echo -n -e "gc=[]" >> $LOG_FILE
+		echo -n -e "\"gc\" : []" >> $LOG_FILE
 	    else
-		echo -n -e "gc=" >> $LOG_FILE
-		cat stats.sml >> $LOG_FILE
-		rm -rf stats.sml
+		echo -n -e "\"gc\" :" >> $LOG_FILE
+		cat stats.json >> $LOG_FILE
+		rm -rf stats.json
 	    fi
 	else
 	    echo "Benchmark failed unexpectedly with nonzero return code"
 	    exit 1
 	fi
-	echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
+	echo -n -e "}" >> $LOG_FILE
+	if [ $cnt -lt $(( $NUM_TRIALS - 1 )) ]; then
+	    echo -e "," >> $LOG_FILE
+	fi
+	cnt=$(( $cnt + 1 ))
     done
-    echo -e "\t\tnil" >> $LOG_FILE
+    echo -e "\t\t]" >> $LOG_FILE
 else
+    n=0
+    for ((i=1;i<=NUM_TRIALS;i+=1)); do
+	for p in $PROCS; do
+	    n=$(( $n + 1 ))
+	done
+    done
+
     PARALLEL_EXE=$BENCHMARK_PATH
-    echo "val runs =" >> $LOG_FILE
+    echo "\"runs\" : [" >> $LOG_FILE
+    cnt=0
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	for p in $PROCS; do
 	    echo "$PARALLEL_EXE -p $p $ARGS"
-	    RES=$( $PARALLEL_EXE -p $p $ARGS 2> stats.sml )
+	    RES=$( $PARALLEL_EXE -p $p $ARGS 2> stats.json )
 	    retcode=$?
 	    nretries=0
 	    while [ $retcode != "0" ]; do
 		let nretries=nretries+1
 		echo "Benchmark failed unexpectedly with nonzero return code -- retrying."
-		RES=$( $PARALLEL_EXE -p $p $ARGS 2> stats.sml )
+		RES=$( $PARALLEL_EXE -p $p $ARGS 2> stats.json )
 		retcode=$?
 		if [ $nretries -gt 100 ]; then
 		    echo "Exceeded maximum number of failed executions of the benchmark"
 		    exit 1
 		fi
 	    done
-	    echo -n -e "\t\t{ n_procs=$p,\t\ttime_sec=" >> $LOG_FILE
+	    echo -n -e "\t\t{ \"n_procs\" : $p,\t\t\"time_sec\" : " >> $LOG_FILE
 	    echo -n -e "$RES" >> $LOG_FILE
 	    echo -n -e ",\t\t" >> $LOG_FILE
 	    if [ $GEN_GC_STATS == "false" ]; then
-		echo -n -e "gc=[]" >> $LOG_FILE
+		echo -n -e "\"gc\" : []" >> $LOG_FILE
 	    else
-		echo -n -e "gc=" >> $LOG_FILE
-		cat stats.sml >> $LOG_FILE
-		rm -rf stats.sml
+		echo -n -e "\"gc\" :" >> $LOG_FILE
+		cat stats.json >> $LOG_FILE
+		rm -rf stats.json
+	    fi 
+	    echo -n "}" >> $LOG_FILE
+	    if [ $cnt -lt $(( $n - 1 )) ]; then
+		echo -e "," >> $LOG_FILE
 	    fi
-	    echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
+	    cnt=$(( cnt + 1 ))
 	done
     done
-    echo -e "\t\tnil" >> $LOG_FILE
+    echo -e "\t\t]" >> $LOG_FILE
 fi
 
-echo -e "end" >> $LOG_FILE # structure
+echo -e "}" >> $LOG_FILE
 
 popd > /dev/null

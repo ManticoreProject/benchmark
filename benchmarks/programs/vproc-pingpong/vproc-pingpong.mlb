@@ -1,5 +1,0 @@
-../common/run-seq.pml
-ann "cpp" ""
-in
-    vproc-pingpong.pml
-end

@@ -1,33 +1,6 @@
-** Benchmark interface **
 
-Each benchmark shall implement the following signature.
 
-signature MAIN : sig
-  val run : int -> unit
-end
-
-The run function takes a problem size, runs the benchmark,
-and prints the result to stdout. The result should be a
-legal SML expression.
-
-** Benchmark script **
-
-The benchmark script takes the following parameters:
-
-    -s	      problem size**
-    -p	      number of processors*
-    -f	      path to the executable
-    -e	      indicates that the binary was compiled for sequential execution
-    -n	      name of the experiment
-    -d        brief description of the experiment
-    -t	      number of repeated runs to do for each data point (default is 1)**
-    -r	      specify the manticore root directory (default is provided by configure script)
-    -i	      string used to report the input parameter used for the benchmark
-
-* zero or more instances of the argument may occur
-** the argument is optional
-
-** Benchmark results **
-Results are formatted as SML modules that match the signature in 
-  manticore-db/src/sml/experiment.sig
-and generated in the results directory.
+Binary             Description                        Build file name
+mc-par             manticore parallel                 mc.mlb
+mlton              mlton (sequential)                 mlton.mlb
+smlnj              smlnj (sequential)                 smlnj.mlb

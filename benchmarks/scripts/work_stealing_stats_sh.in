@@ -39,11 +39,6 @@ do
     esac
 done
 
-#if [ ! $PMLCFLAGS ~= *log* ]; then
-#    echo "log file generation must be enabled at compile time"
-#    exit 1
-#fi
-
 # avoid running this experiment within the same second as a previous experiment
 sleep 2
 
@@ -81,6 +76,10 @@ function metadata_list {
 
 DATETIME=$( date +"%F-%H-%M-%S" )
 LOG_FILE_NAME=$EXPERIMENT_NAME-$DATETIME.sml
+RESULTS_DIR="$RESULTS_DIR/$EXPERIMENT_NAME"
+if [ ! -e $RESULTS_DIR ]; then
+    mkdir $RESULTS_DIR
+fi
 LOG_FILE=$RESULTS_DIR/$LOG_FILE_NAME
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
@@ -135,8 +134,7 @@ if [ $SEQUENTIAL_BINARY == "true" ]; then
 else
     metadata "seq_compilation" "SOME false"
 fi
-MAX_LEAF_SIZE=$( $SCRIPTS_DIR/print-max-leaf-size.sh )
-metadata "max_leaf_size" "SOME $MAX_LEAF_SIZE"
+metadata "max_leaf_size" "NONE"
 metadata "seq_cutoff" "NONE"
 
 metadata "language" "Common.Manticore"

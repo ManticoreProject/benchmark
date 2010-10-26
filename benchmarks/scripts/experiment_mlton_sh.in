@@ -8,7 +8,7 @@
 RESULTS_DIR="@MANTI_BENCH_RESULTS@"
 SCRIPTS_DIR="@MANTI_BENCH_SCRIPTS@"
 MLTON="@MLTON@"
-SIZE=""
+INPUT=""
 BENCHMARK_EXE=""
 EXPERIMENT_NAME="experiment"
 DESCRIPTION=""
@@ -20,7 +20,7 @@ usage="See the README file for instructions"
 while getopts ":s:f:n:d:t:" options; 
 do
     case $options in
-	s ) SIZE="$OPTARG";;
+	s ) INPUT="$OPTARG";;
 	f ) BENCHMARK_EXE="$OPTARG";;
 	n ) EXPERIMENT_NAME="$OPTARG";;
 	d ) DESCRIPTION="$OPTARG";;
@@ -46,22 +46,35 @@ sleep 2
 # Gather metadata
 
 function metadata {
-    echo -e "val $1 = $2" >> $LOG_FILE
+    echo -e "\"$1\" : $2," >> $LOG_FILE
 }
 
 function metadata_list {
-    echo -e "val $2 = " >> $LOG_FILE
+    echo -e "\"$2\" : [" >> $LOG_FILE
+    n=0
     for x in $1
     do
-	echo -n -e " $x :: " >> $LOG_FILE
+	n=$(( n + 1 ))
     done
-    echo -e "nil" >> $LOG_FILE
+    cnt=0
+    for x in $1
+    do
+	if [ $cnt -lt $(( n - 1 )) ]; then
+	    echo -n -e " $x, " >> $LOG_FILE
+	else 
+	    echo -n -e " $x " >> $LOG_FILE
+	fi
+	cnt=$(( cnt + 1 ))
+    done
+    echo -e "]," >> $LOG_FILE
 }
 
 DATETIME=$( date +"%F-%H-%M-%S" )
 EXPERIMENT_RESULTS_DIR="$RESULTS_DIR/$EXPERIMENT_NAME"
-mkdir $EXPERIMENT_RESULTS_DIR
-LOG_FILE=$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.sml
+if [ ! -e $EXPERIMENT_RESULTS_DIR ]; then
+    mkdir $EXPERIMENT_RESULTS_DIR
+fi
+LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.json"
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -88,28 +101,27 @@ EXPERIMENTOR=$( whoami )
 MACHINE=$( uname -n )
 
 EXPERIMENT_NAME_SML=${EXPERIMENT_NAME//"-"/"_"}
-echo -e "structure $EXPERIMENT_NAME_SML$DATETIME_SML : EXPERIMENT = struct" >> $LOG_FILE
+echo -e "{" >> $LOG_FILE
 
-echo "datatype gc = datatype Common.gc" >> $LOG_FILE
-echo "datatype gc_stats = datatype Common.gc_stats" >> $LOG_FILE
 metadata "problem_name" "\"$EXPERIMENT_NAME\""
 
-metadata "compiler_src_url" "NONE"
-metadata "compiler_svn" "NONE"
-metadata "script_url" "SOME \"$SCRIPT_SVN_URL\""
-metadata "script_svn" "SOME $SCRIPT_SVN_REVISION"
-metadata "seq_compilation" "SOME true"
-metadata "max_leaf_size" "NONE"
-metadata "seq_cutoff" "NONE"
+metadata "compiler_src_url" "\"$COMPILER_SVN_URL\""
+metadata "compiler_svn" "0"
+metadata "script_url" "\"$SCRIPT_SVN_URL\""
+metadata "script_svn" "$SCRIPT_SVN_REVISION"
+metadata "seq_compilation" "true"
 
-metadata "language" "Common.SML"
+metadata "max_leaf_size" "0"
+metadata "seq_cutoff" "0"
+
+metadata "language" "\"SML\""
 metadata "compiler" "\"mlton\""
 MLTON_VERSION=$( $MLTON )
 metadata "version" "\"$MLTON_VERSION\""
 
 metadata "bench_url" "\"$BENCHMARK_SVN_URL\""
 metadata "bench_svn" "$BENCHMARK_SVN_REVISION"
-metadata "input" "\"$SIZE\""
+metadata "input" "\"$INPUT\""
 metadata "username" "\"$EXPERIMENTOR\""
 metadata "datetime" "\"$DATETIME_MD\""
 metadata "machine" "\"$MACHINE\""
@@ -122,23 +134,28 @@ metadata "nTrials" "$NUM_TRIALS"
 
 echo "Logging performance results to $LOG_FILE"
 
-echo "val runs =" >> $LOG_FILE
+cnt=0
+echo "\"runs\" : [" >> $LOG_FILE
 for ((i=1;i<=NUM_TRIALS;i+=1)); do
-    echo "./$BENCHMARK_EXE"
-    RES=$( ./$BENCHMARK_EXE )
+    echo "./$BENCHMARK_EXE $INPUT"
+    RES=$( ./$BENCHMARK_EXE $INPUT )
     if [ $? == "0" ]; then
-	echo -n -e "\t\t{ n_procs=0,\t\ttime_sec=" >> $LOG_FILE
+	echo -n -e "\t\t{ \"n_procs\" : 0,\t\t\"time_sec\" : " >> $LOG_FILE
 	echo -n -e "$RES" >> $LOG_FILE
 	echo -n -e ",\t\t" >> $LOG_FILE
-	echo -n -e "gc=[]" >> $LOG_FILE
+	echo -n -e "\"gc\" : []" >> $LOG_FILE
     else
 	echo "Benchmark failed unexpectedly with nonzero return code"
 	exit 1
     fi
-    echo -e ", \t\tcpu_time_sec=NONE,\t\tmax_space_bytes=NONE} ::" >> $LOG_FILE
+    echo -n -e "}" >> $LOG_FILE
+    if [ $cnt -lt $(( $NUM_TRIALS - 1 )) ]; then
+        echo -e "," >> $LOG_FILE
+    fi
+    cnt=$(( $cnt + 1 ))
 done
-echo -e "\t\tnil" >> $LOG_FILE
+echo -e "\t\t]" >> $LOG_FILE
 
-echo -e "end" >> $LOG_FILE # structure
+echo -e "}" >> $LOG_FILE # structure
 
 popd > /dev/null

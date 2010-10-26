@@ -1,34 +1,36 @@
-(* barnes-hut.sml
+(* barnes-hut-rope.sml
  * 
- * Barnes Hut computation. This code is adapted from the Data-parallel
- * Haskell benchmark.
- * http://darcs.haskell.org/packages/ndp/examples/barnesHut/
+ * Barnes Hut computation. This code is adapted from the Data-parallel Haskell benchmark. 
+ *   http://darcs.haskell.org/packages/ndp/examples/barnesHut/
+ * This code provides a fix for a bug in the Haskell benchmark. The problem is that bodies
+ * that are too close caused nontermination during the tree-building process.
  *) 
+
+structure Rope = RopeFn (
+		   structure S = VectorSeq
+		   val maxLeafSize = 256
+		   structure RT = SequentialRuntime
+		)
 
 structure BarnesHut =
   struct
 
+    datatype bounding_box = BOX of (real * real * real * real)
+    datatype mass_point = MP of (real * real * real) (* xpos ypos mass *)
+    datatype particle = PARTICLE of (mass_point * real * real) (* mass point and velocity *)
+    datatype bh_tree 
+      = BHT_QUAD of (real * real * real *     (* root mass point *)
+		     bh_tree * bh_tree * bh_tree * bh_tree)
+						    (* subtrees *)
+      | BHT_LEAF of (real * real * real *     (* root mass point *)
+		     mass_point Rope.rope) 
+
     fun ceilingLg (x :int) : int = Real.ceil (Math.log10 (Real.fromInt x) / Math.log10 2.0)
     fun log4 x = ceilingLg x div 2
 
-    structure Double = Real
-    type double = Real.real
-    datatype bounding_box = BOX of (double * double * double * double)
-    datatype mass_point = MP of (double * double * double) (* xpos ypos mass *)
-    datatype particle = PARTICLE of (mass_point * double * double) (* mass point and velocity *)
-    datatype bh_tree 
-      = BHT_QUAD of (double * double * double *     (* root mass point *)
-		     bh_tree * bh_tree * bh_tree * bh_tree)
-						    (* subtrees *)
-      | BHT_LEAF of (double * double * double *     (* root mass point *)
-		     mass_point list) 
-
-    val epsilon : double = 0.05
-    val eClose : double = 0.01
-    val dt = 2.0
-
-    fun xCoord (MP (x, _, _)) = x
-    fun yCoord (MP (_, y, _)) = y
+    val epsilon : real = 0.05
+    val eClose : real = 0.01
+    val dt = 0.025
 
     fun applyAccel (PARTICLE (mp, vx, vy), (ax, ay)) = PARTICLE (mp, vx+ax * dt, vy+ay * dt)
 
@@ -73,47 +75,28 @@ structure BarnesHut =
 		 accel (mpt, x, y, m)
 	(* end case *))
 
-    fun calcCentroid (mpts : mass_point list) : mass_point = 
+    fun calcCentroid (mpts : mass_point Rope.rope) : mass_point = 
 	let
 	    fun circlePlus ((mx0,my0,m0), (mx1,my1,m1)) = (mx0+mx1, my0+my1, m0+m1)
 	    val (sum_mx, sum_my, sum_m) = 
-		List.foldl circlePlus (0.0, 0.0, 0.0) (List.map (fn (MP (x, y, m)) => (m*x, m*y, m)) mpts)
+		Rope.foldl circlePlus (0.0, 0.0, 0.0) (Rope.map (fn MP (x, y, m) => (m*x, m*y, m)) mpts)
 	in
 	    MP (sum_mx / sum_m, sum_my / sum_m, sum_m)
 	end
 
-    fun inBox (BOX (llx, lly, rux, ruy), MP (px, py, _)) =
+    fun inBox (BOX (llx, lly, rux, ruy)) (MP (px, py, _)) =
 	(px > llx) andalso (px <= rux) andalso (py > lly) andalso (py <= ruy)
 
-    (* partition the particles into the four boxes *)
-    fun partition (particles, b1, b2, b3, b4) =
-	let
-	    fun f (p, ((n1,q1), (n2,q2), (n3,q3), (n4,q4))) =
-		if inBox (b1, p) then
-		    ((n1+1,p::q1), (n2,q2), (n3,q3), (n4,q4))
-		else if inBox (b2, p) then
-		    ((n1,q1), (n2+1,p::q2), (n3,q3), (n4,q4))
-		else if inBox (b3, p) then
-		    ((n1,q1), (n2,q2), (n3+1,p::q3), (n4,q4))
-		else if inBox (b4, p) then
-		    ((n1,q1), (n2,q2), (n3,q3), (n4+1,p::q4))
-		else (raise Fail "particle does not fit into a box")
-	in
-	    List.foldl f ((0,nil),(0,nil),(0,nil),(0,nil)) particles
-	end
-
     (* split mass points according to their locations in the quadrants *)
-    fun buildTree (box, particles : mass_point list) : bh_tree =
+    fun buildTree (box, particles : mass_point Rope.rope) : bh_tree =
 	let
-	    val nParticles = List.length particles
-	    val maxDepth = log4 nParticles + 1
-	    fun build (depth, BOX (llx, lly, rux, ruy), nParticles, particles) =
+	    val maxDepth = log4 (Rope.length particles) - 1
+	    fun build (depth, BOX (llx, lly, rux, ruy), particles) =
 		(* note that the stopping condition is based on the depth of our recursion tree. if we did not
 		 * limit the depth, nontermination could occur when two or more particles lie on top of 
 		 * each other. *)
-		(* also note: our stopping condition means that, in the worst case, the depth of our tree is twice the
-		 * depth of a perfectly balanced tree. *)
-		if nParticles <= 1 orelse depth > maxDepth then
+		(* in the worst case the depth of our tree is twice the depth of a perfectly balanced tree. *)
+		if Rope.length particles <= 1 orelse depth >= maxDepth then
 		    let
 			val MP (x, y, m) = calcCentroid particles
 		    in
@@ -123,54 +106,84 @@ structure BarnesHut =
 		    let
 			val MP (x, y, m) = calcCentroid particles
 			val (midx,  midy) = ((llx + rux) / 2.0 , (lly + ruy) / 2.0) 
-			val b1 = BOX (llx, lly, midx, midy)
+			val b1 = BOX (llx,  lly,  midx,  midy)
 			val b2 = BOX (llx,  midy, midx,  ruy)
 			val b3 = BOX (midx, midy, rux,   ruy)
-			val b4 = BOX (midx, lly,  rux,  midy)
-			val ((n1,p1), (n2,p2), (n3,p3), (n4,p4)) = partition (particles, b1, b2, b3, b4)
+			val b4 = BOX (midx, lly,  rux,   midy)
+			val (pb1, pb2, pb3, pb4) = ( Rope.filter (inBox b1) particles,
+						      Rope.filter (inBox b2) particles,
+						      Rope.filter (inBox b3) particles,
+						      Rope.filter (inBox b4) particles )
 			val depth' = depth + 1
-			val (q1, q2, q3, q4) =
-			    ( build (depth', b1, n1, p1),
-			      build (depth', b2, n2, p2),
-			      build (depth', b3, n3, p3),
-			      build (depth', b4, n4, p4) )
+			val (q1, q2, q3, q4) = ( build (depth', b1, pb1),
+						  build (depth', b2, pb2),
+						  build (depth', b3, pb3),
+						  build (depth', b4, pb4) )
 		    in
 			BHT_QUAD (x, y, m, q1, q2, q3, q4)
 		    end
 	in
-	    build (0, box, nParticles, particles)
+	    build (0, box, particles)
 	end
 
-    fun oneStep (pts : particle list) : particle list =
-	(case pts
-	  of nil => nil
-	   | PARTICLE (MP (x0, y0, _), _, _) :: _ =>
-	     let
-		 val mspnts = List.map (fn (PARTICLE (mpnt, _, _)) => mpnt) pts
-		 val llx = List.foldl Double.min x0 (List.map xCoord mspnts) - epsilon
-		 val lly = List.foldl Double.min y0 (List.map yCoord mspnts) - epsilon
-		 val rux = List.foldl Double.max x0 (List.map xCoord mspnts) + epsilon
-		 val ruy = List.foldl Double.max y0 (List.map yCoord mspnts) + epsilon
-		 val tree = buildTree (BOX (llx, lly, rux, ruy), mspnts)
-		 val accels =  List.map (fn mspnt => calcAccel (mspnt, tree)) mspnts
-	     in
-		 List.map applyAccel (ListPair.zip (pts, accels))
-	     end
-	(* end case *))
+    fun oneStep (pts : particle Rope.rope) : particle Rope.rope  =
+	if Rope.length pts = 0 then
+	    Rope.empty ()
+	else
+	    let
+		val mspnts = Rope.map (fn PARTICLE (mpnt, _, _) => mpnt) pts
+		val MP (x0, y0, _) = Rope.sub (mspnts, 0)
+		(* the perimeter of this box fits snugly around the particles, but touches none of them *)
+		val box0 = BOX (Rope.foldl Real.min x0 (Rope.map (fn MP (x, _, _) => x) mspnts) - epsilon,
+				Rope.foldl Real.min y0 (Rope.map (fn MP (_, y, _) => y) mspnts) - epsilon,
+				Rope.foldl Real.max x0 (Rope.map (fn MP (x, _, _) => x) mspnts) + epsilon,
+				Rope.foldl Real.max y0 (Rope.map (fn MP (_, y, _) => y) mspnts) + epsilon)
+		val tree = buildTree (box0, mspnts)
+		fun ca (pt, mspnt) = applyAccel(pt, calcAccel (mspnt, tree))
+	    in
+		Rope.Pair.mapEq ca (pts, mspnts)
+	    end
 
   end
 
 structure Main =
   struct
 
-    val dfltN = 20000    (* default number of bodies *)
-    val dfltI = 15       (* default number of iterations *)
+    val dfltN = 200000   (* default number of bodies *)
+    val dfltI = 20       (* default number of iterations *)
+
+    structure V = Vector2
+    structure BH = BarnesHut
+
+    fun stringSame (s1, s2) = String.compare (s1, s2) = EQUAL
+
+    fun getSizeArg args =
+	(case args
+	  of arg1 :: arg2 :: args =>
+	     if stringSame (arg1, "-size") then Int.fromString arg2
+	     else getSizeArg (arg2 :: args)
+	   | _ => NONE
+	(* end case *))
+
+    fun getNumItersArg args =
+	(case args
+	  of arg1 :: arg2 :: args =>
+	     if String.compare (arg1, "-iters") = EQUAL then Int.fromString arg2
+	     else getNumItersArg (arg2 :: args)
+	   | _ => NONE
+	(* end case *))
 
     fun particle (mass, (xp, yp), (xv, yv)) = BarnesHut.PARTICLE(BarnesHut.MP(xp, yp, mass), xv, yv)
+    fun genBodies n = List.map particle (GenBodies.testdata n)
+
+    val epsilon = 0.0000000001
+    fun bumpParticle (BH.PARTICLE (BH.MP(xp, yp, mass), xv, yv)) =
+	(BH.PARTICLE (BH.MP(xp+epsilon, yp+epsilon, mass+epsilon), xv+epsilon, yv+epsilon))
+
 
     fun readFromFile () =
 	let
-	    val f = TextIO.openIn "bodies.txt"
+	    val f = TextIO.openIn "../../../input-data/bodies.txt"
 	    val nParticles = valOf (Int.fromString (valOf (TextIO.inputLine f)))
 	    fun readBody () =
 		(case TextIO.inputLine f
@@ -192,24 +205,35 @@ structure Main =
 	
     fun main (_, args) =
 	let
-	    val initialBodies = (case args
-		      of arg :: _ => List.map particle (GenBodies.testdata (Option.getOpt (Int.fromString arg, dfltN)))
-		       | _ => readFromFile())
+	    val bodiesList = (case getSizeArg args
+			       of NONE => readFromFile ()
+				| SOME n => genBodies n)
+	    val nIters = (case getNumItersArg args of NONE => dfltI | SOME i => i)
+	    val bodiesArray = Rope.fromList bodiesList
+	    (* we do this map to maintain similarity with the Manticore version *)
+	    val bodiesArray = Rope.map bumpParticle bodiesArray
 	    fun doit () = 
 		let
 		    fun iter (ps, i) =
-			if i < dfltI then
-			    (* FIXME: read the top-level box from the input *)
+			if i < nIters then
 			    iter (BarnesHut.oneStep ps, i + 1)
 			else
 			    ps
 
 		in
-		    iter (initialBodies, 0)
+		    iter (bodiesArray, 0)
 		end
-		
+	    val particles = RunSeq.run doit
+	    val BarnesHut.PARTICLE (_, xv, _) = Rope.sub (particles, 0)
 	in
-	    RunSeq.run doit;
+	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
+	     * algorithm is execute in its entirety and that key parts are not optimized away by
+	     * clever compilers.
+	     *)
+	    if Real.isNan xv then
+		raise Fail "bogus result"
+	    else
+		();
 	    OS.Process.success
 	end
 

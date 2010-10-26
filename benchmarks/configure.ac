@@ -47,7 +47,7 @@ dnl ******************** Paths ********************
 
 MANTI_BENCH_ROOT=`pwd`
 MANTI_BENCH_SCRIPTS=$MANTI_BENCH_ROOT/scripts
-MANTI_BENCH_RESULTS=$MANTI_BENCH_ROOT/results
+MANTI_BENCH_RESULTS=$MANTI_BENCH_ROOT/../results
 
 AC_SUBST(MANTI_BENCH_ROOT)
 AC_SUBST(MANTI_BENCH_SCRIPTS)
@@ -69,7 +69,6 @@ dnl
   esac
 fi
 
-MANTI_BENCH_RESULTS=""
 AC_ARG_WITH(resultsdir,
   AS_HELP_STRING([--with-resultsdir=PATH], [specify location of benchmarking results directory]),
   [MANTI_BENCH_RESULTS=$with_resultsdir])
@@ -87,7 +86,7 @@ fi
 
 PMLCFLAGS=""
 AC_ARG_WITH(pmlcflags,
-  AS_HELP_STRING([--with-pmlcflags=PATH], [Manticore compiler flags]),
+  AS_HELP_STRING([--with-pmlcflags=flags], [Manticore compiler flags]),
   [PMLCFLAGS=$with_pmlcflags])
 
 GEN_GC_STATS="false"
@@ -95,162 +94,44 @@ AC_ARG_WITH(gcstats,
   AS_HELP_STRING([--with-gcstats], [generate gc stats]),
   [PMLCFLAGS="$PMLCFLAGS -gcstats"; GEN_GC_STATS="true"])
 
-NUM_PROCS="16"
-AC_ARG_WITH(numprocs,
-  AS_HELP_STRING([--with-numprocs], [number of processors (default is 16)]),
-  [NUM_PROCS=$with_numprocs])
-
-NUM_TRIALS="10"
-AC_ARG_WITH(numtrials,
-  AS_HELP_STRING([--with-numtrials], [number of processors (default is 10)]),
-  [NUM_TRIALS=$with_numtrials])
-
-LOG_WORK_STEALING=""
-AC_ARG_WITH(logworkstealing,
-  AS_HELP_STRING([--with-logworkstealing=PATH], [specify location of work-stealing log dump tool]),
-  [LOG_WORK_STEALING=$with_logworkstealing; PMLCFLAGS="$PMLCFLAGS -log"])
-
 MANTICORE_BINDIR=$MANTICORE_ROOT/bin
 PMLC=$MANTICORE_BINDIR/pmlc
+LOG_WORK_STEALING=$MANTICORE_ROOT/src/tools/log-work-stealing/log-work-stealing
 
 AC_SUBST(MANTICORE_ROOT)
 AC_SUBST(PMLC)
+AC_SUBST(LOG_WORK_STEALING)
 AC_SUBST(PMLCFLAGS)
 AC_SUBST(GEN_GC_STATS)
-AC_SUBST(NUM_PROCS)
-AC_SUBST(NUM_TRIALS)
 AC_SUBST(SMLNJ_CMD)
-AC_SUBST(LOG_WORK_STEALING)
-
-AC_CONFIG_FILES(\
-dnl ***** Makefiles *****
-  programs/Makefile
-  programs/barnes-hut/Makefile
-  programs/cml-merge/Makefile
-  programs/cml-parallelpp/Makefile
-  programs/cml-pingpong/Makefile
-  programs/cml-primes/Makefile
-  programs/cml-spawn/Makefile
-  programs/fib/Makefile
-  programs/fib-array/Makefile
-  programs/id-raytracer/Makefile
-  programs/life-seq/Makefile
-  programs/list-mergesort/Makefile
-  programs/list-quicksort/Makefile
-  programs/mandelbrot/Makefile
-  programs/minimax/Makefile
-  programs/plus-prefix/Makefile
-  programs/plus-scan/Makefile
-  programs/plus-reduce/Makefile
-  programs/pmerge/Makefile
-  programs/pmergesort/Makefile
-  programs/pquickhull/Makefile
-  programs/pquicksort/Makefile
-  programs/tree-add/Makefile
-  programs/smvm/Makefile
-  programs/vproc-pingpong/Makefile
-  programs/common/Makefile
-)
 
 dnl ***** Scripts ******
 AC_CONFIG_FILES(
-  [programs/barnes-hut/run.sh:programs/barnes-hut/run_sh.in],
-  [chmod +x programs/barnes-hut/run.sh])
+  [scripts/gen-makefile.sh:scripts/gen_makefile_sh.in],
+  [chmod +x scripts/gen-makefile.sh])
 AC_CONFIG_FILES(
-  [programs/barnes-hut/gen-bodies.sh:programs/barnes-hut/gen_bodies_sh.in],
-  [chmod +x programs/barnes-hut/gen-bodies.sh])
+  [scripts/gen-all-makefiles.sh:scripts/gen_all_makefiles_sh.in],
+  [chmod +x scripts/gen-all-makefiles.sh])
 AC_CONFIG_FILES(
-  [programs/barnes-hut/different-input-sizes.sh:programs/barnes-hut/different_input_sizes_sh.in],
-  [chmod +x programs/barnes-hut/different-input-sizes.sh])
-AC_CONFIG_FILES(
-  [programs/fib/run.sh:programs/fib/run_sh.in],
-  [chmod +x programs/fib/run.sh])
-AC_CONFIG_FILES(
-  [programs/fib/different-input-sizes.sh:programs/fib/different_input_sizes_sh.in],
-  [chmod +x programs/fib/different-input-sizes.sh])
-AC_CONFIG_FILES(
-  [programs/fib-array/run.sh:programs/fib-array/run_sh.in],
-  [chmod +x programs/fib-array/run.sh])
-AC_CONFIG_FILES(
-  [programs/id-raytracer/run.sh:programs/id-raytracer/run_sh.in],
-  [chmod +x programs/id-raytracer/run.sh])
-AC_CONFIG_FILES(
-  [programs/life-seq/run.sh:programs/life-seq/run_sh.in],
-  [chmod +x programs/life-seq/run.sh])
-AC_CONFIG_FILES(
-  [programs/list-mergesort/run.sh:programs/list-mergesort/run_sh.in],
-  [chmod +x programs/list-mergesort/run.sh])
-AC_CONFIG_FILES(
-  [programs/list-quicksort/run.sh:programs/list-quicksort/run_sh.in],
-  [chmod +x programs/list-quicksort/run.sh])
-AC_CONFIG_FILES(
-  [programs/mandelbrot/run.sh:programs/mandelbrot/run_sh.in],
-  [chmod +x programs/mandelbrot/run.sh])
-AC_CONFIG_FILES(
-  [programs/minimax/run.sh:programs/minimax/run_sh.in],
-  [chmod +x programs/minimax/run.sh])
-AC_CONFIG_FILES(
-  [programs/plus-scan/run.sh:programs/plus-scan/run_sh.in],
-  [chmod +x programs/plus-scan/run.sh])
-AC_CONFIG_FILES(
-  [programs/plus-reduce/run.sh:programs/plus-reduce/run_sh.in],
-  [chmod +x programs/plus-reduce/run.sh])
-AC_CONFIG_FILES(
-  [programs/plus-prefix/run.sh:programs/plus-prefix/run_sh.in],
-  [chmod +x programs/plus-prefix/run.sh])
-AC_CONFIG_FILES(
-  [programs/pmerge/run.sh:programs/pmerge/run_sh.in],
-  [chmod +x programs/pmerge/run.sh])
-AC_CONFIG_FILES(
-  [programs/pmergesort/run.sh:programs/pmergesort/run_sh.in],
-  [chmod +x programs/pmergesort/run.sh])
-AC_CONFIG_FILES(
-  [programs/pmergesort/different-input-sizes.sh:programs/pmergesort/different_input_sizes_sh.in],
-  [chmod +x programs/pmergesort/different-input-sizes.sh])
-AC_CONFIG_FILES(
-  [programs/pquickhull/run.sh:programs/pquickhull/run_sh.in],
-  [chmod +x programs/pquickhull/run.sh])
-AC_CONFIG_FILES(
-  [programs/pquickhull/gen-points.sh:programs/pquickhull/gen_points_sh.in],
-  [chmod +x programs/pquickhull/gen-points.sh])
-AC_CONFIG_FILES(
-  [programs/pquicksort/run.sh:programs/pquicksort/run_sh.in],
-  [chmod +x programs/pquicksort/run.sh])
-AC_CONFIG_FILES(
-  [programs/tree-add/run.sh:programs/tree-add/run_sh.in],
-  [chmod +x programs/tree-add/run.sh])
-AC_CONFIG_FILES(
-  [programs/tree-add/different-input-sizes.sh:programs/tree-add/different_input_sizes_sh.in],
-  [chmod +x programs/tree-add/different-input-sizes.sh])
-AC_CONFIG_FILES(
-  [programs/smvm/run.sh:programs/smvm/run_sh.in],
-  [chmod +x programs/smvm/run.sh])
-AC_CONFIG_FILES(
-  [programs/vproc-pingpong/run.sh:programs/vproc-pingpong/run_sh.in],
-  [chmod +x programs/vproc-pingpong/run.sh])
-AC_CONFIG_FILES(
-  [programs/common/gen-random-int-list.sh:programs/common/gen_random_int_list_sh.in],
-  [chmod +x programs/common/gen-random-int-list.sh])
+  [scripts/gen-run.sh:scripts/gen_run_sh.in],
+  [chmod +x scripts/gen-run.sh])
 AC_CONFIG_FILES(
   [scripts/experiment.sh:scripts/experiment_sh.in],
   [chmod +x scripts/experiment.sh])
 AC_CONFIG_FILES(
-  [scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in],
-  [chmod +x scripts/experiment-smlnj.sh])
-AC_CONFIG_FILES(
-  [scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in],
-  [chmod +x scripts/experiment-mlton.sh])
+  [scripts/gen-rope-split-experiment.sh:scripts/gen_rope_split_experiment_sh.in],
+  [chmod +x scripts/gen-rope-split-experiment.sh])
 AC_CONFIG_FILES(
   [scripts/work-stealing-stats.sh:scripts/work_stealing_stats_sh.in],
   [chmod +x scripts/work-stealing-stats.sh])
 AC_CONFIG_FILES(
-  [scripts/set-max-leaf-size.sh:scripts/set_max_leaf_size_sh.in],
-  [chmod +x scripts/set-max-leaf-size.sh])
+  [stats/work-stealing/gen-work-stealing-stats.sh:stats/work-stealing/gen_work_stealing_stats_sh.in],
+  [chmod +x stats/work-stealing/gen-work-stealing-stats.sh])
 AC_CONFIG_FILES(
-  [scripts/restore-max-leaf-size.sh:scripts/restore_max_leaf_size_sh.in],
-  [chmod +x scripts/restore-max-leaf-size.sh])
+  [scripts/profile-rope-split.sh:scripts/gen_profile_rope_split_sh.in],
+  [chmod +x scripts/profile-rope-split.sh])
 AC_CONFIG_FILES(
-  [scripts/print-max-leaf-size.sh:scripts/print_max_leaf_size_sh.in],
-  [chmod +x scripts/print-max-leaf-size.sh])
+  [scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in],
+  [chmod +x scripts/experiment-mlton.sh])
 
 AC_OUTPUT
