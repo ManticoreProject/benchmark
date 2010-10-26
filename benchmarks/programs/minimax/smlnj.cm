@@ -7,5 +7,5 @@ is
 	$/basis.cm
 	$/smlnj-lib.cm
 
-	../common/run-seq.sml
+	../../common/run-seq.sml
 	ttt.sml
