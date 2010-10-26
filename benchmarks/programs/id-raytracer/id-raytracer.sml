@@ -208,7 +208,7 @@ struct
 
     fun readFromFile () =
 	let
-	    val f = TextIO.openIn "../../../input-data/spheres.txt"
+	    val f = TextIO.openIn "../../input-data/spheres.txt"
 	    fun rd d = Option.valOf (Real.fromString d)
 	    fun lp acc =
 		(case TextIO.inputLine f

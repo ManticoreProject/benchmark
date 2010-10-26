@@ -184,7 +184,7 @@ structure Main =
 
     fun readFromFile () =
 	let
-	    val f = TextIO.openIn "../../../input-data/bodies.txt"
+	    val f = TextIO.openIn "../../input-data/bodies.txt"
 	    val SOME nParticles = Int.fromString (Option.valOf (TextIO.inputLine f))
 	    fun rd d = Option.valOf (Double.fromString d)
 	    fun lp acc =

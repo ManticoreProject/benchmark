@@ -152,7 +152,7 @@ structure Main =
 
     fun readFromFile () =
 	let
-	    val f = TextIO.openIn "../../../input-data/points.txt"
+	    val f = TextIO.openIn "../../input-data/points.txt"
 	    fun rd d = Option.valOf (Double.fromString d)
 	    fun lp acc =
 		(case TextIO.inputLine f

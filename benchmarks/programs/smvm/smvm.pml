@@ -22,7 +22,7 @@ structure Main =
   (* reads from any matrix-market named mtx.txt -- just strip off the header comments first *)
     fun readFromFile () =
 	let
-	    val f = TextIO.openIn "../../../input-data/mtx.txt"
+	    val f = TextIO.openIn "../../input-data/mtx.txt"
 	    fun rdd d = Option.valOf (Double.fromString d)
 	    fun rdi d = Option.valOf (Int.fromString d)
 	  (* number of rows, number of columns, number of nonzeros *)

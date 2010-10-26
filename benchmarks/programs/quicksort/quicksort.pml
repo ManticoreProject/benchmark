@@ -41,7 +41,7 @@ structure Main =
 
     fun readFromFile () =
 	let
-	    val f = TextIO.openIn "../../../input-data/random-int-list.txt"
+	    val f = TextIO.openIn "../../input-data/random-int-list.txt"
 	    fun lp acc =
 		(case TextIO.inputLine f
 		  of NONE => List.rev acc

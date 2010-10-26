@@ -183,7 +183,7 @@ structure Main =
 
     fun readFromFile () =
 	let
-	    val f = TextIO.openIn "../../../input-data/bodies.txt"
+	    val f = TextIO.openIn "../../input-data/bodies.txt"
 	    val nParticles = valOf (Int.fromString (valOf (TextIO.inputLine f)))
 	    fun readBody () =
 		(case TextIO.inputLine f
