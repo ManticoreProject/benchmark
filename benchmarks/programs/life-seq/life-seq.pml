@@ -172,7 +172,7 @@ structure Main =
 		(*show print*) (LifeSeq.nthgen(LifeSeq.gun, n))
 
 	in
-	    RunSeq.run doit
+	    RunPar.run doit
 	end
 
   end
