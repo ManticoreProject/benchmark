@@ -45,3 +45,11 @@ Example: Compiling and executing 'quickhull'
 
   Let us pass quickhull 1000 random points.
     ./mc-par -size 1000
+
+TODO
+  Generate data automatically for smvm (input-data/mtx.txt)
+  Convert from direct rope usage to parray syntax (once the LTS ropes are
+  committed to SWP)
+  programs/in-place-* are legacy and not currently working
+  Remove some of the ICFP/worklist-specific scripts
+  Add more docs and scripts on batch runs of benchmarks with db recording
