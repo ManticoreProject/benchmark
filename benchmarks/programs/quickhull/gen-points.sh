@@ -3,7 +3,7 @@
 NUM_POINTS=8000000
 SMLNJ="sml"
 
-if [ ! -f points.txt ]; then
+if [ ! -f ../../input-data/points.txt ]; then
    echo "SMLofNJ.exportFn(\"gen-points\", Main.main);" | $SMLNJ gen-points.cm
-   $SMLNJ @SMLload=gen-points $NUM_POINTS file > ../../../input-data/points.txt
+   $SMLNJ @SMLload=gen-points $NUM_POINTS file > ../../input-data/points.txt
 fi

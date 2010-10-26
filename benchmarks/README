@@ -8,6 +8,7 @@ Preparing benchmarks
     cd manti-bench/src
     autoconf -Iconfig
     ./configure --with-manticore=$MC --with-resultsdir=$RES
+    scripts/gen-input-data.sh
     scripts/gen-all-makefiles.sh
 
 Benchmarks

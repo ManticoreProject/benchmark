@@ -113,6 +113,9 @@ AC_CONFIG_FILES(
   [scripts/gen-all-makefiles.sh:scripts/gen_all_makefiles_sh.in],
   [chmod +x scripts/gen-all-makefiles.sh])
 AC_CONFIG_FILES(
+  [scripts/gen-input-data.sh:scripts/gen_input_data_sh.in],
+  [chmod +x scripts/gen-input-data.sh])
+AC_CONFIG_FILES(
   [scripts/gen-run.sh:scripts/gen_run_sh.in],
   [chmod +x scripts/gen-run.sh])
 AC_CONFIG_FILES(
