@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 LIST_LEN=$1
 if [ "$LIST_LEN" == "" ]; then
