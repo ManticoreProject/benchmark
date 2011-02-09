@@ -8,9 +8,11 @@ structure SMVM = struct
 
   fun sum a = Rope.reduce (fn (x,y) => x + y) 0.0 a
 
-  fun dotp (sv, v) = sum (Rope.map (fn (i, x) => x * Rope.sub (v, i)) sv)
+  fun dotp (sv, v) = 
+      sum (Rope.map (fn (i, x) => x * Rope.sub (v, i)) sv)
 
-  fun smvm (sm, v) = Rope.map (fn sv => dotp (sv, v)) sm
+  fun smvm (sm, v) = 
+      Rope.map (fn sv => dotp (sv, v)) sm
 
 end
 
@@ -63,7 +65,11 @@ structure Main =
 	    val (mtx, C) = readFromFile ()
 	    val (mtx, v) = RunPar.runSilent(fn _ => (bumpSM (rows2sm mtx),
 				Rope.fromList (List.tabulate (C, fn _ => Rand.randDouble (0.0, 10000.0)))))
-	    fun doit () = SMVM.smvm (mtx, v)
+            fun doitN (n) = (if n=0 then () else (
+                             SMVM.smvm (mtx, v);
+                             doitN (n-1)))
+                           
+	    fun doit () = doitN 100
 	in
 	    RunPar.run doit
 	end

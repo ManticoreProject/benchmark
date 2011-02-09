@@ -586,7 +586,7 @@ end
 structure Main =
   struct
 
-    val dfltN = 256
+    val dfltN = 512
 
     fun getSizeArg args =
 	(case args

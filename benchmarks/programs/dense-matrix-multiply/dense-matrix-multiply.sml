@@ -36,7 +36,7 @@ structure DenseMatrixMultiply =
 structure Main =
   struct
 
-    val dfltN = 300
+    val dfltN = 600
 
     fun getSizeArg args =
 	(case args

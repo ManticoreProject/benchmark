@@ -71,7 +71,11 @@ structure Main =
 	    val (mtx, C) = readFromFile ()
 	    val (mtx, v) = (bumpSM (rows2sm mtx),
 			    Rope.fromList (List.tabulate (C, fn _ => Random.randReal rand)))
-	    fun doit () = SMVM.smvm (mtx, v)
+            fun doitN (n) = (if n=0 then () else (
+                             SMVM.smvm (mtx, v);
+                             doitN (n-1)))
+                           
+	    fun doit () = doitN 100
 	in
 	    RunSeq.run doit
 	end
