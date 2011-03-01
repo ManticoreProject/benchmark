@@ -19,7 +19,7 @@ end
 structure Main =
   struct
 
-    structure A = Array64
+    structure A = Array
 
   (* reads from any matrix-market named mtx.txt -- just strip off the header comments first *)
     fun readFromFile () =

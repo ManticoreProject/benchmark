@@ -18,7 +18,7 @@ structure RopePermute =
 
     structure RTy = RopeTy
     structure RT = Rope.RT
-    structure Array = Array64
+    structure Array = Array
 
     val maxLeafSize = R.maxLeafSize
     val sub = R.sub

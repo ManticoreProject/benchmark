@@ -14,7 +14,7 @@ undefine({len})dnl
 val seqSq = PrimIO.readInt()
 define({_SEQ_SZ_}, {seqSq})dnl
 
-structure A = Array64
+structure A = Array
 val array = A.array
 val asub = A.sub
 val aupdate = A.update
