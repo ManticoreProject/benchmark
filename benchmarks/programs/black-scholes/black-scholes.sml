@@ -2,6 +2,8 @@
  *
  * COPYRIGHT (c) 2011 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
+ *
+ * Black Scholes benchmark.  Ported by Damon Wang.
  *)
 
 structure BlackScholes : sig
