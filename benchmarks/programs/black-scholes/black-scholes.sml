@@ -8,43 +8,47 @@
 
 structure BlackScholes : sig
 
+    type float = real
+
     datatype OptionType = Put | Call
 
     datatype option_t = Option of { 
-	spot : real,          (* spot price *)
-	strike : real,        (* strike price *)
-	interest : real,      (* risk-free interest rate *)
-	div_rate : real,      (* dividend rate *)
-	volatility : real,    (* volatility *)
-	time : real,          (* years to maturity or expiration: 6mos = .5, etc. *)
+	spot : float,          (* spot price *)
+	strike : float,        (* strike price *)
+	interest : float,      (* risk-free interest rate *)
+	div_rate : float,      (* dividend rate *)
+	volatility : float,    (* volatility *)
+	time : float,          (* years to maturity or expiration: 6mos = .5, etc. *)
 	opt_type : OptionType,(* Put or Call *)
-	div_vals : real,      (* dividend values (not used here) *)
-	derivagem : real      (* expected answer from DerivaGem *)
+	div_vals : float,      (* dividend values (not used here) *)
+	derivagem : float      (* expected answer from DerivaGem *)
       }
 
     val dummy_option : option_t
 
     val readData : string -> option_t list
-    val writePrices : string -> real list -> unit
-    val poly : real list -> real -> real
-    val magic_poly : real -> real 
-    val std_normal_cdf : real -> real
-    val price : option_t -> real
+    val writePrices : string -> float list -> unit
+    val poly : float list -> float -> float
+    val magic_poly : float -> float 
+    val std_normal_cdf : float -> float
+    val price : option_t -> float
 
   end = struct
+
+    type float = real
 
     datatype OptionType = Put | Call
 
     datatype option_t = Option of { 
-	spot : real,          (* spot price *)
-	strike : real,        (* strike price *)
-	interest : real,      (* risk-free interest rate *)
-	div_rate : real,      (* dividend rate *)
-	volatility : real,    (* volatility *)
-	time : real,          (* years to maturity or expiration: 6mos = .5, etc. *)
+	spot : float,          (* spot price *)
+	strike : float,        (* strike price *)
+	interest : float,      (* risk-free interest rate *)
+	div_rate : float,      (* dividend rate *)
+	volatility : float,    (* volatility *)
+	time : float,          (* years to maturity or expiration: 6mos = .5, etc. *)
 	opt_type : OptionType,(* Put or Call *)
-	div_vals : real,      (* dividend values (not used here) *)
-	derivagem : real      (* expected answer from DerivaGem *)
+	div_vals : float,      (* dividend values (not used here) *)
+	derivagem : float      (* expected answer from DerivaGem *)
       }
 
     val dummy_option = Option{
@@ -55,13 +59,13 @@ structure BlackScholes : sig
 	  }
 
   (* readData : String -> [ Option ] -- don't know how to tell the compiler *)
-  fun readData infname = let
+  fun readData (infname : string) : option_t list = let
     fun real_of_string s = Option.valOf (Real.fromString s)
 
     val inf = TextIO.openIn infname
 
     val num_options = 
-      (Option.valOf o Int.fromString o Option.valOf o TextIO.inputLine) inf
+      (Option.valOf o Option.composePartial(Int.fromString, TextIO.inputLine)) inf
 
       (* string list -> Option 
       * TODO throw an exception for invalid input *)
@@ -102,8 +106,8 @@ structure BlackScholes : sig
 
   (* uses Horner's algorithm to evaluate a polynomial whose coefficients are
    * specified in order of ascending degree: x + 2 is [2, 1] *)
-  (* x must be type-hinted to real or smlnj thinks it's an int! *)
-  fun poly (c::coeffs) (x : real) = foldl (fn (c, partial) => c + x * partial) c coeffs
+  (* x must be type-hinted to float or smlnj thinks it's an int! *)
+  fun poly (c::coeffs) (x : float) = foldl (fn (c, partial) => c + x * partial) c coeffs
 
   local
     (* probability density function for standard normal distribution: 
