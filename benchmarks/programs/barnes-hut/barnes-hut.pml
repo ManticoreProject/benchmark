@@ -1,154 +1,146 @@
 (* barnes-hut.pml
  * 
- * Barnes Hut computation. This code is adapted from the Data-parallel Haskell benchmark. 
- *   http://darcs.haskell.org/packages/ndp/examples/barnesHut/
- * This code provides a fix for a bug in the Haskell benchmark. The problem is that bodies
- * that are too close caused nontermination during the tree-building process.
- *
- * usage: ./barnes-hut args
- * where args can be one or both of the following
+ * usage: ./barnes-hut <args>
+ *   where <args> can include
  *       -size <int>            number of bodies
  *       -iters <int>           number of iterations
  *) 
 
-structure BarnesHut =
-  struct
+structure BarnesHut = struct
 
-    structure R = Rope
+structure S = Rope
+type 'a seq = 'a S.rope
 
-    datatype bounding_box = BOX of (double * double * double * double)
-    datatype mass_point = MP of (double * double * double) (* xpos ypos mass *)
-    datatype particle = PARTICLE of (mass_point * double * double) (* mass point and velocity *)
-    datatype bh_tree 
-      = BHT_QUAD of (double * double * double *     (* root mass point *)
-		     bh_tree * bh_tree * bh_tree * bh_tree)
-						    (* subtrees *)
-      | BHT_LEAF of (double * double * double *     (* root mass point *)
-		     mass_point R.rope) 
+type scalar = double
 
-    fun log4 x = Int.ceilingLg x div 2
+(* 2-d point with mass *)
+(*   - x coordinate *)
+(*   - y coordinate *)
+(*   - mass *)
+type mp = scalar * scalar * scalar
+type velocity = scalar * scalar
+type particle = mp * velocity
 
-    val epsilon : double = 0.05
-    val eClose : double = 0.01
-    val dt = 0.025
+datatype bht =
+    BHTLeaf of mp
+  | BHTQuad of mp * bht * bht * bht * bht
 
-    fun applyAccel (PARTICLE (mp, vx, vy), (ax, ay)) = PARTICLE (mp, vx+ax * dt, vy+ay * dt)
+fun get_x ((x, _, _), _) = x
+fun get_y ((_, y, _), _) = y
 
-    fun isClose (MP (x1, y1, m), x2, y2) = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) < eClose
+val map = S.map
+val reduce = S.reduce
+val filter = S.filter
+val size = S.length
+val sub = S.sub
+val empty = S.empty
+fun maxv (x, y) = if x > y then x else y
+fun minv (x, y) = if x < y then x else y
+fun log4 x = Int.ceilingLg x div 2
+fun sq x = x * x
+val sqrt = Double.sqrt
 
-    fun accel (MP (x1,  y1, _), x2, y2, m)  =
-	let
-	    val dx   = x1 - x2 
-	    val dy   = y1 - y2 
-	    val rsqr = (dx * dx) + (dy * dy) 
-	    val r    = Double.sqrt rsqr 
-	in
-	    if r < epsilon then
-		(0.0, 0.0) 
-	    else 
-		let
-		    val aabs = m / rsqr 
-		in
-		    (aabs * dx / r , aabs * dy / r) 
-		end
-	end
+val epsilon : scalar = 0.05
+val eClose : scalar = 0.01
+val dt = 0.025
 
-    (* the acceleration of a mass point after applying the force applied by surrounding
-     * mass points
-     *)
-    fun calcAccel (mpt, bht) = 
-	(case bht
-	  of BHT_LEAF (x, y, m, _) =>
-	     accel (mpt, x, y, m)
-	   | BHT_QUAD (x, y, m, st1, st2, st3, st4) =>
-	     if isClose (mpt, x, y) then
-		 let
-		     val ((x1, y1), (x2, y2), (x3, y3), (x4, y4)) =
-			 (| calcAccel (mpt, st1), 
-			    calcAccel (mpt, st2), 
-			    calcAccel (mpt, st3), 
-			    calcAccel (mpt, st4) |)
-		 in
-		     (x1 + x2 + x3 + x4, y1 + y2 + y3 + y4)
-		 end
-	     else
-		 accel (mpt, x, y, m)
-	(* end case *))
+fun circle_plus ((mx0,my0,m0), (mx1,my1,m1)) = (mx0 + mx1, my0 + my1, m0 + m1)
 
-    fun calcCentroid mpts =
-	let
-	    fun circlePlus ((mx0,my0,m0), (mx1,my1,m1)) = (mx0+mx1, my0+my1, m0+m1)
-	    val (sum_mx, sum_my, sum_m) = 
-		R.reduce circlePlus (0.0, 0.0, 0.0) 
-			 (R.map (fn mp => let val MP (x, y, m) = mp in (m*x, m*y, m) end) mpts)
-	in
-	    MP (sum_mx / sum_m, sum_my / sum_m, sum_m)
-	end
-
-    fun inBox (BOX (llx, lly, rux, ruy)) (MP (px, py, _)) =
-	(px > llx) andalso (px <= rux) andalso (py > lly) andalso (py <= ruy)
-
-    (* split mass points according to their locations in the quadrants *)
-    fun buildTree (box, particles) =
-	let
-	    val maxDepth = log4 (R.length particles) - 1
-	    fun build (depth, BOX (llx, lly, rux, ruy), particles) =
-		(* note that the stopping condition is based on the depth of our recursion tree. if we did not
-		 * limit the depth, nontermination could occur when two or more particles lie on top of 
-		 * each other. *)
-		(* in the worst case the depth of our tree is twice the depth of a perfectly balanced tree. *)
-		if R.length particles <= 1 orelse depth >= maxDepth then
-		    let
-			val MP (x, y, m) = calcCentroid particles
-		    in
-			BHT_LEAF (x, y, m, particles)
-		    end
-		else
-		    let
-			val MP (x, y, m) = calcCentroid particles
-			val (midx,  midy) = ((llx + rux) / 2.0 , (lly + ruy) / 2.0) 
-			val b1 = BOX (llx,  lly,  midx,  midy)
-			val b2 = BOX (llx,  midy, midx,  ruy)
-			val b3 = BOX (midx, midy, rux,   ruy)
-			val b4 = BOX (midx, lly,  rux,   midy)
-			val (pb1, pb2, pb3, pb4) = (| R.filter (inBox b1) particles,
-						      R.filter (inBox b2) particles,
-						      R.filter (inBox b3) particles,
-						      R.filter (inBox b4) particles |)
-			val depth' = depth + 1
-			val (q1, q2, q3, q4) = (| build (depth', b1, pb1),
-						  build (depth', b2, pb2),
-						  build (depth', b3, pb3),
-						  build (depth', b4, pb4) |)
-		    in
-			BHT_QUAD (x, y, m, q1, q2, q3, q4)
-		    end
-	in
-	    build (0, box, particles)
-	end
-
-    fun oneStep pts =
-	if R.length pts = 0 then
-	    R.empty ()
-	else
-	    let
-		val mspnts = R.map (fn pt => let val PARTICLE (mpnt, _, _) = pt in mpnt end) pts
-		val MP (x0, y0, _) = R.sub (mspnts, 0)
-		fun getX mp = let val MP (x, _, _) = mp in x end
-		fun getY mp = let val MP (_, y, _) = mp in y end
-		(* the perimeter of this box fits snugly around the particles, but touches none of them *)
-		val box0 = BOX (| 
-				  (R.reduce Double.min x0 (R.map getX mspnts)) - epsilon,
-				  (R.reduce Double.min y0 (R.map getY mspnts)) - epsilon,
-				  (R.reduce Double.max x0 (R.map getX mspnts)) + epsilon,
-				  (R.reduce Double.max y0 (R.map getY mspnts)) + epsilon 
-                                |)
-		val tree = buildTree (box0, mspnts)
-	    in
-		RopePair.mapEq (fn (pt, mspnt) => applyAccel (pt, calcAccel (mspnt, tree))) (pts, mspnts)
-	    end
-
+fun calc_centroid parts = let
+  fun f ((x, y, m), _) = (m * x, m * y, m) 
+  val (sum_mx, sum_my, sum_m) = 
+    reduce circle_plus (0.0, 0.0, 0.0) (map f parts) 
+  in
+    (sum_mx / sum_m, sum_my / sum_m, sum_m)
   end
+
+fun in_box ((llx, lly, rux, ruy), ((px, py, _), _)) =
+  (px > llx) andalso (px <= rux) andalso (py > lly) andalso (py <= ruy)
+
+fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
+  val max_depth = log4 (size particles) - 1 
+  fun build (depth, (llx, lly, rux, ruy), particles) =
+    if size particles <= 1 orelse depth >= max_depth then
+      BHTLeaf (calc_centroid particles)
+    else let
+      val (midx, midy) = ((llx + rux) / 2.0, (lly + ruy) / 2.0) 
+      val b1 = (llx,  lly,  midx,  midy) 
+      val b2 = (llx,  midy, midx,  ruy) 
+      val b3 = (midx, midy, rux,   ruy)
+      val b4 = (midx, lly,  rux,   midy)
+      fun ib1 p = in_box (b1, p)
+      fun ib2 p = in_box (b2, p)
+      fun ib3 p = in_box (b3, p)
+      fun ib4 p = in_box (b4, p)
+      val (pb1, pb2, pb3, pb4) = 
+	(filter ib1 particles,
+	 filter ib2 particles,
+	 filter ib3 particles,
+	 filter ib4 particles)
+      val depth' = depth + 1
+      val (q1, q2, q3, q4) =
+	 (| build (depth', b1, pb1),
+	    build (depth', b2, pb2),
+	    build (depth', b3, pb3),
+	    build (depth', b4, pb4) |)
+      in
+        BHTQuad (calc_centroid particles, q1, q2, q3, q4)
+      end
+  in
+    build (0, box, particles)
+  end
+
+fun accel (x1, y1, _) x2 y2 m = let
+  val dx   = x1 - x2
+  val dy   = y1 - y2
+  val rsqr = sq dx + sq dy
+  val r    = sqrt rsqr 
+  in
+    if r < epsilon then
+      (0.0, 0.0)
+    else let
+      val aabs = m / rsqr 
+      in (aabs * dx / r , aabs * dy / r) end
+  end
+
+fun is_close (x1, y1, m) x2 y2 =  
+  sq (x1 - x2) + sq (y1 - y2) < eClose
+
+fun calc_accel (mpt, _) bht = let
+ fun aux bht =
+  (case bht of
+    BHTLeaf (x, y, m) =>
+      accel mpt x y m
+  | BHTQuad ((x, y, m), q1, q2, q3, q4) =>
+      if is_close mpt x y then let
+	val ((x1, y1), (x2, y2), (x3, y3), (x4, y4)) =
+	  (aux q1, aux q2, aux q3, aux q4)
+	in
+	  (x1 + x2 + x3 + x4, y1 + y2 + y3 + y4)
+	end
+      else
+	accel mpt x y m)
+  in aux bht end
+
+fun move_particle ((x, y, m), (vx, vy)) (ax, ay) =
+  ((x + vx, y + vy, m), (vx + ax, vy + ay))
+
+fun one_step parts =
+  if size parts = 0 then
+    empty ()
+  else let
+    val ((x0, y0, _), _) = sub (parts, 0)
+    val box0 = (reduce minv x0 (map get_x parts) - epsilon,
+		reduce minv y0 (map get_y parts) - epsilon,
+		reduce maxv x0 (map get_x parts) + epsilon,
+		reduce maxv y0 (map get_y parts) + epsilon)
+    val tree = build_bht box0 parts
+    fun f part = move_particle part (calc_accel part tree)
+    in
+      map f parts
+    end
+
+end
 
 structure Main =
   struct
@@ -175,12 +167,12 @@ structure Main =
     structure V = Vector2
     structure BH = BarnesHut
 
-    fun particle (mass, (xp, yp), (xv, yv)) = BarnesHut.PARTICLE(BarnesHut.MP(xp, yp, mass), xv, yv)
+    fun particle (mass, (xp, yp), (xv, yv)) = ((xp, yp, mass), (xv, yv))
     fun genBodies n = List.map particle (GenBodies.testdata n)
 
     val epsilon = 0.0000000001
-    fun bumpParticle (BH.PARTICLE (BH.MP(xp, yp, mass), xv, yv)) =
-	(BH.PARTICLE (BH.MP(xp+epsilon, yp+epsilon, mass+epsilon), xv+epsilon, yv+epsilon))
+    fun bumpParticle ((xp, yp, mass), (xv, yv)) =
+	((xp+epsilon, yp+epsilon, mass+epsilon), (xv+epsilon, yv+epsilon))
 
     fun readFromFile () =
 	let
@@ -212,7 +204,7 @@ structure Main =
 		let
 		    fun iter (ps, i) =
 			if i < nIters then
-			    iter (BarnesHut.oneStep ps, i + 1)
+			    iter (BarnesHut.one_step ps, i + 1)
 			else
 			    ps
 
