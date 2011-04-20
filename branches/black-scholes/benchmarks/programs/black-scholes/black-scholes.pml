@@ -22,8 +22,11 @@ structure MyBasis : sig
     val exp : double -> double
     val ln : double -> double
 
+    (* just a convenient function for debugging key-value pairs *)
     val debug : (string * double) list -> unit
 
+    (* equivalent to Python's str.join(): join "_" ["a", "b", "c"] -> "a_b_c"
+    *)
     val join : (string * string list) -> string
 end = struct
 
@@ -148,19 +151,19 @@ structure BlackScholes (*: sig
             real_of_string volatility,
             real_of_string time,
             (* TODO throw exception if neither "P" nor "C" *)
-            (if opt_type = "P" then Put else Call),
+            (if String.same (opt_type, "P") then Put else Call),
             real_of_string div_vals,
             real_of_string derivagem
           )
+          (*
         val _ = Print.printLn (MyBasis.join ("' '",
         (spot::strike::interest::div_rate::volatility::time::opt_type::div_vals::derivagem::nil)))
-        (* FIXME uncommenting this reproduces the error noted in rev. 330
-        * val _ = Print.printLn ((opt_type : string) ^ " => " ^ (if opt_type = "P" then "P" else "C"))
-        *)
+
         val _ = Print.printLn 
           ((fn (Option (_, _, _, _, _, _, opt_type, _, _)) 
               => ((case opt_type of Put => "Put" | Call => "Call" ))) 
             retval)
+        *)
     in
         retval
       end 
@@ -195,8 +198,10 @@ structure BlackScholes (*: sig
      * mean = 0, variance = 1 *)
     val normalization_factor = 1.0 / Double.sqrt(2.0 * MyBasis.pi)
 
+    (*
     val _ = MyBasis.debug [("MyBasis.pi", MyBasis.pi), 
       ("sqrt", Double.sqrt(2.0 * MyBasis.pi)) ]
+      *)
     
     fun std_normal_pdf x = let
       val exp_term = MyBasis.exp (~0.5 * x * x)
@@ -242,11 +247,13 @@ structure BlackScholes (*: sig
 	val retval = case opt_type of
                    Put => strike_exp * (1.0 - n_d2) - spot * (1.0 - n_d1)
                  | Call => spot * n_d1 - strike_exp * n_d2
+                 (*
     val _ = MyBasis.debug [
       ("type", (case opt_type of Put => 1.0 | Call => 0.0 )), 
       ("log_term", log_term), ("time_term", time_term),
       ("denom", denom), ("d1", d1), ("d2", d2), ("n_d1", n_d1), 
       ("n_d2", n_d2), ("retval", retval), ("derivagem", derivagem) ]
+      *)
 	in
 	  if Double.abs (retval - derivagem) > 0.001
       then "E"

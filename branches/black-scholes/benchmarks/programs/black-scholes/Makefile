@@ -1,16 +1,17 @@
 PMLC=../../../../bin/pmlc
-TARGET=black-scholes
+TARGET=./black-scholes
 
-.PHONY: test test-dev
-test-dev: $(TARGET)
-	./$(TARGET) ../../input-data/black-scholes/simdev.txt 2> test_err.txt | tee test_out.txt
+.PHONY: test-small test-dev test-large test
+test: test-dev
 
-test: $(TARGET)
-	./$(TARGET) ../../input-data/black-scholes/simsmall.txt
+
+test-small test-dev test-large: $(TARGET)
+	./$(TARGET) ../../input-data/black-scholes/sim$(subst test-,,$@).txt 2> test_err.txt | tee test_out.txt
+
 
 $(TARGET): mc.mlb black-scholes.pml
 	$(PMLC) -o $@ $< 
 
 .PHONY: clean
 clean:
-	rm $(wildcard *.s test a.out *.log)
+	rm $(wildcard *.s test a.out *.log $(TARGET)) 
