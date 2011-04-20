@@ -257,7 +257,7 @@ structure BlackScholes (*: sig
 	in
 	  if Double.abs (retval - derivagem) > 0.001
       then "E"
-      else "."
+      else ""
 	end
 
   end
@@ -266,6 +266,15 @@ structure Main =
   struct
 
     fun main (_, args) = let
+	  val options = BlackScholes.readData (List.hd args)
+	  fun doit () = [| BlackScholes.price op | op in fromListP options |]
+	  in
+	    (* TextIO.outputLine logfile (hd args); 
+        *)
+	    Print.printLn (String.concat (PArray.toString (RunPar.run doit)))
+	  end
+
+    fun main_map (_, args) = let
 	  val options = BlackScholes.readData (List.hd args)
 	  fun doit () = map BlackScholes.price options
 	  in

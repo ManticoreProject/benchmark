@@ -146,6 +146,7 @@ structure BlackScholes : sig
 	val d2 = d1 - denom
 	val n_d1 = std_normal_cdf d1
 	val n_d2 = std_normal_cdf d2
+    (*
 	val debug_print = String.concat [
 		"log_term = ", (Real.toString log_term), "\ttime_term =",
 		(Real.toString time_term), "\tdenom = ", (Real.toString denom),
@@ -153,15 +154,15 @@ structure BlackScholes : sig
 		"\tn_d1 = ", (Real.toString n_d1), "\tn_d2 = ", (Real.toString n_d2),
 		"\n"
 	      ]
+          *)
 	val retval = if opt_type = Put
 		     then strike_exp * (1.0 - n_d2) - spot * (1.0 - n_d1)
 		     else spot * n_d1 - strike_exp * n_d2
 	in
 	  (* TextIO.print debug_print; *)
-	  TextIO.print (if Real.abs (retval - derivagem) > 0.001
-		       then "E"
-		       else ".");
-	  retval
+      if Real.abs (retval - derivagem) > 0.001
+      then "E"
+      else ""
 	end
 
   end
@@ -173,8 +174,7 @@ structure Main =
 	  val options = BlackScholes.readData (hd args)
 	  fun doit () = map BlackScholes.price options
 	  in
-	    TextIO.print (hd args);
-	    RunSeq.run doit
+	    TextIO.print (String.concat (RunSeq.run doit))
 	  end
 
   end
