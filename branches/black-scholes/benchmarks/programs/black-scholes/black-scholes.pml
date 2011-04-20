@@ -154,7 +154,9 @@ structure BlackScholes (*: sig
           )
         val _ = Print.printLn (MyBasis.join ("' '",
         (spot::strike::interest::div_rate::volatility::time::opt_type::div_vals::derivagem::nil)))
-        val _ = Print.printLn ((opt_type : string) ^ " => " ^ (if opt_type = "P" then "P" else "C"))
+        (* FIXME uncommenting this reproduces the error noted in rev. 330
+        * val _ = Print.printLn ((opt_type : string) ^ " => " ^ (if opt_type = "P" then "P" else "C"))
+        *)
         val _ = Print.printLn 
           ((fn (Option (_, _, _, _, _, _, opt_type, _, _)) 
               => ((case opt_type of Put => "Put" | Call => "Call" ))) 
