@@ -37,4 +37,4 @@ $(MLTON_TARGET): mlton.mlb black-scholes.sml
 
 .PHONY: clean
 clean:
-	rm $(wildcard *.s test a.out *.log $(TARGET) *test*.txt $(SEQ_TARGET) $(MLTON_TARGET)) 
+	-rm $(wildcard *.s test a.out *.log $(TARGET) *test*.txt $(SEQ_TARGET) $(MLTON_TARGET)) 

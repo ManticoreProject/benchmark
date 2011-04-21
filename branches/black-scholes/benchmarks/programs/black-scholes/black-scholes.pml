@@ -39,13 +39,11 @@ end = struct
       acc []
     end
 
-    val pi =  3.14159265358979323846
-
-    (* FIXME if this print statement is deleted, pi becomes zero.  Do not delete
-    * this print statement! *)
-    val _ = Print.printLn (Double.toString pi)
-
-    val e =  2.7182818284590452354
+    (* FIXME if the type hint is deleted, pi becomes zero.  Do not delete! 
+    * This is a workaround for a known bug where the PML compiler sometimes
+    * erroneously generates single-precision instructions on doubles.  *)
+    val pi =  3.14159265358979323846 : double
+    val e =  2.7182818284590452354 : double
 
     fun exp power = Double.pow (e, power)
 
@@ -267,11 +265,11 @@ structure Main =
 
     fun main (_, args) = let
 	  val options = BlackScholes.readData (List.hd args)
-	  fun doit () = [| BlackScholes.price op | op in fromListP options |]
+	  fun doit () = mapP (BlackScholes.price, (fromListP options))
 	  in
 	    (* TextIO.outputLine logfile (hd args); 
         *)
-	    Print.printLn (String.concat (PArray.toString (RunPar.run doit)))
+	    Print.printLn (PArray.toString (fn x => x) "" (RunPar.run doit))
 	  end
 
     fun main_map (_, args) = let
