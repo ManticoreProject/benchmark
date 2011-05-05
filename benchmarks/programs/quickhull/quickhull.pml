@@ -59,8 +59,8 @@ structure Quickhull (* : sig
 		val c = farthest (a, b, S)  (* c must also be on the convex hull *)
 		val (rightOfac, rightOfcb) = (| pointsRightOf (a, c, S), pointsRightOf (c, b, S) |)
 	    in
-		Rope.append (Rope.singleton c, 
-			 Rope.append (| quickhull' (a, c, rightOfac), 
+		Rope.cat2 (Rope.singleton c, 
+			 Rope.cat2 (| quickhull' (a, c, rightOfac), 
 				        quickhull' (c, b, rightOfcb) |))
 	    end
 
@@ -79,11 +79,12 @@ structure Quickhull (* : sig
 		val S = Rope.filter (fn p => not (samePoint (p, x0) orelse samePoint (p, y0))) S
 		val (rightOfx0y0, rightOfy0x0) = (| pointsRightOf (x0, y0, S), pointsRightOf (y0, x0, S) |)
 	    in
-		Rope.append (Rope.fromList (x0 :: y0 :: nil), 
-			 Rope.append (| quickhull' (x0, y0, rightOfx0y0),
+		Rope.cat2 (Rope.fromList (x0 :: y0 :: nil), 
+			 Rope.cat2 (| quickhull' (x0, y0, rightOfx0y0),
 				        quickhull' (y0, x0, rightOfy0x0) |))
 	    end
 
+(*
     fun indexOfExtremalElt cmp isMin xs = 
 	if Rope.length xs < 1 then raise Fail "indexOfExtremalElt: length of input rope must be greater than 0" else
 	let
@@ -113,12 +114,12 @@ structure Quickhull (* : sig
 	    val packed = Rope.filter (fn (p, cp) => cp > 0.0) cross
 	    val unpacked = Rope.map fst packed
 	in
-	    if Rope.length packed < 2 then Rope.append (Rope.singleton p1, unpacked)
+	    if Rope.length packed < 2 then Rope.cat2 (Rope.singleton p1, unpacked)
 	    else 
 		let
 		    val pm = Rope.sub (points, maxIndex (Rope.map snd cross))
 		in
-		    Rope.append (| hsplit (unpacked, (p1, pm)), hsplit (unpacked, (pm, p2)) |)
+		    Rope.cat2 (| hsplit (unpacked, (p1, pm)), hsplit (unpacked, (pm, p2)) |)
 		end
 	end
 	    
@@ -130,9 +131,9 @@ structure Quickhull (* : sig
 	    val minx = Rope.sub (points, minIndex xs)
 	    val maxx = Rope.sub (points, maxIndex xs)
 	in
-	    Rope.append (| hsplit (points, (minx, maxx)), hsplit (points, (maxx, minx))|)
+	    Rope.cat2 (| hsplit (points, (minx, maxx)), hsplit (points, (maxx, minx))|)
 	end
-	    
+*)	    
 end
 
 structure Main =

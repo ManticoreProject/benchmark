@@ -2,7 +2,7 @@ local
     $(SML_LIB)/basis/basis.mlb
     $(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
 
-    ../../lib/par-rope-lib/mlton.mlb
+    ../../lib/rope/sml/mlton.mlb
     ../../common/run-seq.sml
     gen-bodies-mlton.mlb
     barnes-hut.sml

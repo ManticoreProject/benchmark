@@ -21,7 +21,7 @@ structure Quicksort = struct
 				      R.filter (fn x => x > p) xs |)
 		val (l, u) = (| quicksort lt, quicksort gt |)
 	    in
-		R.append (l, (R.append (eq, u)))
+		R.cat2 (l, (R.cat2 (eq, u)))
 	    end
 
 end

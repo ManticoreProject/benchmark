@@ -6,10 +6,10 @@
  * Parallel quicksort over parallel arrays.
  *)
 
-structure Rope = RopeFn (
-		   structure S = VectorSeq
-		   val maxLeafSize = 256
-		   structure RT = SequentialRuntime
+structure Rope = RopeImplFn (
+		   structure Seq = VectorSeq
+		   structure RT = SimpleRuntime
+		   val C = 2.0
 		)
 
 structure Quicksort = struct
@@ -27,7 +27,7 @@ structure Quicksort = struct
 				      R.filter (fn x => x > p) xs )
 		val (l, u) = ( quicksort lt, quicksort gt )
 	    in
-		R.append (l, (R.append (eq, u)))
+		R.cat2 (l, (R.cat2 (eq, u)))
 	    end
 
 end

@@ -1,4 +1,4 @@
-../../lib/rope/rope.mlb
+../../lib/rope/pml/manticore.mlb
 ../../common/run-par.mlb
 vector2.pml
 gen-bodies.pml
