@@ -103,4 +103,6 @@ fun filterUntil cond f s = let
     lp (s, nil)
   end
 
+val app = List.app
+
 end

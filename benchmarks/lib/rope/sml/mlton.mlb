@@ -18,7 +18,7 @@ in
   rope-impl-fn.sml
   rope-pair-impl-fn.sml
 
-  list-seq.sml
+(*  list-seq.sml*)
   vector-seq.sml
 
 (*  check.sml*)
