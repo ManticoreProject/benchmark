@@ -8,10 +8,10 @@
  *
  *)
 
-structure Rope = RopeFn (
-		   structure S = VectorSeq
-		   val maxLeafSize = 256
-		   structure RT = SequentialRuntime
+structure Rope = RopeImplFn (
+		   structure Seq = VectorSeq
+		   structure RT = SimpleRuntime
+		   val C = 2.0
 		)
 
 structure DenseMatrixMultiply =
