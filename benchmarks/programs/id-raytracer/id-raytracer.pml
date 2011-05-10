@@ -457,42 +457,14 @@ structure IdRaytracer =
     % "main" routine
     *)
     (* parallel version *)
-
-    fun app1 (f : int * int * (double * double * double) -> unit) = let
-      fun g arr = let
-        val n = PArray.length arr
-        fun lp i = 
-          if (i >= n) then ()
-	  else (f (arr!i); lp (i+1))
-        in
-          lp 0
-        end
-      in
-        g
-      end
-
-    fun app2 (f : (int * int * (double * double * double)) parray -> unit) = let
-      fun g arr = let
-        val n = PArray.length arr
-        fun lp i = 
-          if (i >= n) then ()
-	  else (f (arr!i); lp (i+1))
-        in
-	  lp 0
-        end
-      in
-        g 
-      end
-
     fun ray winsize = let
 
 	val img = Image.new (winsize, winsize)
 	val lights = testlights
 	val (firstray, scrnx, scrny) = camparams (lookfrom, lookat, vup, fov, winsize)
 	fun f (i, j) = tracepixel (world, lights, i, j, firstray, scrnx, scrny)
-	val scene = [| [| (i, j, f (i, j)) | j in [| 0 to (winsize-1) |] |] | i in [| 0 to (winsize-1) |] |]
-(*	val _ = PArray.app (PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b))) scene *)
-(*	val _ = app2 (app1 (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b))) scene *)
+	val scene = Rope.tabulate (winsize, fn i => Rope.tabulate (winsize, fn j => (i, j, f (i, j))))
+	val _ = Rope.app (fn row => Rope.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene
 	val _ = Image.output("out.ppm", img)
 	val _ = Image.free img
 
