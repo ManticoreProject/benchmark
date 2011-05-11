@@ -125,6 +125,9 @@ AC_CONFIG_FILES(
   [scripts/gen-rope-split-experiment.sh:scripts/gen_rope_split_experiment_sh.in],
   [chmod +x scripts/gen-rope-split-experiment.sh])
 AC_CONFIG_FILES(
+  [scripts/gen-speedup-experiment.sh:scripts/gen_speedup_experiment_sh.in],
+  [chmod +x scripts/gen-speedup-experiment.sh])
+AC_CONFIG_FILES(
   [scripts/work-stealing-stats.sh:scripts/work_stealing_stats_sh.in],
   [chmod +x scripts/work-stealing-stats.sh])
 AC_CONFIG_FILES(

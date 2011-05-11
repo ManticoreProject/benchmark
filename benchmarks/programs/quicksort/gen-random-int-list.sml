@@ -1,7 +1,7 @@
 structure Main =
   struct
 
-    val dfltN = 1000000
+    val dfltN = 10000000
 
     val rand = Random.rand (0, 1000000)
 
