@@ -8,14 +8,14 @@
 
 structure Quicksort = struct
 
-    structure R = Rope
+    structure R = IntRope
 
-    fun quicksort xs =
+    fun quicksort (xs:R.rope) = 
 	if R.length xs <= 1 then
 	    xs
 	else
 	    let
-		val p = Rope.sub (xs, R.length xs div 2)
+		val p = R.sub (xs, R.length xs div 2)
 		val (lt, eq, gt) = (| R.filter (fn x => x < p) xs, 
 				      R.filter (fn x => x = p) xs,
 				      R.filter (fn x => x > p) xs |)
@@ -54,16 +54,13 @@ structure Main =
 	let
 	    val x = RunPar.runSilent (fn _ => 
 		 let
-		     val x = Rope.fromList
+		     val x = IntRope.fromList
 				 (case getSizeArg args
 				   of NONE => readFromFile ()
 				    | SOME n =>
 				      List.tabulate (n, fn _ => Rand.inRangeInt (0, 10000)))
 		 in
-		     (* the map below has the effect of distributing the parallel array across per-vproc nurseries, thereby
-		      * distributing subsequent GC load
-		      *)
-		     Rope.map (fn y => y+1) x
+		     x
 		 end)
 	    fun doit () = Quicksort.quicksort x
 		
