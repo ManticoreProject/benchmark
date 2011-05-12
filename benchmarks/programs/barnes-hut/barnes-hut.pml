@@ -13,20 +13,15 @@ type 'a seq = 'a S.rope
 
 type scalar = double
 
-(* 2-d point with mass *)
-(*   - x coordinate *)
-(*   - y coordinate *)
-(*   - mass *)
+(* the particle P (x, y, m, xv, yv) represents a particle in 2d space located *)
+(* at point (x, y) with mass m and velocity (xv, yv) *)
+datatype particle = P of scalar * scalar * scalar * scalar * scalar
+
 type mp = scalar * scalar * scalar
-type velocity = scalar * scalar
-type particle = mp * velocity
 
 datatype bht =
     BHTLeaf of mp
   | BHTQuad of mp * bht * bht * bht * bht
-
-fun get_x ((x, _, _), _) = x
-fun get_y ((_, y, _), _) = y
 
 val map = S.map
 val reduce = S.reduce
@@ -47,14 +42,14 @@ val dt = 0.025
 fun circle_plus ((mx0,my0,m0), (mx1,my1,m1)) = (mx0 + mx1, my0 + my1, m0 + m1)
 
 fun calc_centroid parts = let
-  fun f ((x, y, m), _) = (m * x, m * y, m) 
+  fun f (P (x, y, m, _, _)) = (m * x, m * y, m) 
   val (sum_mx, sum_my, sum_m) = 
     reduce circle_plus (0.0, 0.0, 0.0) (map f parts) 
   in
     (sum_mx / sum_m, sum_my / sum_m, sum_m)
   end
 
-fun in_box ((llx, lly, rux, ruy), ((px, py, _), _)) =
+fun in_box ((llx, lly, rux, ruy), (P (px, py, _, _, _))) =
   (px > llx) andalso (px <= rux) andalso (py > lly) andalso (py <= ruy)
 
 fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
@@ -106,7 +101,8 @@ fun accel (x1, y1, _) x2 y2 m = let
 fun is_close (x1, y1, m) x2 y2 =  
   sq (x1 - x2) + sq (y1 - y2) < eClose
 
-fun calc_accel (mpt, _) bht = let
+fun calc_accel (P (x, y, m, _, _)) bht = let
+ val mpt = (x, y, m)
  fun aux bht =
   (case bht of
     BHTLeaf (x, y, m) =>
@@ -122,14 +118,17 @@ fun calc_accel (mpt, _) bht = let
 	accel mpt x y m)
   in aux bht end
 
-fun move_particle ((x, y, m), (vx, vy)) (ax, ay) =
-  ((x + vx, y + vy, m), (vx + ax, vy + ay))
+fun move_particle (P (x, y, m, vx, vy)) (ax, ay) =
+  P (x + vx, y + vy, m, vx + ax, vy + ay)
+
+fun get_x (P (x, _, _, _, _)) = x
+fun get_y (P (_, y, _, _, _)) = y
 
 fun one_step parts =
   if size parts = 0 then
     empty ()
   else let
-    val ((x0, y0, _), _) = sub (parts, 0)
+    val P (x0, y0, _, _, _) = sub (parts, 0)
     val box0 = (reduce minv x0 (map get_x parts) - epsilon,
 		reduce minv y0 (map get_y parts) - epsilon,
 		reduce maxv x0 (map get_x parts) + epsilon,
@@ -167,12 +166,12 @@ structure Main =
     structure V = Vector2
     structure BH = BarnesHut
 
-    fun particle (mass, (xp, yp), (xv, yv)) = ((xp, yp, mass), (xv, yv))
+    fun particle (mass, (xp, yp), (xv, yv)) = BarnesHut.P (xp, yp, mass, xv, yv)
     fun genBodies n = List.map particle (GenBodies.testdata n)
 
     val epsilon = 0.0000000001
-    fun bumpParticle ((xp, yp, mass), (xv, yv)) =
-	((xp+epsilon, yp+epsilon, mass+epsilon), (xv+epsilon, yv+epsilon))
+    fun bumpParticle (BarnesHut.P (xp, yp, mass, xv, yv)) =
+	BarnesHut.P (xp+epsilon, yp+epsilon, mass+epsilon, xv+epsilon, yv+epsilon)
 
     fun readFromFile () =
 	let
