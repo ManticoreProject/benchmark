@@ -17,11 +17,9 @@ type scalar = double
 (* at point (x, y) with mass m and velocity (xv, yv) *)
 datatype particle = P of scalar * scalar * scalar * scalar * scalar
 
-type mp = scalar * scalar * scalar
-
 datatype bht =
-    BHTLeaf of mp
-  | BHTQuad of mp * bht * bht * bht * bht
+    BHTLeaf of scalar * scalar * scalar
+  | BHTQuad of scalar * scalar * scalar * bht * bht * bht * bht
 
 val map = S.map
 val reduce = S.reduce
@@ -78,8 +76,9 @@ fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
 	    build (depth', b2, pb2),
 	    build (depth', b3, pb3),
 	    build (depth', b4, pb4) |)
+      val (cx, cy, cm) = calc_centroid particles
       in
-        BHTQuad (calc_centroid particles, q1, q2, q3, q4)
+        BHTQuad (cx, cy, cm, q1, q2, q3, q4)
       end
   in
     build (0, box, particles)
@@ -107,7 +106,7 @@ fun calc_accel (P (x, y, m, _, _)) bht = let
   (case bht of
     BHTLeaf (x, y, m) =>
       accel mpt x y m
-  | BHTQuad ((x, y, m), q1, q2, q3, q4) =>
+  | BHTQuad (x, y, m, q1, q2, q3, q4) =>
       if is_close mpt x y then let
 	val ((x1, y1), (x2, y2), (x3, y3), (x4, y4)) =
 	  (aux q1, aux q2, aux q3, aux q4)
