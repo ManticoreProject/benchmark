@@ -47,7 +47,7 @@ fun calc_centroid parts = let
     (sum_mx / sum_m, sum_my / sum_m, sum_m)
   end
 
-fun in_box ((llx, lly, rux, ruy), (P (px, py, _, _, _))) =
+fun in_box (llx, lly, rux, ruy) (P (px, py, _, _, _)) =
   (px > llx) andalso (px <= rux) andalso (py > lly) andalso (py <= ruy)
 
 fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
@@ -61,15 +61,11 @@ fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
       val b2 = (llx,  midy, midx,  ruy) 
       val b3 = (midx, midy, rux,   ruy)
       val b4 = (midx, lly,  rux,   midy)
-      fun ib1 p = in_box (b1, p)
-      fun ib2 p = in_box (b2, p)
-      fun ib3 p = in_box (b3, p)
-      fun ib4 p = in_box (b4, p)
       val (pb1, pb2, pb3, pb4) = 
-	(filter ib1 particles,
-	 filter ib2 particles,
-	 filter ib3 particles,
-	 filter ib4 particles)
+	(filter (in_box b1) particles,
+	 filter (in_box b2) particles,
+	 filter (in_box b3) particles,
+	 filter (in_box b4) particles)
       val depth' = depth + 1
       val (q1, q2, q3, q4) =
 	 (| build (depth', b1, pb1),
