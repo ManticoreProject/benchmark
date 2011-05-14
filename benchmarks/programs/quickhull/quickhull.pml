@@ -8,14 +8,19 @@ structure Quickhull (* : sig
     val quickhull : point Rope.rope -> point Rope.rope
   end *) = struct
 
-    type point = double * double
+    type scalar = double
 
-    fun samePoint ((x1, y1), (x2, y2)) = 
-	(case (Double.compare (x1, x2), Double.compare (y1, y2))
+    datatype point = P of scalar * scalar
+
+    val scalarCompare = Double.compare
+    val sqrt = Double.sqrt
+
+    fun samePoint (P (x1, y1), P (x2, y2)) = 
+	(case (scalarCompare (x1, x2), scalarCompare (y1, y2))
 	  of (EQUAL, EQUAL) => true
 	   | _ => false)
 
-    fun distance ((q, w), (z, x)) = Double.sqrt ((q - z) * (q - z) + (w - x) * (w - x))
+    fun distance (P (q, w), P (z, x)) = sqrt ((q - z) * (q - z) + (w - x) * (w - x))
 
     fun rpMax f m xs = 
 	let
@@ -31,7 +36,7 @@ structure Quickhull (* : sig
     fun farthest (a, b, S) = 
 	let
 	    fun dist x = (distance (a, x) + distance (b, x), x)
-	    fun cmp ((d1, _), (d2, _)) = Double.compare (d1, d2)
+	    fun cmp ((d1, _), (d2, _)) = scalarCompare (d1, d2)
 	    val dpts = Rope.map dist S
 	    val (_, pt) = rpMax cmp (Rope.sub (dpts, 0)) dpts
 	in
@@ -39,7 +44,7 @@ structure Quickhull (* : sig
 	end
 
     (* returns true if the point p is to the right of the ray emanating from a and ending at b *)
-    fun isRight ((*a as *) (x1, y1), (* b as *) (x2, y2)) (* p as *) (x, y) = 
+    fun isRight ((*a as *) P (x1, y1), (* b as *) P (x2, y2)) (* p as *) (P (x, y)) = 
 	(x1 - x) * (y2 - y) - (y1 - y) * (x2 - x) (* this quantity is the numerator of the 
 						   * signed distance from the point p to the
 						   * line (a,b). the sign represents the direction
@@ -57,31 +62,31 @@ structure Quickhull (* : sig
 	else
 	    let
 		val c = farthest (a, b, S)  (* c must also be on the convex hull *)
-		val (rightOfac, rightOfcb) = (| pointsRightOf (a, c, S), pointsRightOf (c, b, S) |)
+		val (rightOfac, rightOfcb) = ( pointsRightOf (a, c, S), pointsRightOf (c, b, S) )
 	    in
 		Rope.cat2 (Rope.singleton c, 
-			 Rope.cat2 (| quickhull' (a, c, rightOfac), 
-				        quickhull' (c, b, rightOfcb) |))
+			 Rope.cat2 ( quickhull' (a, c, rightOfac), 
+				        quickhull' (c, b, rightOfcb) ))
 	    end
 
     (* takes a set of 2d points and returns the convex hull for those points *)	
-    fun quickhull S = 
+    fun quickhull (S:point Rope.rope) = 
 	if Rope.length S <= 1 then
 	    S
 	else
 	    let
 		val p0 = Rope.sub (S, 0)
-		fun belowAndLeft ((x1, y1), (x2, y2)) = if x1 < x2 andalso y1 < y2 then (x1, y1) else (x2, y2)
-		fun aboveAndRight ((x1, y1), (x2, y2)) = if x1 > x2 andalso y1 > y2 then (x1, y1) else (x2, y2)
+		fun belowAndLeft (P (x1, y1), P (x2, y2)) = if x1 < x2 andalso y1 < y2 then P (x1, y1) else P (x2, y2)
+		fun aboveAndRight (P (x1, y1), P (x2, y2)) = if x1 > x2 andalso y1 > y2 then P (x1, y1) else P (x2, y2)
 		(* points x0 and y0 lie on the convex hull *)
-		val (x0, y0) = (| Rope.reduce belowAndLeft p0 S, Rope.reduce aboveAndRight p0 S |)
+		val (x0, y0) = ( Rope.reduce belowAndLeft p0 S, Rope.reduce aboveAndRight p0 S )
 		(* remove x0 and y0 from S *)
 		val S = Rope.filter (fn p => not (samePoint (p, x0) orelse samePoint (p, y0))) S
-		val (rightOfx0y0, rightOfy0x0) = (| pointsRightOf (x0, y0, S), pointsRightOf (y0, x0, S) |)
+		val (rightOfx0y0, rightOfy0x0) = ( pointsRightOf (x0, y0, S), pointsRightOf (y0, x0, S) )
 	    in
 		Rope.cat2 (Rope.fromList (x0 :: y0 :: nil), 
-			 Rope.cat2 (| quickhull' (x0, y0, rightOfx0y0),
-				        quickhull' (y0, x0, rightOfy0x0) |))
+			 Rope.cat2 ( quickhull' (x0, y0, rightOfx0y0),
+				        quickhull' (y0, x0, rightOfy0x0) ))
 	    end
 
 (*
@@ -162,7 +167,7 @@ structure Main =
 		     let
 			 val x::y::nil = List.map rd (String.tokenize " " line)
 		     in
-			 lp((x,y) :: acc)
+			 lp(Quickhull.P (x,y) :: acc)
 		     end)
 	in
 	    lp nil
@@ -175,10 +180,11 @@ structure Main =
 		  val points = Rope.fromList
 				   (case getSizeArg args
 				     of NONE => readFromFile ()
-				      | SOME n => List.tabulate (n, fn _ => (Rand.randDouble (~1.0, 1.0), 
+				      | SOME n => List.tabulate (n, fn _ => Quickhull.P (Rand.randDouble (~1.0, 1.0), 
 									     Rand.randDouble (~1.0, 1.0))))
+		  fun f (Quickhull.P (x, y)) = Quickhull.P (x+epsilon-epsilon, y+epsilon-epsilon)
 	      in
-		  Rope.map (fn (x, y) => (x+epsilon-epsilon, y+epsilon-epsilon)) points
+		  Rope.map f points
 	      end)
 	    fun doit () = Quickhull.quickhull points
 	in
