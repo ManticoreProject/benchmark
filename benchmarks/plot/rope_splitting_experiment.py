@@ -11,8 +11,9 @@ import human_readable
 import line_plot
 import math
 import sys
+import numpy as np
 
-n_procs=16
+n_procs=48
 
 # if len(sys.argv) != 2:
 #   sys.exit("expected an integer argument for the number of procs")
@@ -21,11 +22,11 @@ n_procs=16
 
 splitting_strategies = [
 #  command-line       long desc       has parameter
-  ("ebs-sp",          "ETS_SP",       True),
+  ("ETS",          "ETS",       True),
   ("ebs-ap",          "ETS_AP",       True),
-  ("lbs",             "LTS   ",       True),
+  ("LTS",             "LTS   ",       True),
   ("lps",             "LTS_P   ",       True),
-  ("ns",              "NS    ",       False) 
+  ("SEQ",              "SEQ    ",       False) 
 ]
 
 baseline_strategy=("ns",              "NoSplit",      False)
@@ -50,7 +51,7 @@ def id_of_strategy(input):
 
 def is_lbs1(input):
   p=input.split(" ")
-  return(p[1] == "lbs" and p[2] == "1")
+  return(p[1] == "LTS" and p[2] == "1")
 
 def is_ebsap(input):
   p=input.split(" ")
@@ -62,7 +63,7 @@ def is_ebsap1(input):
 
 def is_ebssp(input):
   p=input.split(" ")
-  return(p[1] == "ebs-sp")
+  return(p[1] == "ETS")
 
 def is_ok_ebsap(input):
   if is_ebsap(input):
@@ -215,12 +216,36 @@ def compare_wall_clock (experiment_id, n_procs):
 #(mlton_lbs_avg / mlt_avg) - 1.0 
   return ((maxtime, blavg, mlt_avg, mltlbsovhd, lbs_ovhd, norms))
 
+def ets (experiment_id, n_procs):
+  pts=[]
+  maxtime=0.0
+  for strat in splitting_strategies:
+    ctx_ids=filter(get.is_context_parallel, find_mc_context_ids(experiment_id, strat))
+    for ctx_id in ctx_ids:
+      input=input_of_context_id(ctx_id)
+      (avg,stddev)=stat_of_par_context_id(ctx_id, n_procs)
+      maxtime=max(maxtime,avg)
+      if is_ok_ebsap(input):
+        pts.append((input, pretty_strategy(strat, input), (avg, stddev)))
+  pts.sort(compare_pts)
+  norms=[]
+  # get baseline performance
+  baseline_id=find_mc_context_ids(experiment_id, splitting_strategies[4])[0]
+  (blavg,blstddev)=stat_of_context_id(baseline_id)
+  for (input, ps, (avg, stddev)) in pts:
+    norms.append((input, ps, avg, stddev))
+  return ((maxtime, blavg, norms))
+
 #ids=(772, 773, 774, 775, 776, 777, 778, 779)
 #ids=(781, 782, 784, 785, 786, 787, 807)
 #ids=(808, 809, 810, 811, 812, 813, 814, 815)
 #ids=(837,838,841,844,845,846,847)
 
-ids=(848,849,850,851,852,853,854)
+#ids=(848,849,850,851,852,853,854)
+
+#ids=(902,903,904,905,906)
+
+ids=(918,919,920,921,922,923)
 
 # for id in ids:
 #   print_compare_normalized(id, n_procs)
@@ -232,7 +257,7 @@ def plotall(name, strats, legend_loc):
   for experiment_id in ids:
     problem_name=get.problem_name_of_experiment(experiment_id)
     #print problem_name
-    (maxtime, bl_avg, mlt_avg, mltlbsovhd, lbs_ovhd, norms)=compare_wall_clock(experiment_id, n_procs)
+    (maxtime, bl_avg, norms)=ets(experiment_id, n_procs)
     for strat in strats:
       lab=problem_name
       ns=[n for n in norms if id_of_strategy(n[0]) == strat[0]]
@@ -245,24 +270,29 @@ def plotall(name, strats, legend_loc):
         else:
           x=int(param_of_strategy(input))
           x=float(math.log(x,2))
-#          x=x-4.0
-        y=((bl_avg / avg) / float(n_procs)) * 100.0
+        y=(bl_avg / avg)
         #print (lab, avg, y, bl_avg)
         xys.append((x,y))
         maxX=max(x,maxX)
         maxY=max(y,maxY)
       xys.sort(cmp)
       lines.append((lab,xys))
-  line_plot.plot('tps'+name, lines, maxX, 102.0,chart_title='',connect_dots=True,
+  yaxvals=np.arange(0, 49, 8)
+  xaxlabs=[]
+  for i in range (0,14):
+    xaxlabs.append(('$2^{'+str(i)+'}$'))
+  line_plot.plot('tps'+name, lines, maxX, 49.0,chart_title='',connect_dots=True,
                  #formats=['r+', 'b+', 'r-', 'b-', 'rx', 'bx', 'r^', 'b^', 'ro', 'bo'],
                  linecolors=['#000000', 'r', 'b', 'g', 'b', 'r', 'b', 'r', 'g', 'r', 'b', 'g', 'r', 'b'],
                  formats=['b+', 'b,', 'b.', 'b1', 'b2', 'b3', 'b4', 'b<', 'b>', 'b|'],
                  dashes=[False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
-                 yax_label='parallel efficiency',
-                 xax_label='SST (log scale)',
+                 yax_label='speedup',
+                 xax_label='SST',
                  dimensions=(35,23),
                  legend_loc=legend_loc,
-                 marker=(43.0, 4.0))
+                 marker=(43.0, 4.0),
+                 yaxvals=yaxvals,
+                 xaxlabs=xaxlabs)
 
 
 #plotall(splitting_strategies[1][0]+"-"+str(n_procs), [splitting_strategies[1]], 'upper right')
@@ -282,6 +312,8 @@ def pretty_bench_name(n):
   for nam in benchmark_names:
     if nam[0] == n:
       return nam[1]
+
+plotall(splitting_strategies[0][0]+"-"+str(n_procs), [splitting_strategies[0]], 'upper right')
 
 # #speedup vs pmlc
 # print("\\begin{tabular}{l | r}")

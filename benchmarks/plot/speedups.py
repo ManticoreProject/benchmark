@@ -164,9 +164,9 @@ def plot(filename,
   axes.xaxis.set_ticks_position('bottom') # as opposed to 'top' or 'both'
   plt.title(chart_title, fontproperties=h1)
   plt.xlabel(xax_label, fontproperties=h2)
-  plt.xticks(np.append(np.arange(1,2,1), np.arange(2, biggestX+1, 2)), fontproperties=h3)
+  plt.xticks(np.append(np.arange(1,2,2), np.arange(2, biggestX+1, 4)), fontproperties=h3)
   plt.ylabel(yax_label, fontproperties=h2)
-  plt.yticks(np.append(np.arange(1,2,1), np.arange(2, biggestX+2, 2)), fontproperties=h3)
+  plt.yticks(np.append(np.arange(1,2,2), np.arange(2, biggestX+2, 4)), fontproperties=h3)
   # accumulators
   legend_text  = []
   speedupsList = []
@@ -219,11 +219,11 @@ def compare(experiment_id):
     sstpars=([],[],[])
     ebsappars=([], [])
     lbspars=[]
-    for n_procs in (2,4,8,12,16):
+    for n_procs in (1,8,16,24,32,48):
         (maxtime, bl_avg, mlt_avg, mltlbsovhd, lbs_ovhd, norms)=r.compare_wall_clock(experiment_id,n_procs)
         for i in (0,1,2):
             sst=ssts[i]
-            xinput="-splitting-strategy ebs-sp " + str(sst)
+            xinput="-chunking-policy ETS " + str(sst)
             for (input, ps, avg, stddev) in norms:
                 if input == xinput:
                     sstparsi=sstpars[i]
@@ -256,8 +256,9 @@ def compare(experiment_id):
          formats=['r.', 'bx', 'b+', 'b1', 'b,', 'b4', 'b2', 'b<', 'b>', 'b|'],
          marker=(80.0, 5.0))
 
-r.plotall(r.splitting_strategies[0][0]+"-"+str(r.n_procs), [r.splitting_strategies[0]], 'upper right')
 
-for id in r.ids:
+ids=(908,909,911,913,914,917)
+for id in ids:
   compare(id)
 
+#r.plotall(r.splitting_strategies[0][0]+"-"+str(r.n_procs), [r.splitting_strategies[0]], 'upper right')

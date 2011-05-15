@@ -120,7 +120,10 @@ def plot(filename,
          dimensions=None, # (width, height) in inches
          heightIn=None,
          prefix=None,
-         show_errorbars=False):
+         show_errorbars=False,
+         xaxlabs=None,
+         yaxvals=None
+         ):
   # size of the figure if dimensions are specified
   if (dimensions != None):
     plt.figure(figsize=dimensions)
@@ -130,9 +133,15 @@ def plot(filename,
   axes.xaxis.set_ticks_position('bottom') # as opposed to 'top' or 'both'
   plt.title(chart_title, fontproperties=h1)
   plt.xlabel(xax_label, fontproperties=h2)
-  plt.xticks(np.arange(0., biggestX + 1.0), fontproperties=h3)
+  if (yaxvals == None):
+    yaxvals=np.arange(0.0, biggestY, 10.0)
+  xaxvals=np.arange(0., biggestX + 1.0)
+  if (xaxlabs != None):
+    plt.xticks (xaxvals, xaxlabs, fontproperties=h3)
+  else:
+    plt.xticks(xaxvals, fontproperties=h3)
   plt.ylabel(yax_label, fontproperties=h2)
-  plt.yticks(np.arange(0.0, biggestY, 10.0), fontproperties=h3)
+  plt.yticks(yaxvals, fontproperties=h3)
   # accumulators
   legend_text  = []
   speedupsList = []
