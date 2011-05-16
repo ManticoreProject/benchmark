@@ -125,8 +125,14 @@ AC_CONFIG_FILES(
   [scripts/gen-rope-split-experiment.sh:scripts/gen_rope_split_experiment_sh.in],
   [chmod +x scripts/gen-rope-split-experiment.sh])
 AC_CONFIG_FILES(
+  [scripts/gen-leaf-size-experiment.sh:scripts/gen_leaf_size_experiment_sh.in],
+  [chmod +x scripts/gen-leaf-size-experiment.sh])
+AC_CONFIG_FILES(
   [scripts/gen-speedup-experiment.sh:scripts/gen_speedup_experiment_sh.in],
   [chmod +x scripts/gen-speedup-experiment.sh])
+AC_CONFIG_FILES(
+  [scripts/gen-sst-experiment.sh:scripts/gen_sst_experiment_sh.in],
+  [chmod +x scripts/gen-sst-experiment.sh])
 AC_CONFIG_FILES(
   [scripts/work-stealing-stats.sh:scripts/work_stealing_stats_sh.in],
   [chmod +x scripts/work-stealing-stats.sh])

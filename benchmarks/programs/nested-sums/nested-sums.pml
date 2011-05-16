@@ -11,7 +11,7 @@ end
 structure Main =
   struct
 
-    val dfltN = 6000
+    val dfltN = 15000
 
     fun getSizeArg args =
 	(case args
