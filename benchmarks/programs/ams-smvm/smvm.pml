@@ -8,11 +8,13 @@ structure SMVM = struct
 
   fun add (x:double, y:double) = x+y
 
+(*  fun sum a = PArray.reduce (add, 0.0, a) *)
   fun sum a = PArray.reduce add 0.0 a
 
   fun dotp (sv, v) = let
     fun f (i, x) = x * (v!i)
     in
+      (* sum (PArray.map (f, sv)) *)
       sum (PArray.map f sv)
     end
 
@@ -43,9 +45,9 @@ structure Main = struct
       if (n = 0)
         then ()
       else let
-        val testsv = PArray.tab (1000, fn i => (i, rnd ()))
+        val testsv = [| (i, rnd ()) | i in [| 0 to 999 |] |]
 	(* val _ = Print.printLn "built testsv" *)
-        val testv = PArray.tab (100000, fn _ => rnd ())
+        val testv = [| rnd () | _ in [| 1 to 100000 |] |]
 	(* val _ = Print.printLn "built testv" *)
 	val p = SMVM.dotp (testsv, testv)
 	(* val _ = Print.printLn "computed dotprod" *)
