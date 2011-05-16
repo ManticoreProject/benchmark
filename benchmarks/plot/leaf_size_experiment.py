@@ -11,9 +11,10 @@ import human_readable
 import line_plot
 import math
 import sys
+import numpy as np
 import branches
 
-n_procs=16
+n_procs=48
 
 # if len(sys.argv) != 2:
 #   sys.exit("expected an integer argument for the number of procs")
@@ -22,14 +23,14 @@ n_procs=16
 
 splitting_strategies = [
 #  command-line       long desc       has parameter
-  ("ebs-sp",          "EBS_SP",       True),
-  ("ebs-ap",          "EBS_AP",       True),
-  ("lbs",             "LBS   ",       True),
-  ("lps",             "LPS   ",       True),
-  ("ns",              "NS    ",       False) 
+  ("ETS",          "ETS",       True),
+  ("ebs-ap",          "ETS_AP",       True),
+  ("LTS",             "LTS   ",       True),
+  ("lps",             "LTS_P   ",       True),
+  ("SEQ",              "SEQ    ",       False) 
 ]
 
-baseline_strategy=("ns",              "NoSplit",      False)
+baseline_strategy=("SEQ",              "SEQ",      False)
 
 def find_mc_context_ids(experiment_id, strat):
   q = "SELECT DISTINCT(context_id) FROM contexts \
@@ -38,12 +39,19 @@ def find_mc_context_ids(experiment_id, strat):
        AND input LIKE '%" + strat[0] + "%'"
   return(get.detup(db.select_values(q)))
 
+def find_mc_context_ids3(experiment_id):
+  q = "SELECT DISTINCT(context_id) FROM contexts \
+       WHERE experiment_id = " + str(experiment_id) + " \
+       AND compiler = 'pmlc'"
+  return(get.detup(db.select_values(q)))
+
+#       AND max_leaf_size = " + str(mls) + " \
+
 def find_mc_context_ids2(experiment_id, strat, mls):
   q = "SELECT DISTINCT(context_id) FROM contexts \
        WHERE experiment_id = " + str(experiment_id) + " \
        AND compiler = 'pmlc' \
-       AND max_leaf_size = " + str(mls) + " \
-       AND input LIKE '%" + strat[0] + "%'"
+       AND input LIKE '%-max-leaf-size " + strat[0] + "%'"
   return(get.detup(db.select_values(q)))
 
 def find_mlton_context_ids(experiment_id, strat):
@@ -79,6 +87,10 @@ def is_ok_ebsap(input):
     return(p[3] == "4")
   else:
     return(True)
+
+def max_leaf_size_of_input(input):
+  p=input.split(" ")
+  return float(p[1])
 
 def param_of_strategy(input):
   p=input.split(" ")
@@ -168,25 +180,31 @@ def cmp(x,y):
 def compare_wall_clock (experiment_id, n_procs):
   pts=[]
   maxtime=0.0
-  for strat in splitting_strategies:
-    ctx_ids=filter(get.is_context_parallel, find_mc_context_ids(experiment_id, strat))
-    for ctx_id in ctx_ids:
-      input=input_of_context_id(ctx_id)
-      max_leaf_size=max_leaf_size_of_context_id(ctx_id)
-      (avg,stddev)=stat_of_par_context_id(ctx_id, n_procs, branches.SWP)
-      branch=branch_of_context_id(ctx_id)
-      pts.append((branch, input, pretty_strategy(strat, input), max_leaf_size, (avg, stddev)))
-      print avg
-      print branch
-      maxtime=max(maxtime,avg)
-  pts.sort(compare_pts)
+  ctx_ids=filter(get.is_context_parallel, find_mc_context_ids3(experiment_id))
+  print 'ctx_ids'
+  print ctx_ids
+  for ctx_id in ctx_ids:
+    input=input_of_context_id(ctx_id)
+    max_leaf_size=max_leaf_size_of_input(input)
+    (avg,stddev)=stat_of_par_context_id(ctx_id, n_procs, branches.SWP)
+    branch=branch_of_context_id(ctx_id)
+    pts.append((branch, input, '', max_leaf_size, (avg, stddev)))
+    print avg
+    print branch
+    maxtime=max(maxtime,avg)
+  print 'pts'
+  print pts
+#  pts.sort(compare_pts)
   norms=[]
   # get baseline performance
   print experiment_id
-  baseline_id=find_mc_context_ids2(experiment_id, splitting_strategies[4], 256)[0]
+  baseline_id=find_mc_context_ids3(experiment_id)[0]
   (blavg,blstddev)=stat_of_seq_context_id(baseline_id)
+  print 'blavg'
+  print blavg
+  print norms
   # get performance of sequential ellision of lbs(1) 
-  ids=filter(get.is_context_sequential, find_mc_context_ids(experiment_id, splitting_strategies[2]))
+  ids=filter(get.is_context_sequential, find_mc_context_ids3(experiment_id))
   ids=filter(get.is_context_manticore,ids)
 #  (lbs_se_avg,_)=stat_of_context_id(ids[0])
   lbs_se_avg=0.0
@@ -209,7 +227,9 @@ def compare_wall_clock (experiment_id, n_procs):
 #ids=(808, 809, 810, 811, 812, 813, 814, 815)
 #ids=(837,838,841,844,845,846,847)
 
-ids=(885, 886, 887, 888, 889, 890, 891)
+#ids=(885, 886, 887, 888, 889, 890, 891)
+
+ids=(924,925,926,927)
 
 #ids=(885, 886)
 
@@ -222,37 +242,45 @@ def plotall(name, leaf_sizes, legend_loc):
     #print problem_name
     (maxtime, bl_avg, mlt_avg, mltlbsovhd, lbs_ovhd, norms)=compare_wall_clock(experiment_id, n_procs)
     lab=problem_name
-    ns=[n for n in norms if id_of_strategy(n[1]) == "lbs"]
+    ns=norms
     xys=[]
     print problem_name
     print ns
     print bl_avg
+    print 'n_procs'
+    print n_procs
     for (branch, input, pinput, avg, stddev, max_leaf_size) in ns:
       if max_leaf_size == 500:
         x=math.log(512, 2)
       else:
         x=math.log(max_leaf_size, 2)
-      y=((bl_avg / avg) / float(n_procs)) * 100.0
+      y=(bl_avg / avg)
       xys.append((x,y))
       maxX=max(x,maxX)
       maxY=max(y,maxY)
     xys.sort(cmp)
     print xys
     lines.append((lab,xys))
-  line_plot.plot(name, lines, maxX, 150.0,chart_title='',connect_dots=True,
+  yaxvals=np.arange(0, 49, 8)
+  xaxlabs=[]
+  for i in range (0,13):
+    xaxlabs.append(('$2^{'+str(i)+'}$'))
+  line_plot.plot(name, lines, maxX, 48,chart_title='',connect_dots=True,
                  #formats=['r+', 'b+', 'r-', 'b-', 'rx', 'bx', 'r^', 'b^', 'ro', 'bo'],
                  formats=['b+', 'b,', 'b.', 'b1', 'b2', 'b3', 'b4', 'b<', 'b>', 'b|'],
                  dashes=[False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
-                 yax_label='parallel efficiency',
-                 xax_label='Max leaf size (log_2 scale)',
+                 yax_label='speedup',
+                 xax_label='leaf size',
                  dimensions=(35,23),
                  legend_loc=legend_loc,
+                 yaxvals=yaxvals,
+                 xaxlabs=xaxlabs,
                  marker=(43.0, 4.0))
 
 
 #plotall(splitting_strategies[1][0]+"-"+str(n_procs), [splitting_strategies[1]], 'upper right')
 
-plotall('leaf-size-16', [1, 16, 32, 64, 128, 256, 500], 'upper right')
+plotall('leaf-size-48', [1, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192], 'upper right')
 
 benchmark_names = [
   ("barnes-hut", "Barnes Hut"),

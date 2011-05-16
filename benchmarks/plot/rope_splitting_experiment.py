@@ -29,7 +29,7 @@ splitting_strategies = [
   ("SEQ",              "SEQ    ",       False) 
 ]
 
-baseline_strategy=("ns",              "NoSplit",      False)
+baseline_strategy=("SEQ",              "SEQ",      False)
 
 def find_mc_context_ids(experiment_id, strat):
   q = "SELECT DISTINCT(context_id) FROM contexts \
@@ -281,7 +281,7 @@ def plotall(name, strats, legend_loc):
   xaxlabs=[]
   for i in range (0,14):
     xaxlabs.append(('$2^{'+str(i)+'}$'))
-  line_plot.plot('tps'+name, lines, maxX, 49.0,chart_title='',connect_dots=True,
+  line_plot.plot('speedups-'+name, lines, maxX, 49.0,chart_title='',connect_dots=True,
                  #formats=['r+', 'b+', 'r-', 'b-', 'rx', 'bx', 'r^', 'b^', 'ro', 'bo'],
                  linecolors=['#000000', 'r', 'b', 'g', 'b', 'r', 'b', 'r', 'g', 'r', 'b', 'g', 'r', 'b'],
                  formats=['b+', 'b,', 'b.', 'b1', 'b2', 'b3', 'b4', 'b<', 'b>', 'b|'],
