@@ -1,7 +1,9 @@
 #!/bin/sh
 
-CMD="pmlc -Cftrx.on=true  -o smvmF mc.mlb"
+PML=~/manticore/branches/flattening-transformation/src/tools/mc/test/pmlc
+
+CMD="$PML -Cftrx.on=true  -o smvmF mc.mlb"
 echo $CMD && $CMD
 
-CMD="pmlc -Cftrx.on=false -o smvmNF mc.mlb"
+CMD="$PML -Cftrx.on=false -o smvmNF mc.mlb"
 echo $CMD && $CMD

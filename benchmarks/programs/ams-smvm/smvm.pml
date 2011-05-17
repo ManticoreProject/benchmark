@@ -39,19 +39,22 @@ structure Main = struct
   
   fun rnd () = Rand.randDouble (0.0, 1.0)
   
-  val lim = 100000
-  val times = 50
+  fun tenToThe n = foldl (fn(m,n)=>m*n) 1 (List.tabulate (n, fn _ => 10))
+
+  val lim = tenToThe 5
+  val sparsity = 100
+  val times = 20
 
   fun main (_, args) = let
     fun go n = 
       if (n <= 0)
         then ()
       else let
-        val testsv = [| (i, rnd ()) | i in [| 1 to lim by (lim div 10) |] |]
+        val testsv = [| (i, rnd ()) | i in [| 1 to lim by (lim div sparsity) |] |]
         val testv  = [| rnd () | _ in [| 1 to lim |] |]
 	val p = SMVM.dotp (testsv, testv)
         in
-	  (* Print.printLn (Int.toString n ^ "\t" ^ Double.toString p); *)
+	  Print.printLn (Int.toString n ^ "\t" ^ Double.toString p);
 	  go (n-1)
 	end
     in
