@@ -30,33 +30,32 @@ end
 
 structure Main = struct
 
+(*  
   val epsilon = 0.0000000001
-
-(*
   fun bumpSV1 sv = PArray.map (fn (i,x) => (i+1, x+epsilon)) sv
   fun bumpSV2 sv = PArray.map (fn (i,x) => (i-1, x-epsilon)) sv
   fun bumpSM sm = PArray.map (fn sv => bumpSV2 (bumpSV1 sv)) sm
 *)	
   
-  fun rnd () = Rand.randDouble (0.0, 10000.0)
+  fun rnd () = Rand.randDouble (0.0, 1.0)
   
+  val lim = 100000
+  val times = 50
+
   fun main (_, args) = let
     fun go n = 
-      if (n = 0)
+      if (n <= 0)
         then ()
       else let
-        val testsv = [| (i, rnd ()) | i in [| 0 to 999 |] |]
-	(* val _ = Print.printLn "built testsv" *)
-        val testv = [| rnd () | _ in [| 1 to 100000 |] |]
-	(* val _ = Print.printLn "built testv" *)
+        val testsv = [| (i, rnd ()) | i in [| 1 to lim by (lim div 10) |] |]
+        val testv  = [| rnd () | _ in [| 1 to lim |] |]
 	val p = SMVM.dotp (testsv, testv)
-	(* val _ = Print.printLn "computed dotprod" *)
         in
 	  (* Print.printLn (Int.toString n ^ "\t" ^ Double.toString p); *)
 	  go (n-1)
 	end
     in
-      RunPar.run (fn _ => go 100)
+      RunPar.run (fn _ => go times)
     end
 
 end

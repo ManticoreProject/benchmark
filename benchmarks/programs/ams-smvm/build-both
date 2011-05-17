@@ -1,0 +1,7 @@
+#!/bin/sh
+
+CMD="pmlc -Cftrx.on=true  -o smvmF mc.mlb"
+echo $CMD && $CMD
+
+CMD="pmlc -Cftrx.on=false -o smvmNF mc.mlb"
+echo $CMD && $CMD
