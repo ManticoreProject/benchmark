@@ -43,21 +43,34 @@ structure Main = struct
 
   val lim = tenToThe 5
   val sparsity = 100
-  val times = 20
+  val times = 100
 
   fun main (_, args) = let
     fun go n = 
       if (n <= 0)
         then ()
       else let
-        val testsv = [| (i, rnd ()) | i in [| 1 to lim by (lim div sparsity) |] |]
-        val testv  = [| rnd () | _ in [| 1 to lim |] |]
-	val p = SMVM.dotp (testsv, testv)
+        val lim = 100000
+        val (testsv, t1) = Stopwatch.time (fn () => [| (i, rnd ()) | i in [| 0 to lim by 17 |] |])
+        val (testv, t2) = Stopwatch.time (fn () => [| rnd () | _ in [| 0 to lim |] |])
+	val (p, t3) = Stopwatch.time (fn () => SMVM.dotp (testsv, testv))
         in
-	  Print.printLn (Int.toString n ^ "\t" ^ Double.toString p);
+(* 	  Print.printLn ("iteration " ^ Int.toString n); *)
+(* 	  Print.printLn ("time to build testsv (sparse vector of length " ^ *)
+(* 			 Int.toString (lim div 17) ^ "): " ^ *)
+(* 			 Long.toString t1); *)
+(* 	  Print.printLn ("time to build testv (vector of " ^ Int.toString lim ^ *)
+(* 			 ") random doubles: " ^ *)
+(* 			 Long.toString t2); *)
+(* 	  Print.printLn ("time to compute dot product: " ^ Long.toString t3); *)
+(* 	  Print.printLn ("dotp: " ^ Double.toString p); *)
+	  Print.printLn (Long.toString t1 ^ "|" ^
+			 Long.toString t2 ^ "|" ^
+			 Long.toString t3);
 	  go (n-1)
 	end
     in
+      Print.printLn "testsv time|testv time|dotp time";
       RunPar.run (fn _ => go times)
     end
 
