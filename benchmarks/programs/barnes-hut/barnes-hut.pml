@@ -80,7 +80,7 @@ fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
     build (0, box, particles)
   end
 
-fun accel (x1, y1, _) x2 y2 m = let
+fun accel (x1, y1, _) (x2, y2, m) = let
   val dx   = x1 - x2
   val dy   = y1 - y2
   val rsqr = sq dx + sq dy
@@ -93,25 +93,25 @@ fun accel (x1, y1, _) x2 y2 m = let
       in (aabs * dx / r , aabs * dy / r) end
   end
 
-fun is_close (x1, y1, m) x2 y2 =  
+fun is_close (x1, y1, m) (x2, y2) =  
   sq (x1 - x2) + sq (y1 - y2) < eClose
 
 fun calc_accel (P (x, y, m, _, _)) bht = let
- val mpt = (x, y, m)
- fun aux bht =
-  (case bht of
-    BHTLeaf (x, y, m) =>
-      accel mpt x y m
-  | BHTQuad (x, y, m, q1, q2, q3, q4) =>
-      if is_close mpt x y then let
-	val ((x1, y1), (x2, y2), (x3, y3), (x4, y4)) =
-	  (aux q1, aux q2, aux q3, aux q4)
-	in
-	  (x1 + x2 + x3 + x4, y1 + y2 + y3 + y4)
-	end
-      else
-	accel mpt x y m)
-  in aux bht end
+  val mpt = (x, y, m)
+  fun aux bht =
+   (case bht of
+     BHTLeaf (x, y, m) =>
+       accel mpt (x, y, m)
+   | BHTQuad (x, y, m, q1, q2, q3, q4) =>
+       if is_close mpt (x, y) then let
+	 val ((x1, y1), (x2, y2), (x3, y3), (x4, y4)) =
+	   (aux q1, aux q2, aux q3, aux q4)
+	 in
+	   (x1 + x2 + x3 + x4, y1 + y2 + y3 + y4)
+	 end
+       else
+	 accel mpt (x, y, m))
+   in aux bht end
 
 fun move_particle (P (x, y, m, vx, vy)) (ax, ay) =
   P (x + vx, y + vy, m, vx + ax, vy + ay)
