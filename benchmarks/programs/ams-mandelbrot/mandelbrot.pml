@@ -13,8 +13,6 @@ structure Mandelbrot = struct
   val side = 2.5
   val maxCount = 1000
 
-  fun for n = [| 0 to (n-1) |]
-
   fun pix2rgb cnt = 
     if cnt >= maxCount then
       (0.0, 0.0, 0.0)
@@ -47,7 +45,8 @@ structure Mandelbrot = struct
       in
 	loop (0, c_re, c_im)
     end
-    val counts = [| [| elt (i, j) | j in for N |] | i in for N |]
+    val rng = [| 0 to (N-1) |]
+    val counts = [| [| elt (i, j) | j in rng |] | i in rng |]
 (*
     val pixels = Rope.tabulate (N, fn i => Rope.tabulate (N, fn j => (i, j, pix2rgb (elt (i, j)))))
     val image = Image.new (N, N)
