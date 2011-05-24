@@ -63,19 +63,32 @@ structure Main = struct
 
   val dfltN = 256
 
-  fun getSizeArg args = (case args
-    of arg1 :: arg2 :: args =>
-         if String.same (arg1, "-size") then 
-	   Int.fromString arg2
-	 else 
-	   getSizeArg (arg2 :: args)
-     | _ => NONE
-    (* end case *))
+  fun getArgs args = let
+    fun lp (args, chatty, size) = (case args
+      of s::ss =>
+           if String.same (s, "-v") then
+             lp (ss, true, size)
+           else if String.same (s, "-size") then (case ss
+             of s'::ss' => lp (ss', chatty, Int.fromString s')
+              | nil => lp ([], chatty, SOME dfltN)
+             (* end case *))
+           else (* breeze past other options; could be used elsewhere *)
+             lp (ss, chatty, size)
+       | nil => (case size
+           of NONE => (chatty, dfltN)
+            | SOME sz => (chatty, sz)
+           (* end case *))
+      (* end case *))
+    in
+      lp (args, false, NONE)
+    end
 			
   fun main (_, args) = let
-    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
+    val (chatty, n) = getArgs args
     fun doit () = Mandelbrot.mandelbrot n
     val counts = RunPar.run doit
+    val _ = if chatty then Print.printLn (PArray.tos_intParr counts)
+            else ()
     in
 (*
       Image.output ("mand.ppm", image); 
