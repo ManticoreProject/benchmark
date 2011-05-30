@@ -30,6 +30,23 @@ end
 
 structure Main = struct
 
+  fun qs (ns : long list) = (case ns
+    of nil => ns
+     | q::nil => ns
+     | p::ns => let
+         val (ls, gs) = List.partition (fn n => n <= p) ns
+         in
+           (qs ls) @ (p :: (qs gs))
+         end
+    (* end case *))
+
+  fun med (ns : long list) = let
+    val sorted = qs ns
+    val len = List.length sorted
+    in
+      List.nth (sorted, len div 2)
+    end
+
 (*  
   val epsilon = 0.0000000001
   fun bumpSV1 sv = PArray.map (fn (i,x) => (i+1, x+epsilon)) sv
@@ -41,19 +58,30 @@ structure Main = struct
   
   fun tenToThe n = foldl (fn(m,n)=>m*n) 1 (List.tabulate (n, fn _ => 10))
 
-  val lim = tenToThe 5
+  val lim = tenToThe 4
   val sparsity = 100
-  val times = 100
+  val times = 50
+
+  val sparseRng = [| 0 to lim by sparsity |]
+  val rng = [| 0 to lim |]
+
+  fun csv ss = Print.printLn (String.concatWith "," ss)
 
   fun main (_, args) = let
-    fun go n = 
-      if (n <= 0)
-        then ()
+    fun go (n, svTimes, vTimes, dotpTimes) = 
+      if (n <= 0) then let
+        val itos = Int.toString
+        val tos = Long.toString
+        val svMed = med svTimes
+        val vMed = med vTimes
+        val dotpMed = med dotpTimes
+        in
+          csv [itos lim, itos (lim div sparsity), tos svMed, tos vMed, tos dotpMed]          
+        end
       else let
-        val lim = 100000
-        val (testsv, t1) = Stopwatch.time (fn () => [| (i, rnd ()) | i in [| 0 to lim by 17 |] |])
-        val (testv, t2) = Stopwatch.time (fn () => [| rnd () | _ in [| 0 to lim |] |])
-	val (p, t3) = Stopwatch.time (fn () => SMVM.dotp (testsv, testv))
+        val (testsv, t1) = Stopwatch.time (fn () => [| (i, rnd ()) | i in sparseRng |] )
+        val (testv, t2) = Stopwatch.time (fn () => [| rnd () | _ in rng |])
+	val (p, t3) = Stopwatch.time (fn () => ()) (* (fn () => SMVM.dotp (testsv, testv)) *)
         in
 (* 	  Print.printLn ("iteration " ^ Int.toString n); *)
 (* 	  Print.printLn ("time to build testsv (sparse vector of length " ^ *)
@@ -64,14 +92,12 @@ structure Main = struct
 (* 			 Long.toString t2); *)
 (* 	  Print.printLn ("time to compute dot product: " ^ Long.toString t3); *)
 (* 	  Print.printLn ("dotp: " ^ Double.toString p); *)
-	  Print.printLn (Long.toString t1 ^ "|" ^
-			 Long.toString t2 ^ "|" ^
-			 Long.toString t3);
-	  go (n-1)
+	  go (n-1, t1::svTimes, t2::vTimes, t3::dotpTimes)
 	end
     in
-      Print.printLn "testsv time|testv time|dotp time";
-      RunPar.run (fn _ => go times)
+(*      Print.printLn (Int.toString times ^ " runs conducted"); *)
+(*      Print.printLn "testsv median time,testv median time,dotp median time"; *)
+      RunPar.runSilent (fn _ => go (times, nil, nil, nil))
     end
 
 end

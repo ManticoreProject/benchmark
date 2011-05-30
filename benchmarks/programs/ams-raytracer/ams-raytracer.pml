@@ -269,8 +269,8 @@ structure IdRaytracer = struct
 	end;
 
     fun rgbToInt (r, g, b) = let
-      fun rnd x = Long.toInt (Double.round x)
-      fun f c = rnd (255.0 * c)
+      fun round x = (raise Fail "broken") (* Long.toInt (Double.round x) *)
+      fun f c = round (255.0 * c)
       in
         (256*256*f(r)) + (256*f(g)) + f(b)
       end
