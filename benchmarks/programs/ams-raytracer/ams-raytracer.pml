@@ -269,7 +269,7 @@ structure IdRaytracer = struct
 	end;
 
     fun rgbToInt (r, g, b) = let
-      fun round x = (raise Fail "broken") (* Long.toInt (Double.round x) *)
+      fun round x = raise Fail "broken: Double.round" (* Long.toInt (Double.round x) *)
       fun f c = round (255.0 * c)
       in
         (256*256*f(r)) + (256*f(g)) + f(b)
@@ -291,15 +291,15 @@ structure IdRaytracer = struct
       val (dir, _) = vecnorm (vecadd (vecadd firstray (vecscale scrnx (Double.fromInt x)))
 			(vecscale scrny (Double.fromInt y)));
       val (hit, dist, sp) = trace (spheres, pos, dir);  (* pick first intersection *)
-						    (* return color of the pixel x,y *)
+						        (* return color of the pixel x,y *)
       val result = 
         if hit then
 	  shade (lights, sp, pos, dir, dist, (1.0,1.0,1.0))
 	else
 	  background
       in
-	(* rgbToInt result *)
-        spoofRGBToInt result
+	rgbToInt result
+        (* spoofRGBToInt result *)
       end
 
     (*
