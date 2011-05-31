@@ -272,7 +272,7 @@ structure IdRaytracer = struct
       fun round x = Long.toInt (Double.round x)
       fun f c = round (255.0 * c)
       in
-        (256*256*f(r)) + (256*f(g)) + f(b)
+        (65536*f(r)) + (256*f(g)) + f(b)
       end
 
     fun spoofRGBToInt (r, g, b) = let
@@ -528,8 +528,10 @@ structure IdRaytracer = struct
       (* val _ = PArray.app (PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b))) scene *)
       (* val _ = Image.output("out.ppm", img) *)
       (* val _ = Image.free img	       *)
+      val img = PArrayUtil.mkImage scene
       in
-	()
+        (Image.output ("out.ppm", img);
+	 Image.free img)
       end
 
   end (* IdRaytracer *)
