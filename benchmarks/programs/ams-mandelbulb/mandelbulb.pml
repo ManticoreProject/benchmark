@@ -46,8 +46,10 @@ structure Mandelbulb = struct
   val zbase = ~2.0
   val side = 4.0
 
+  val power = 8;
+
   fun mandelbulb n = let
-    val iter' = iter 8
+    val iter' = iter power
     fun elt (i, j, k) = let
       val delta = side / Double.fromInt (n-1)
       val cx = xbase + (delta * Double.fromInt k)
@@ -65,7 +67,7 @@ end
 
 structure Main = struct
 
-  val dfltN = 128
+  val dfltN = 64
 
   fun getArgs args = let
     fun lp (args, chatty, size) = (case args
@@ -91,8 +93,8 @@ structure Main = struct
     val (chatty, n) = getArgs args
     fun doit () = Mandelbulb.mandelbulb n
     val counts = RunPar.run doit
-    (* val _ = if chatty then Print.printLn (PArray.tos_intParr counts) *)
-    (*         else () *)
+    val _ = if chatty then Print.printLn (PArray.tos_intParrParr counts)
+            else ()
     in
       counts
     end

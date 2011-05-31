@@ -1,7 +1,7 @@
 #!/bin/sh
 
-#echo 'building C.out (c executable)'
-#gcc -std=c99 -Wall -O2 -o C.out mandelbulb.c
+echo 'building C.out (c executable)'
+gcc -lm -std=c99 -Wall -O2 -o C.out mandelbulb.c
 
 echo 'building N.out (non-flattened pml executable)'
 pmlc -Cftrx.on=false -o N.out pml.mlb
