@@ -31,7 +31,7 @@ structure MMM = struct
       (* [| [| dot (r, c) | c in m2T |] | r in m1 |] *)
     end
 
-  fun mmm' (a, b) = let
+  fun mmm' (a : double parray parray, b : double parray parray) = let
     val aw = PArray.length (a!0)
     val ah = PArray.length a
     val bw = PArray.length (b!0)
@@ -40,9 +40,15 @@ structure MMM = struct
     val iRng = [| 0 to ah-1 |]
     val jRng = [| 0 to bw-1 |]
     val kRng = [| 0 to aw-1 |]
-    fun sum (p : double parray) = PArray.reduce add 0.0 p
+    fun sum (p : double parray) : double = PArray.reduce add 0.0 p
+    fun f (i, j) = let
+      val ai = a!i
+      in
+        sum [| (ai!k) * (b!j!k) | k in kRng |]
+      end
     in
-      [| [| (sum [| (a!i!k) * (b!k!j) | k in kRng |]) | j in jRng |] | i in iRng |]
+      (* [| [| (sum [| (a!i!k) * (b!k!j) | k in kRng |]) | j in jRng |] | i in iRng |] *)
+      [| [| f (i,j) | j in jRng |] | i in iRng |]
     end
 
 end
@@ -69,29 +75,24 @@ structure Main = struct
       (* end case *))
     in
       lp (args, false, NONE)
-    end
-			
-  fun example () = let
-    val m2 : double parray parray = [| [| 1.0, 2.0, 3.0 |] | _ in [| 0 to 2 |] |]
-    val m1 : double parray parray = [| [| 1.1, 2.1, 3.1 |] | _ in [| 0 to 2 |] |]
+    end		
+
+  fun mkI n = let
+    val r = [| 0 to n-1 |]
+    val z : double = 0.0
     in
-      (m1, MMM.transpose m1)
-      (* [| [| MMM.dot (r, c) | c in m2 |] | r in m1 |] *)
+      [| [| if (i=j) then 1.0 else z | j in r |] | i in r |]
     end
 
   fun main (_, args) = let
     val (chatty, n) = getArgs args
-    val (m, mT) = example ()
-    val id4 = [| [| 1.0, 0.0, 0.0, 0.0 |],
-	         [| 0.0, 1.0, 0.0, 0.0 |],
-                 [| 0.0, 0.0, 1.0, 0.0 |],
-                 [| 0.0, 0.0, 0.0, 1.0 |] |]
-    val r = [| 0 to n-1 |]
     fun doit () = let
-      val z : double = 0.0
-      val I = [| [| if (i=j) then 1.0 else z | j in r |] | i in r |]
+      val (I, Itime) = Stopwatch.time (fn () => mkI n) 
+      val (p, ptime) = Stopwatch.time (fn () => MMM.mmm' (I, I))
+      val _ = Print.printLn ("time to build I: " ^ Long.toString Itime)
+      val _ = Print.printLn ("time to compute product: " ^ Long.toString ptime)
       in
-        MMM.mmm' (I, I)
+        p
       end
     val product = RunPar.run doit
     val _ = Print.printLn 
