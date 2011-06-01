@@ -44,7 +44,7 @@ structure MMM = struct
     fun f (i, j) = let
       val ai = a!i
       in
-        sum [| (ai!k) * (b!j!k) | k in kRng |]
+        sum [| (ai!k) * (b!k!j) | k in kRng |]
       end
     in
       (* [| [| (sum [| (a!i!k) * (b!k!j) | k in kRng |]) | j in jRng |] | i in iRng |] *)
