@@ -152,6 +152,8 @@ def plot(filename,
          dimensions=None, # (width, height) in inches
          heightIn=None,
          prefix=None,
+         xaxlabs=None,
+         yaxvals=None,
          show_errorbars=False):
   # size of the figure if dimensions are specified
   if (dimensions != None):
@@ -160,13 +162,16 @@ def plot(filename,
   biggestX = maxX(triples)
   axes = plt.gca()
   axes.set_xlim([0, biggestX + 0.5])
-  axes.set_ylim([0, 16.5])
+#  axes.set_ylim([0, 16.5])
   axes.xaxis.set_ticks_position('bottom') # as opposed to 'top' or 'both'
+  #axes.yaxis.set_ticks_position('right')
   plt.title(chart_title, fontproperties=h1)
   plt.xlabel(xax_label, fontproperties=h2)
-  plt.xticks(np.append(np.arange(1,2,2), np.arange(2, biggestX+1, 4)), fontproperties=h3)
+  lab =(0,8,16,24,32,40,48)
+  labx =(8,16,24,32,40,48)
+  plt.xticks(labx, labx, fontproperties=h3)
   plt.ylabel(yax_label, fontproperties=h2)
-  plt.yticks(np.append(np.arange(1,2,2), np.arange(2, biggestX+2, 4)), fontproperties=h3)
+  plt.yticks(lab, lab, fontproperties=h3)
   # accumulators
   legend_text  = []
   speedupsList = []
@@ -219,7 +224,7 @@ def compare(experiment_id):
     sstpars=([],[],[])
     ebsappars=([], [])
     lbspars=[]
-    for n_procs in (1,8,16,24,32,48):
+    for n_procs in (1,8,16,24,32,42,48):
         (maxtime, bl_avg, mlt_avg, mltlbsovhd, lbs_ovhd, norms)=r.compare_wall_clock(experiment_id,n_procs)
         for i in (0,1,2):
             sst=ssts[i]
@@ -239,13 +244,15 @@ def compare(experiment_id):
             if r.is_lbs1(input):
                 lbspars.append((n_procs, avg))
     speedup_args.append(("LTS", bl_avg, lbspars))
-    speedup_args.append(("ETS SP (SST=1)", bl_avg, sstpars[0]))
-    speedup_args.append(("ETS SP (SST=128)", bl_avg, sstpars[1]))
-    speedup_args.append(("ETS SP (SST=16384)", bl_avg, sstpars[2]))
+    speedup_args.append(("ETS ($SST=2^0$)", bl_avg, sstpars[0]))
+    speedup_args.append(("ETS ($SST=2^7$)", bl_avg, sstpars[1]))
+    speedup_args.append(("ETS ($SST=2^{14}$)", bl_avg, sstpars[2]))
 #    speedup_args.append(("EBS AP (K=1 V=4)", bl_avg, ebsappars[0]))
 #    speedup_args.append(("EBS AP (K=2 V=4)", bl_avg, ebsappars[1]))
     ylab = 'speedup'
     bench_name=get.problem_name_of_experiment(experiment_id)
+    xaxlabs=(0,8,16,24,32,40,48)
+    yaxvals =(0,8,16,24,32,40,48)
     plot(bench_name + '-speedups', 
          speedup_args, 
          chart_title='', 
@@ -254,10 +261,13 @@ def compare(experiment_id):
          dimensions=(35,23),
          prefix='.',
          formats=['r.', 'bx', 'b+', 'b1', 'b,', 'b4', 'b2', 'b<', 'b>', 'b|'],
+         yaxvals=yaxvals,
+         xaxlabs=xaxlabs,
          marker=(80.0, 5.0))
 
 
-ids=(908,909,911,913,914,917)
+#ids=(908,909,911,913,914,917)
+ids=(930,931,932,933,934,935)
 for id in ids:
   compare(id)
 

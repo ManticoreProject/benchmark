@@ -38,6 +38,13 @@ def find_mc_context_ids(experiment_id, strat):
        AND input LIKE '%" + strat[0] + "%'"
   return(get.detup(db.select_values(q)))
 
+def find_mc_context_ids3(experiment_id, mls):
+  q = "SELECT DISTINCT(context_id) FROM contexts \
+       WHERE experiment_id = " + str(experiment_id) + " \
+       AND compiler = 'pmlc' \
+       AND input LIKE '%" + str(mls) + "%'"
+  return(get.detup(db.select_values(q)))
+
 def find_mlton_context_ids(experiment_id, strat):
   q = "SELECT DISTINCT(context_id) FROM contexts \
        WHERE experiment_id = " + str(experiment_id) + " \
@@ -71,6 +78,10 @@ def is_ok_ebsap(input):
     return(p[3] == "4")
   else:
     return(True)
+
+def param_of_mls(input):
+  p=input.split(" ")
+  return p[1]
 
 def param_of_strategy(input):
   p=input.split(" ")
@@ -127,7 +138,7 @@ def compare_normalized (experiment_id, n_procs):
       input=input_of_context_id(ctx_id)
       (avg,stddev)=stat_of_par_context_id(ctx_id, n_procs)
       if is_ok_ebsap(input):
-        pts.append((input, pretty_strategy(strat, input), (avg, stddev)))
+        pts.append((input, '', (avg, stddev)))
   pts.sort(compare_pts)
   (binput, bps, (bavg, bstddev))=pts.pop(0)
   norms=[]
@@ -216,17 +227,19 @@ def compare_wall_clock (experiment_id, n_procs):
 #(mlton_lbs_avg / mlt_avg) - 1.0 
   return ((maxtime, blavg, mlt_avg, mltlbsovhd, lbs_ovhd, norms))
 
+leaf_sizes=(0,1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384)
+
 def ets (experiment_id, n_procs):
   pts=[]
   maxtime=0.0
-  for strat in splitting_strategies:
-    ctx_ids=filter(get.is_context_parallel, find_mc_context_ids(experiment_id, strat))
-    for ctx_id in ctx_ids:
-      input=input_of_context_id(ctx_id)
-      (avg,stddev)=stat_of_par_context_id(ctx_id, n_procs)
-      maxtime=max(maxtime,avg)
-      if is_ok_ebsap(input):
-        pts.append((input, pretty_strategy(strat, input), (avg, stddev)))
+  for leaf_size in leaf_sizes:
+   ctx_ids=filter(get.is_context_parallel, find_mc_context_ids3(experiment_id,leaf_size))
+   for ctx_id in ctx_ids:
+     input=input_of_context_id(ctx_id)
+     (avg,stddev)=stat_of_par_context_id(ctx_id, n_procs)
+     maxtime=max(maxtime,avg)
+     if is_ok_ebsap(input):
+       pts.append((input, '', (avg, stddev)))
   pts.sort(compare_pts)
   norms=[]
   # get baseline performance
@@ -245,7 +258,9 @@ def ets (experiment_id, n_procs):
 
 #ids=(902,903,904,905,906)
 
-ids=(918,919,920,921,922,923)
+#ids=(918,919,920,921,922,923)
+
+ids=(924,925,926,927,928,929)
 
 # for id in ids:
 #   print_compare_normalized(id, n_procs)
@@ -260,7 +275,7 @@ def plotall(name, strats, legend_loc):
     (maxtime, bl_avg, norms)=ets(experiment_id, n_procs)
     for strat in strats:
       lab=pretty_bench_name(problem_name)
-      ns=[n for n in norms if id_of_strategy(n[0]) == strat[0]]
+      ns=norms
       xys=[]
       for (input, pinput, avg, stddev) in ns:
         if is_ebsap(input):
@@ -268,7 +283,7 @@ def plotall(name, strats, legend_loc):
           (k,v)=s.split(",")
           x=float(k)
         else:
-          x=int(param_of_strategy(input))
+          x=int(param_of_mls(input))
           x=float(math.log(x,2))
         y=(bl_avg / avg)
         #print (lab, avg, y, bl_avg)
@@ -281,13 +296,13 @@ def plotall(name, strats, legend_loc):
   xaxlabs=[]
   for i in range (0,15):
     xaxlabs.append(('$2^{'+str(i)+'}$'))
-  line_plot.plot('speedups-'+name, lines, maxX, 51.0,chart_title='',connect_dots=True,
+  line_plot.plot('mls'+name, lines, 14, 49.0,chart_title='',connect_dots=True,
                  #formats=['r+', 'b+', 'r-', 'b-', 'rx', 'bx', 'r^', 'b^', 'ro', 'bo'],
                  linecolors=['#000000', 'r', 'b', 'g', 'b', 'r', 'b', 'r', 'g', 'r', 'b', 'g', 'r', 'b'],
                  formats=['b+', 'b,', 'b.', 'b1', 'b2', 'b3', 'b4', 'b<', 'b>', 'b|'],
                  dashes=[False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
                  yax_label='speedup',
-                 xax_label='$SST$',
+                 xax_label='$M$',
                  dimensions=(35,23),
                  legend_loc=legend_loc,
                  marker=(43.0, 4.0),

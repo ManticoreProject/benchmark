@@ -15,10 +15,10 @@ h1 = fm.FontProperties()
 h1.set_size(60)
 
 h2 = fm.FontProperties()
-h2.set_size(78)
+h2.set_size(72)
 
 h3 = fm.FontProperties()
-h3.set_size(73)
+h3.set_size(76)
 
 h4 = fm.FontProperties()
 h4.set_size(52)

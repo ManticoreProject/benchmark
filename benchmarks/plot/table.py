@@ -10,9 +10,10 @@ import utils
 import rope_splitting_experiment as r
 import collect_data as get
 import human_readable as h
+import speedups as spds
 
-for experiment_id in r.ids:
-    (maxtime, bl_avg, mlt_avg, mltlbsovhd, lbs_ovhd, norms)=r.compare_wall_clock(experiment_id, 16)
+for experiment_id in spds.ids:
+    (maxtime, bl_avg, mlt_avg, mltlbsovhd, lbs_ovhd, norms)=r.compare_wall_clock(experiment_id, 48)
     problem_name=get.problem_name_of_experiment(experiment_id)
     problem_name=r.pretty_bench_name(problem_name)
     (input, ps, lbs_avg, lbs_std)=filter(lambda (input, ps, avg, err): r.is_lbs1(input), norms)[0]
