@@ -35,6 +35,7 @@ AC_DEFUN(CHECK_SMLNJ_HEAP_SUFFIX, [
     i586:netbsd*)	SMLNJ_ARCH=x86;		SMLNJ_OPSYS=netbsd;;
     i686:netbsd*)	SMLNJ_ARCH=x86;		SMLNJ_OPSYS=netbsd;;
     i386:solaris3)	SMLNJ_ARCH=x86;		SMLNJ_OPSYS=solaris;;
+    i686:cygwin*)       SMLNJ_ARCH=x86;         SMLNJ_OPSYS=cygwin;;
     mips:irix4*)	SMLNJ_ARCH=mipseb;	SMLNJ_OPSYS=irix4; HEAP_OPSYS=irix;;
     mips:irix5*)	SMLNJ_ARCH=mipseb;	SMLNJ_OPSYS=irix5; HEAP_OPSYS=irix;;
     mips:irix6*)	SMLNJ_ARCH=mipseb;	SMLNJ_OPSYS=irix6; HEAP_OPSYS=irix;;
@@ -44,7 +45,7 @@ AC_DEFUN(CHECK_SMLNJ_HEAP_SUFFIX, [
     sparc:solaris2*)	SMLNJ_ARCH=sparc;	SMLNJ_OPSYS=sunos;;
     sparc:solaris3*)	SMLNJ_ARCH=sparc;	SMLNJ_OPSYS=solaris;;
     x86_64:linux*)	SMLNJ_ARCH=x86;		SMLNJ_OPSYS=linux;;
-    x86_64:darwin*)     SMLNJ_ARCH=x86;         SMLNJ_OPSYS=darwin;;
+    x86_64:darwin*)	SMLNJ_ARCH=x86;		SMLNJ_OPSYS=darwin;;
     *) $1 ;;
   esac
   if test z$SMLNJ_ARCH != z -a z$SMLNJ_OPSYS != z ; then
