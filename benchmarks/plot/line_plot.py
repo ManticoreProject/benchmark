@@ -8,6 +8,12 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import collect_data
 import utils
+import pylab
+
+pylab.rcParams['xtick.major.pad']='16'
+pylab.rcParams['ytick.major.pad']='16'
+
+
 
 ### Cosmetics
 
@@ -137,11 +143,11 @@ def plot(filename,
     yaxvals=np.arange(0.0, biggestY, 10.0)
   xaxvals=np.arange(0., biggestX + 1.0)
   if (xaxlabs != None):
-    plt.xticks (xaxvals, xaxlabs, fontproperties=h3)
+    plt.xticks (xaxvals, xaxlabs, fontproperties=h1)
   else:
-    plt.xticks(xaxvals, fontproperties=h3)
+    plt.xticks(xaxvals, fontproperties=h1)
   plt.ylabel(yax_label, fontproperties=h2)
-  plt.yticks(yaxvals, fontproperties=h3)
+  plt.yticks(yaxvals, fontproperties=h1)
   # accumulators
   legend_text  = []
   speedupsList = []
@@ -182,7 +188,7 @@ def plot(filename,
 #  if show_errorbars:
 #    errorbars(speedupsList, stdevsList)
   # build the legend
-  plt.legend(legend_text, prop=h4, loc=legend_loc)
+  plt.legend(legend_text, prop=h1, loc=legend_loc)
   fl = filename + '.eps'
   if (prefix != None):
     fl = prefix + '/' + fl
