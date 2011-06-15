@@ -9,25 +9,26 @@ structure RunPar (* sig
   val runSilent : (unit -> 'a) -> 'a
   end *) = struct
 
-    fun run f =
-	let
-	    val b = Time.now ()
+  fun mkRun optToStr f = let
+    val b = Time.now ()
 #ifndef SEQUENTIAL
-	    val ans = ImplicitThread.runOnWorkGroup(WorkStealing.workGroup(), f)
+    val ans = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), f)
 #else
-	    val ans = f ()
+    val ans = f ()
 #endif
-	    val e = Time.now ()
-	in
-	    Print.printLn (Time.toString (e - b));
-	    ans
-	end
+    val e = Time.now ()
+    val _ = (case optToStr
+      of SOME tos => Print.printLn (tos (e-b))
+       | NONE => ()
+      (* end case *))
+    in
+      ans
+    end
 
-    fun runSilent f = 
-#ifndef SEQUENTIAL
-	ImplicitThread.runOnWorkGroup(WorkStealing.workGroup(), f)
-#else
-        f ()
-#endif
+  val run = mkRun (SOME Time.toString)
+	    
+  val runMicrosec = mkRun (SOME Time.toStringMicrosec)
 
-  end
+  val runSilent = mkRun NONE
+
+end

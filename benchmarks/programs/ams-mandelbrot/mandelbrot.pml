@@ -86,7 +86,7 @@ structure Main = struct
   fun main (_, args) = let
     val (chatty, n) = getArgs args
     fun doit () = Mandelbrot.mandelbrot n
-    val counts = RunPar.run doit
+    val counts = RunPar.runMicrosec doit
     val _ = if chatty then Print.printLn (PArray.tos_intParr counts)
             else ()
     in
