@@ -39,6 +39,7 @@ $MANTI_BENCH_ROOT/scripts/experiment.sh $FPROCS_LIST -f mc-par -n $NAME -d "$DES
 $MANTI_BENCH_ROOT/scripts/experiment.sh $FPROCS_LIST -f mc-par -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-chunking-policy ETS 32"
 $MANTI_BENCH_ROOT/scripts/experiment.sh $FPROCS_LIST -f mc-par -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-chunking-policy ETS 64"
 $MANTI_BENCH_ROOT/scripts/experiment.sh $FPROCS_LIST -f mc-par -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-chunking-policy ETS 128"
+$MANTI_BENCH_ROOT/scripts/experiment.sh $FPROCS_LIST -f mc-par -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-chunking-policy ETS 256"
 $MANTI_BENCH_ROOT/scripts/experiment.sh $FPROCS_LIST -f mc-par -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-chunking-policy ETS 512"
 $MANTI_BENCH_ROOT/scripts/experiment.sh $FPROCS_LIST -f mc-par -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-chunking-policy ETS 1024"
 $MANTI_BENCH_ROOT/scripts/experiment.sh $FPROCS_LIST -f mc-par -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-chunking-policy ETS 2048"
