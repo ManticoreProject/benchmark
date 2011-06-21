@@ -1,35 +1,50 @@
+val pr = Print.printLn
+val itos = Int.toString
+
 structure NestedSums = struct
 
-  (* fun upto i = Rope.tabulate (i, fn i => i) *)
+  fun sumP (xs : int parray) : int = PArray.reduce (fn (x:int, y:int) => x + y) 0 xs
 
-  fun sumP xs = PArray.reduce (fn (x:int, y:int) => x + y) 0 xs
-
-  (* fun nestedSums i = Rope.map sumP (Rope.map upto (upto i)) *)
+  fun spoof_sumP (xs : int parray) : int = 12345
 
   fun nestedSums i = let
-    val rng = [| 0 to i-1 |]
+    val _ = pr ("nestedSums " ^ itos i)
+    val rng = [| 1 to i |]
+    val _ = pr ("nestedSums: built rng")
+    val nss = [| [| 1 to j |] | j in rng |]
+    val _ = pr ("nestedSums: built nss")
     in
-      [| sumP ns | ns in [| [| 0 to j-1 |] | j in rng |] |]
+      [| sumP ns | ns in nss |]
     end
 
 end
 
 structure Main = struct
 
-  val dfltN = 15000
+  val dfltN = 10
 
   fun getSizeArg args = (case args
     of arg1 :: arg2 :: args =>
-         if String.same (arg1, "-size") then Int.fromString arg2
-	 else getSizeArg (arg2 :: args)
+         if String.same (arg1, "-size") then 
+	     Int.fromString arg2
+	 else 
+	     getSizeArg (arg2 :: args)
      | _ => NONE
     (* end case *))
 	
   fun main (_, args) = let
-    val n = (case getSizeArg args of SOME n => n | NONE => dfltN)
-    fun doit () = NestedSums.nestedSums (n-1)
+    val n = (case getSizeArg args 
+      of SOME n => n 
+       | NONE => dfltN
+      (* end case *))
+    fun doit () = let
+      val ns = NestedSums.nestedSums n
+      in
+	pr (itos (PArray.length ns));
+        ()
+      end
     in
-      RunPar.run doit 
+      RunPar.runMicrosec doit 
     end
 
 end
