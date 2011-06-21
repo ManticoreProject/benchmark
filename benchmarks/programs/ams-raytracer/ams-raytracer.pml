@@ -528,10 +528,11 @@ structure IdRaytracer = struct
       (* val _ = PArray.app (PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b))) scene *)
       (* val _ = Image.output("out.ppm", img) *)
       (* val _ = Image.free img	       *)
-      val img = PArrayUtil.mkImage scene
+      (* val img = PArrayUtil.mkImage scene *)
+      (* val _ = Image.output ("out.ppm", img) *)
+      (* val _ = Image.free img *)
       in
-        (Image.output ("out.ppm", img);
-	 Image.free img)
+        scene
       end
 
   end (* IdRaytracer *)
@@ -551,8 +552,9 @@ structure Main = struct
 	
   fun main (_, args) = let
     val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
+    fun doit () = IdRaytracer.ray n
     in
-      RunPar.run (fn () => IdRaytracer.ray n)
+      RunPar.runMicrosec doit
     end
 
 end

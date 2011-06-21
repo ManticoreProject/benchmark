@@ -40,7 +40,7 @@ structure MMM = struct
     val iRng = [| 0 to ah-1 |]
     val jRng = [| 0 to bw-1 |]
     val kRng = [| 0 to aw-1 |]
-    fun sum (p : double parray) : double = PArray.reduce add 0.0 p
+    fun sum (p : double parray) : double = PArray.reduce (add, 0.0, p)
     fun f (i, j) = let
       val ai = a!i
       in

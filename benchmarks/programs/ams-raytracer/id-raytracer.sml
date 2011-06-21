@@ -528,15 +528,17 @@ struct
 		else ();
 	  val _ = lp 0;
 	  in
-	    outputImage(img, "out.ppm"); freeImage img
+	    (* outputImage(img, "out.ppm"); *)
+	    (* freeImage img *)
+	    ()
 	  end;
 
     (* sequential version of the code that builds the image first as a list *)
-(*
+
     fun ray' winsize = let
 	val lights = testlights;
 	val (firstray, scrnx, scrny) = camparams (lookfrom, lookat, vup, fov, winsize);
-	val img = newImage (winsize, winsize)
+	(* val img = newImage (winsize, winsize) *)
 	fun f (i, j) = tracepixel (world, lights, i, j, firstray, scrnx, scrny)
 	fun lp (i, is) = if (i < winsize)
 	      then let
@@ -548,15 +550,21 @@ struct
 		end
 	      else is
 	val vs = lp (0, nil)
-	fun output vs = (case vs
+(*	fun output vs = (case vs
 	    of nil => ()
 	     | (i,j,(r,g,b)) :: vs => (updateImage3d (img, i, j, r, g, b); output vs)
 	    (* end case *))
+*)
 	in
-	  output vs; outputImage(img, "out.ppm"); freeImage img;
+(*
+	  output vs; 
+	  outputImage(img, "out.ppm"); 
+	  freeImage img;
+*)
+	  print (concat ["length ", Int.toString (List.length vs), "\n"]);
 	  ()
 	end;
-*)
+
     (*
     fun run (outFile, sz) = let
 	  val outS = BinIO.openOut outFile
@@ -568,7 +576,7 @@ struct
 	  val t = Time.-(Time.now(), t0)
 	  in
 	    print(concat[
-		Time.fmt 3 t, " seconds\n"
+		Time.fmt 7 t, " seconds\n"
 	      ]);
 	    pr "P6\n";
 	    pr(concat[Int.toString sz, " ", Int.toString sz, "\n"]);
@@ -599,8 +607,8 @@ structure Main =
     fun main (_, args) =
 	let
 	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-	    fun doit () = IdRaytracer.ray n
-	    val _ = RunSeq.run doit
+	    fun doit () = IdRaytracer.ray' n
+	    val _ = RunSeq.runMicrosec doit
 	in
 	    OS.Process.success
 	end

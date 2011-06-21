@@ -1,4 +1,4 @@
-(* mandelbrot.pml
+(* mandelbulb.pml
  *
  * COPYRIGHT (c) 2011 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
@@ -92,7 +92,7 @@ structure Main = struct
   fun main (_, args) = let
     val (chatty, n) = getArgs args
     fun doit () = Mandelbulb.mandelbulb n
-    val counts = RunPar.run doit
+    val counts = RunPar.runMicrosec doit
     val _ = if chatty then Print.printLn (PArray.tos_intParrParr counts)
             else ()
     in

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <sys/time.h>
+#include <stdint.h>
 
 /* compile with -std=c99 */
 
@@ -105,9 +107,27 @@ void show(int*** arr) {
   printf("]\n");
 }
 
+// timing utilities
+
+int64_t now() {
+  struct timeval now;
+  gettimeofday(&now, 0);
+  return 1000000 * now.tv_sec + now.tv_usec;
+}
+
+int64_t from_timeval(struct timeval tv) {
+  return 1000000 * tv.tv_sec + tv.tv_usec;
+}
+
 int main(int argc, char* argv[]) {
+  struct timeval t0;
+  struct timeval t1;
   args(argc, argv);
+  gettimeofday(&t0, 0);
   int*** counts = mandelbulb(sz);
+  gettimeofday(&t1,0);
+  int64_t t = from_timeval(t1) - from_timeval(t0);
+  printf("%lld\n", t);
   if (chatty) show(counts);
   free(counts);
 }
