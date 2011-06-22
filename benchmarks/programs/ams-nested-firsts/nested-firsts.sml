@@ -18,7 +18,7 @@ structure Main = struct
 
   fun getSizeArg args = (case args
     of arg1 :: arg2 :: args =>
-         if String.same (arg1, "-size") then 
+         if (arg1 = "-size") then 
 	     Int.fromString arg2
 	 else 
 	     getSizeArg (arg2 :: args)
@@ -33,10 +33,11 @@ structure Main = struct
     fun doit () = let
       val ns = NestedFirsts.nestedFirsts n
       in
-	pr (itos (List.length ns));
+	print (itos (List.length ns));
+	print "\n";
         ()
       end
-    val _ = RunSeq.runMiscrosec doit
+    val _ = RunSeq.runMicrosec doit
     in
       OS.Process.success
     end
