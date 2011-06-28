@@ -107,6 +107,11 @@ AC_SUBST(PMLCFLAGS)
 AC_SUBST(GEN_GC_STATS)
 AC_SUBST(SMLNJ_CMD)
 
+AC_CONFIG_FILES(\
+dnl ***** Makefiles *****
+  programs/cml-pingpong/Makefile
+)
+
 dnl ***** Scripts ******
 AC_CONFIG_FILES(
   [scripts/gen-makefile.sh:scripts/gen_makefile_sh.in],
