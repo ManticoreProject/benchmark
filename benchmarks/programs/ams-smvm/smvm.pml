@@ -8,25 +8,13 @@ structure SMVM = struct
 
   fun add (x:double, y:double) = x+y
 
-(*  fun sum a = PArray.reduce (add, 0.0, a) *)
   fun sum a = PArray.reduce add 0.0 a
 
-  fun dotp (sv, v) = let
-    fun f (i, x) = x * (v!i)
-    in
-      (* sum (PArray.map (f, sv)) *)
-      sum (PArray.map f sv)
-    end
+  fun dotp (sv, v) = sum [| x * (v!i) | (i, x) in sv |]
 
-  fun smvm (sm, v) = PArray.map (fn sv => dotp (sv, v)) sm
+  fun smvm (sm, v) = [| dotp (sv, v) | sv in sm |]
 
 end
-
-(* val testsv = [| (9, 0.1), (10, 0.2), (11, 0.11), (13, 0.13) |] *)
-(* val testv = PArray.tab (20, Double.fromInt) *)
-(* val dotp = SMVM.dotp (testsv, testv) *)
-(* val _ = Print.printLn (Double.toString dotp) *)
-(* val _ = Print.printLn "done" *)
 
 structure Main = struct
 
@@ -58,32 +46,33 @@ structure Main = struct
   
   fun tenToThe n = foldl (fn(m,n)=>m*n) 1 (List.tabulate (n, fn _ => 10))
 
-  val lim = tenToThe 6
+  val lim = tenToThe 4
   val sparsity = 100
-  val times = 50
+  val times = 10
 
   fun csv ss = Print.printLn (String.concatWith "," ss)
 
   fun loc n = Print.printLn ("at location " ^ Int.toString n)
 
   fun main (_, args) = let
-    fun go (n, svTimes, vTimes, dotpTimes) = 
+    val time = Stopwatch.time
+    fun go (n, svTimes, vTimes, dotpTimes, smvmTimes) = 
       if (n <= 0) then let
         val itos = Int.toString
         val tos = Long.toString
         val svMed = med svTimes
         val vMed = med vTimes
         val dotpMed = med dotpTimes
+	val smvmMed = med smvmTimes
         in
-          csv [itos lim, itos (lim div sparsity), tos svMed, tos vMed, tos dotpMed]   
+          csv [itos lim, itos (lim div sparsity), tos svMed, tos vMed, tos dotpMed, tos smvmMed]   
         end
       else let
-        val (testsv, t1) = Stopwatch.time (fn () => 
-          [| (i, rnd ()) | i in [| 0 to lim by sparsity |] |])
-        val (testv, t2) = Stopwatch.time (fn () => 
-          [| rnd () | _ in [| 0 to lim |] |])
-	val (p, t3) = Stopwatch.time (fn () => 
-          SMVM.dotp (testsv, testv))
+        val (testsv, t1) = time (fn () => [| (i, rnd ()) | i in [| 0 to lim by sparsity |] |])
+        val (testv, t2) = time (fn () => [| rnd () | _ in [| 0 to lim |] |])
+	val (p, t3) = time (fn () => SMVM.dotp (testsv, testv))
+        val sm = [| testsv | _ in [| 1 to 100 |] |]
+        val (xs, t4) = time (fn () => SMVM.smvm (sm, testv))
         in
 	  (* Print.printLn ("iteration " ^ Int.toString n); *)
 	  (* Print.printLn ("time to build testsv (sparse vector of length " ^ *)
@@ -94,12 +83,12 @@ structure Main = struct
 	  (* 		 Long.toString t2); *)
 	  (* Print.printLn ("time to compute dot product: " ^ Long.toString t3); *)
 	  (* Print.printLn ("dotp: " ^ Double.toString p); *)
-	  go (n-1, t1::svTimes, t2::vTimes, t3::dotpTimes)
+	  go (n-1, t1::svTimes, t2::vTimes, t3::dotpTimes, t4::smvmTimes)
 	end
     in
       (* Print.printLn (Int.toString times ^ " runs conducted"); *)
       (* Print.printLn "testsv median time,testv median time,dotp median time"; *)
-      RunPar.runMicrosec (fn _ => go (times, nil, nil, nil))
+      RunPar.runMicrosec (fn _ => go (times, nil, nil, nil, nil))
     end
 
 end
