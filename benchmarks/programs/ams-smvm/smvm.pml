@@ -46,9 +46,9 @@ structure Main = struct
   
   fun tenToThe n = foldl (fn(m,n)=>m*n) 1 (List.tabulate (n, fn _ => 10))
 
-  val lim = tenToThe 4
-  val sparsity = 100
-  val times = 10
+  val lim = 1000000
+  val sparsity = 5000
+  val times = 1
 
   fun csv ss = Print.printLn (String.concatWith "," ss)
 
@@ -56,6 +56,8 @@ structure Main = struct
 
   fun main (_, args) = let
     val time = Stopwatch.time
+    fun mksv (u, g) = [| (i, rnd ()) | i in [| 0 to u by g |] |]
+    fun mkv u = [| rnd () | _ in [| 0 to u |] |]
     fun go (n, svTimes, vTimes, dotpTimes, smvmTimes) = 
       if (n <= 0) then let
         val itos = Int.toString
@@ -68,10 +70,10 @@ structure Main = struct
           csv [itos lim, itos (lim div sparsity), tos svMed, tos vMed, tos dotpMed, tos smvmMed]   
         end
       else let
-        val (testsv, t1) = time (fn () => [| (i, rnd ()) | i in [| 0 to lim by sparsity |] |])
-        val (testv, t2) = time (fn () => [| rnd () | _ in [| 0 to lim |] |])
+        val (testsv, t1) = time (fn () => mksv (lim, sparsity))
+        val (testv, t2) = time (fn () => mkv lim)
 	val (p, t3) = time (fn () => SMVM.dotp (testsv, testv))
-        val sm = [| testsv | _ in [| 1 to 100 |] |]
+        val sm = [| mksv (lim, sparsity) | _ in [| 1 to 100000 |] |]
         val (xs, t4) = time (fn () => SMVM.smvm (sm, testv))
         in
 	  (* Print.printLn ("iteration " ^ Int.toString n); *)
