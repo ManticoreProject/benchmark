@@ -1,9 +1,9 @@
 val pr = Print.printLn
 val itos = Int.toString
 
-structure NestedLens = struct
+structure NestedFirsts = struct
 
-  fun nestedLens i = let
+  fun nestedFirsts i = let
     val rng = [| 1 to i |]
     val nss = [| [| 1 to j |] | j in rng |]
     in
@@ -31,7 +31,7 @@ structure Main = struct
        | NONE => dfltN
       (* end case *))
     fun doit () = let
-      val ns = NestedLens.nestedLens n
+      val ns = NestedFirsts.nestedFirsts n
       in
 	pr (itos (PArray.length ns));
         ()

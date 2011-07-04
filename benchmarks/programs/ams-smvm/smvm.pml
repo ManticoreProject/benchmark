@@ -18,7 +18,7 @@ structure SMVM = struct
       sum (PArray.map f sv)
     end
 
-  (* fun smvm (sm, v) = PArray.map (fn sv => dotp (sv, v)) sm *)
+  fun smvm (sm, v) = PArray.map (fn sv => dotp (sv, v)) sm
 
 end
 
@@ -58,14 +58,13 @@ structure Main = struct
   
   fun tenToThe n = foldl (fn(m,n)=>m*n) 1 (List.tabulate (n, fn _ => 10))
 
-  val lim = tenToThe 4
+  val lim = tenToThe 6
   val sparsity = 100
   val times = 50
 
-  val sparseRng = [| 0 to lim by sparsity |]
-  val rng = [| 0 to lim |]
-
   fun csv ss = Print.printLn (String.concatWith "," ss)
+
+  fun loc n = Print.printLn ("at location " ^ Int.toString n)
 
   fun main (_, args) = let
     fun go (n, svTimes, vTimes, dotpTimes) = 
@@ -76,30 +75,41 @@ structure Main = struct
         val vMed = med vTimes
         val dotpMed = med dotpTimes
         in
-          csv [itos lim, itos (lim div sparsity), tos svMed, tos vMed, tos dotpMed]          
+          csv [itos lim, itos (lim div sparsity), tos svMed, tos vMed, tos dotpMed]   
         end
       else let
-        val (testsv, t1) = Stopwatch.time (fn () => [| (i, rnd ()) | i in sparseRng |] )
-        val (testv, t2) = Stopwatch.time (fn () => [| rnd () | _ in rng |])
-	val (p, t3) = Stopwatch.time (fn () => ()) (* (fn () => SMVM.dotp (testsv, testv)) *)
+        val (testsv, t1) = Stopwatch.time (fn () => 
+          [| (i, rnd ()) | i in [| 0 to lim by sparsity |] |])
+        val (testv, t2) = Stopwatch.time (fn () => 
+          [| rnd () | _ in [| 0 to lim |] |])
+	val (p, t3) = Stopwatch.time (fn () => 
+          SMVM.dotp (testsv, testv))
         in
-(* 	  Print.printLn ("iteration " ^ Int.toString n); *)
-(* 	  Print.printLn ("time to build testsv (sparse vector of length " ^ *)
-(* 			 Int.toString (lim div 17) ^ "): " ^ *)
-(* 			 Long.toString t1); *)
-(* 	  Print.printLn ("time to build testv (vector of " ^ Int.toString lim ^ *)
-(* 			 ") random doubles: " ^ *)
-(* 			 Long.toString t2); *)
-(* 	  Print.printLn ("time to compute dot product: " ^ Long.toString t3); *)
-(* 	  Print.printLn ("dotp: " ^ Double.toString p); *)
+	  (* Print.printLn ("iteration " ^ Int.toString n); *)
+	  (* Print.printLn ("time to build testsv (sparse vector of length " ^ *)
+	  (* 		 Int.toString (lim div 17) ^ "): " ^ *)
+	  (* 		 Long.toString t1); *)
+	  (* Print.printLn ("time to build testv (vector of " ^ Int.toString lim ^ *)
+	  (* 		 ") random doubles: " ^ *)
+	  (* 		 Long.toString t2); *)
+	  (* Print.printLn ("time to compute dot product: " ^ Long.toString t3); *)
+	  (* Print.printLn ("dotp: " ^ Double.toString p); *)
 	  go (n-1, t1::svTimes, t2::vTimes, t3::dotpTimes)
 	end
     in
-(*      Print.printLn (Int.toString times ^ " runs conducted"); *)
-(*      Print.printLn "testsv median time,testv median time,dotp median time"; *)
-      RunPar.runSilent (fn _ => go (times, nil, nil, nil))
+      (* Print.printLn (Int.toString times ^ " runs conducted"); *)
+      (* Print.printLn "testsv median time,testv median time,dotp median time"; *)
+      RunPar.runMicrosec (fn _ => go (times, nil, nil, nil))
     end
 
 end
 
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
+fun workaround thunk = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), thunk)
+
+val _ = let
+  val name = CommandLine.name ()
+  val args = CommandLine.arguments ()
+  fun doit () = Main.main (name, args)
+  in
+    workaround doit
+  end

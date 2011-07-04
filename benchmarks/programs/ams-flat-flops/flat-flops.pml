@@ -44,7 +44,7 @@ structure Main = struct
         ()
       end
     in
-      RunPar.runMicrosec doit 
+      RunPar.runMicrosec doit
     end
 
 end
