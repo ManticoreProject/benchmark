@@ -1,6 +1,6 @@
 #!/bin/sh
 
-C_SRC="already-flat.c"
+C_SRC="flat-flops.c"
 PML_SRC="pml.mlb"
 
 echo 'building C.out (c executable)'
@@ -11,4 +11,3 @@ pmlc -Cftrx.on=false -o N.out $PML_SRC
 
 echo 'building F.out (flattened pml executable)'
 pmlc -Cftrx.on=true -o F.out $PML_SRC
-

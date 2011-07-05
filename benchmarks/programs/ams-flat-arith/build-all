@@ -1,6 +1,6 @@
 #!/bin/sh
 
-C_SRC="already-flat.c"
+C_SRC="flat-arith.c"
 PML_SRC="pml.mlb"
 
 echo 'building C.out (c executable)'

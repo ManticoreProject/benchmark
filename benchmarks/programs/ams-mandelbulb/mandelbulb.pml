@@ -101,4 +101,5 @@ structure Main = struct
 
 end
 
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
+fun workaround thunk = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), thunk)
+val _ = workaround (fn () => Main.main (CommandLine.name (), CommandLine.arguments ()))

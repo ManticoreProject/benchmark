@@ -32,6 +32,8 @@ structure Main = struct
      | _ => NONE
     (* end case *))
 	
+  fun ignore x = ()
+
   fun main (_, args) = let
     val n = (case getSizeArg args 
       of SOME n => n 
@@ -40,7 +42,7 @@ structure Main = struct
     fun doit () = let
       val ns = FlatFlops.go n
       in
-	pr (itos (PArray.length ns));
+	ignore (itos (PArray.length ns));
         ()
       end
     in
@@ -49,4 +51,5 @@ structure Main = struct
 
 end
 
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
+fun workaround thunk = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), thunk)
+val _ = workaround (fn () => Main.main (CommandLine.name (), CommandLine.arguments ()))

@@ -30,6 +30,8 @@ structure Main = struct
      | _ => NONE
     (* end case *))
 	
+  fun ignore x = ()
+
   fun main (_, args) = let
     val n = (case getSizeArg args 
       of SOME n => n 
@@ -38,7 +40,7 @@ structure Main = struct
     fun doit () = let
       val ns = AlreadyFlat.go n
       in
-	pr (itos (PArray.length ns));
+	ignore (itos (PArray.length ns));
         ()
       end
     in
