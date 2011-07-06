@@ -44,7 +44,10 @@ structure Main = struct
   
   fun rnd () = Rand.randDouble (0.0, 1.0)
   
-  fun tenToThe n = foldl (fn(m,n)=>m*n) 1 (List.tabulate (n, fn _ => 10))
+  fun imul (n:int, m:int) = m*n
+  fun copies n x = List.tabulate (n, fn _ => x)
+  val prod = foldl imul 1
+  fun tenToThe n = prod (copies n 10)
 
   val lim = 1000000
   val sparsity = 5000
