@@ -111,7 +111,7 @@ fun segsum (nss : IF.int_farray) = let
   val locs = locations (R.length data, shape)
   fun lp (r, lo) = (case r
     of R.Leaf ns => sums (nSums, locs, lo) ns
-     | R.Cat (rL, rR) => let
+     | R.Cat (_, _, rL, rR) => let
          val lenL = R.length rL
          val (l, r) = (| lp (rL, lo), lp (rR, lo+lenL) |)
          val possibleOverlap = IntSeq.sub (locs, lo+lenL)
@@ -123,17 +123,16 @@ fun segsum (nss : IF.int_farray) = let
   val data' = R.fromSeq sums
   val shape' = S.Lf (0, R.length data')
   in
-    F.F (data', shape')
+    IF.FArray (data', shape')
   end
 
-val testF = let 
-  val halfSz = 2048
-  val sz = halfSz*2
+fun mkTestF sz = let
+  val data = IntRope.tab (sz*sz, fn _ => 1)
+  val leaves = List.tabulate (sz, fn i => S.Lf (i*sz, i*sz+sz))
+  val shape = S.Nd leaves
   in
-    IF.FArray (IntRope.tab (sz, fn _ => 1), S.Nd [S.Lf (0, halfSz), S.Lf (halfSz, sz)])
+    IF.FArray (data, shape)
   end
-
-val _ = Print.printLn ("length of testF is " ^ Int.toString (IF.length testF))
 
 fun showMe (ns : IF.int_farray) = let
   val len = IF.length ns
@@ -144,6 +143,33 @@ fun showMe (ns : IF.int_farray) = let
     lp 0
   end
 
-val _ = showMe (segsum testF)
+fun getSize args = let
+  val default = 256
+  fun lp (args, size) = (case args
+    of s::ss =>
+         if String.same (s, "-size") then (case ss
+           of s'::ss' => lp (ss', Int.fromString s')
+            | nil => lp ([], SOME default)
+             (* end case *))
+         else (* breeze past other options; could be used elsewhere *)
+           lp (ss, size)
+     | nil => (case size
+         of NONE => default
+          | SOME sz => sz
+         (* end case *))
+    (* end case *))
+  in
+    lp (args, NONE)
+  end
 
-val _ = Print.printLn "done"
+fun doit () = let
+  val args = CommandLine.arguments ()
+  val sz = getSize args
+  val testF = mkTestF sz
+  val _ = Print.printLn ("length of testF is " ^ Int.toString (IF.length testF))
+  val ss = segsum testF
+  in
+    Print.printLn ("number of sums: " ^ Int.toString (IF.length ss))
+  end
+
+val _ = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), fn () => RunPar.runMicrosec doit)
