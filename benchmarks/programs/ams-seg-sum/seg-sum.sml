@@ -153,9 +153,11 @@ fun segsum (nss : int farray) = let
     F (data', shape')
   end
 
-fun test () = let
-  val x = F (ropeFromList (copies 2048 1), 
-             Nd (List.tabulate (2, fn i => Lf(i*1024,i*1024+1024))))
+fun test sz = let
+  val data = ropeFromList (copies (sz*sz) 1)
+  val leaves = List.tabulate (sz, fn i => Lf (i*sz, i*sz+sz))
+  val shape = Nd leaves
+  val x = F (data, shape)
   in
     (x, segsum x)
   end
