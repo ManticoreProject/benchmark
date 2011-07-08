@@ -8,193 +8,101 @@ structure DF = DoubleFArray
 
 val fail = Fail.fail "seg-sum" 
 
-fun copies n = fn x => List.tabulate (n, fn _ => x)
-
-fun update seq (x, loIncl, hiExcl) = let
-  fun lp i = 
-    if i >= hiExcl then ()
-    else (IntSeq.update (seq, i, x); lp (i+1))
-  in
-    lp loIncl
+fun writePairs res pss = let
+  fun sub i = IntSeq.sub (res, i)
+  fun upd (i, x) = IntSeq.update (res, i, x)
+  fun lp1 ps = (case ps
+    of nil => ()
+     | (i,n)::t => (upd (i,n); lp1 t)
+    (* end case *))
+  fun lp0 ps = (case ps
+    of nil => ()
+     | (i,n)::t => (upd(i,n+sub(i)); lp1 t)
+    (* end case *))
+  in 
+    List.app lp0 pss
   end
 
-fun locations (n, s) : IntSeq.int_seq = (case s
-  of S.Lf _ => (fail "locations" "Lf")
-   | S.Nd ss => let
-       val seq = IntSeq.unsafeCreate n
-       val upd = update seq
-       fun lp (i, ss) = (case ss
-         of nil => seq
-	  | s::ss => (case s
-              of S.Lf (lo,hi) => (upd (i, lo, hi); lp (i+1, ss))
-	       | S.Nd _ => fail "locations" "Nd"
-              (* end case *))
+fun segdesFromShape s = let
+  fun lp (i, ls, acc) = (case ls
+    of nil => List.rev acc
+     | l::ls => (case l
+         of S.Lf(lo,hi) => lp (i+i, ls, (i,hi-lo)::acc)
+	  | S.Nd _ => fail "segdesFromShape" "Nd"
          (* end case *))
-       in
-         lp (0, ss)
-       end
-  (* end case *))
-
-fun addInto (sums : IntSeq.int_seq) (i, n) = let
-  val curr = IntSeq.sub (sums, i)
-  in
-    IntSeq.update (sums, i, curr+n)
-  end
-
-fun sums (nSums, locs, lo) ns = let
-  val seq = IntSeq.tabulate (nSums, fn _ => 0)
-  val len = IntSeq.length ns
-  fun go i =
-    if i-lo >= len then seq
-    else let
-      val n = IntSeq.sub (ns, i-lo)
-      val _ = addInto seq (IntSeq.sub (locs, i), n)
-      in
-        go (i+1)
-      end
-  in
-    go lo
-  end
-
-fun fasterSums (nSums, locs, lo) ns = let
-  val seq = IntSeq.tabulate (nSums, fn _ => 0)
-  val len = IntSeq.length ns
-  fun writeAll ps = (case ps
-    of nil => seq
-     | (i,n)::t => (IntSeq.update (seq, i, n); writeAll t)
     (* end case *))
-  fun lp (i, acc) = 
-    if i-lo >= len then writeAll acc
-    else let
-      val n = IntSeq.sub (ns, i-lo)
-      val loc = IntSeq.sub (locs, i)
-      val acc' = (case acc
-        of (j,s)::t => if j=loc then (j,s+n)::t
-                       else (loc,n)::acc
-	 | nil => (loc,n)::acc
-        (* end case *))
-      in
-        lp (i+1, acc') 
-      end
   in
-    lp (lo, nil)
+    case s
+      of S.Nd ls => lp (0, ls, nil)
+       | S.Lf _ => fail "segdesFromShape" "Lf"
   end
 
-fun listOfSums (locs, lo) ns = let
-  val len = IntSeq.length ns
+fun partsum (v, lo, len) = let
+  val hi = lo+len
+  fun sub i = IntSeq.sub (v, i)
   fun lp (i, acc) =
-    if i-lo >= len then List.rev acc
-    else let
-      val n = IntSeq.sub (ns, i-lo)
-      val loc = IntSeq.sub (locs, i)
-      val acc' = (case acc
-        of (j,s)::t => if j=loc then (j,s+n)::t else (loc,n)::acc
-	 | nil => (loc,n)::acc
-        (* end case *))
-      in
-        lp (i+1, acc') 
-      end
+    if i>=hi then acc
+    else lp (i+1, acc + sub(i))
   in
-    lp (lo, nil)
+    lp (lo, 0)
   end
 
-(* fun showII (ps : (int * int) list) = let *)
-(*   fun lp (ps, acc) = (case ps *)
-(*     of nil => String.concat (List.rev acc) *)
-(*      | (m,n)::t => let *)
-(*          val s = "(" ^ Int.toString m ^ "," ^ Int.toString n ^ ")" *)
-(*          in *)
-(*            lp (t, s::acc) *)
-(*          end *)
-(*     (\* end case *\)) *)
-(*   in *)
-(*     Print.printLn (lp (ps, nil)) *)
-(*   end *)
-
-(* fun showMergeArgs (ps, qs) = let *)
-(*   val _ = Print.printLn "merge args:" *)
-(*   val _ = showII ps *)
-(*   val _ = showII qs *)
-(*   in *)
-(*     () *)
-(*   end *)
-
-(* fun showRes res = let *)
-(*   val _ = Print.printLn "res:" *)
-(*   val _ = showII res *)
-(*   in *)
-(*     () *)
-(*   end *)
-
-fun intSeqCopy (dst, src, startIncl, endExcl) = let
-  fun lp i = 
-    if i >= endExcl then dst
-    else (IntSeq.update (dst, i, IntSeq.sub (src, i)); lp (i+1))
-  in
-    lp startIncl
-  end
-
-fun merge (overlap, ss1, ss2) = let
-  val len = IntSeq.length ss1
-  val _ = if len <> IntSeq.length ss2 then fail "merge" "len mismatch" else ()
-  val n1 = IntSeq.sub (ss1, overlap)
-  val n2 = IntSeq.sub (ss2, overlap)
-  val _ = IntSeq.update (ss1, overlap, n1+n2)
-  in
-    intSeqCopy (ss1, ss2, overlap+1, len)
-  end
-
-fun segsum (nss : IF.int_farray) = let
-  val IF.FArray (data, shape) = nss
-  val nSums = (case shape  
-    of S.Nd ss => List.length ss
-     | S.Lf _ => fail "segsum" "Lf"
-    (* end case *))
-  val locs = locations (R.length data, shape)
-  val sums = IntSeq.tabulate (nSums, fn _ => 0)
-  fun lp (r, lo) : (int * int) list list = (case r
-    of R.Leaf ns => (listOfSums (locs, lo) ns)::nil
-     | R.Cat (_, _, rL, rR) => let
-         val lenL = R.length rL
-         val (l, r) = (| lp (rL, lo), lp (rR, lo+lenL) |)
+fun segsumv (v, ps) = let
+  fun lp (i, ps) = (case ps
+    of nil => nil
+     | (j,n)::t => let
+         val s= partsum (v, i, n)
          in
-           l @ r
+           (j,s)::lp(i+n,t)
          end
     (* end case *))
-  fun writeAll pss = let
-    fun pairs ps = (case ps
-      of nil => ()
-       | (i,n)::t => (IntSeq.update (sums, i, n); pairs t)
-      (* end case *))
-    fun firstPair ps = (case ps
-      of nil => ()
-       | (i,n)::t => let
-           val curr = IntSeq.sub (sums, i)
-           val _ = IntSeq.update (sums, i, curr+n) 
-           in
-             pairs t
-           end
-      (* end case *))
-    in
-      List.app firstPair pss
-    end
-  val _ = writeAll (lp (data, 0))
+  in
+    lp (0, ps)
+  end
+
+fun take (n, ps) =
+  if n<0 then fail "take" "n<0"
+  else if n=0 then nil
+  else (case ps
+    of nil => fail "take" "nil"
+     | (i,m)::t =>
+         if n<=m then (i,n)::nil
+	 else (i,m)::take(n-m,t)
+    (* end case *))
+
+fun drop (n, ps) = 
+  if n<0 then fail "drop" "n<0"
+  else if n=0 then ps
+  else (case ps
+    of nil => fail "drop" "nil"
+     | (i,m)::t =>
+         if n<m then (i,m-n)::t
+	 else drop(n-m,t)
+    (* end case *))
+
+fun split (n, ps) = (take (n, ps), drop (n, ps))
+
+fun segsum nss = let
+  val (IF.FArray (data, shape)) = nss
+  val segdes = segdesFromShape shape
+  fun lp (r, ps) = (case r
+    of R.Leaf v => segsumv(v,ps)::nil
+     | R.Cat (_, _, rL, rR) => let
+         val nL = R.length rL
+         val (psL, psR) = split (nL, ps)
+	 val (sumsL, sumsR) = (| lp (rL, psL), lp (rR, psR) |)
+         in
+	   sumsL @ sumsR
+         end
+    (* end case *))
+  val pss = lp (data, segdes)
+  val sums = IntSeq.tabulate (List.length segdes, fn _ => 0)
+  val _ = writePairs sums pss
   val data' = R.fromSeq sums
   val shape' = S.Lf (0, R.length data')
   in
     IF.FArray (data', shape')
   end
-
-  (* fun lp (r, lo) = (case r *)
-  (*   of R.Leaf ns => fasterSums (nSums, locs, lo) ns *)
-  (*    | R.Cat (_, _, rL, rR) => let *)
-  (*        val lenL = R.length rL *)
-  (*        val (l, r) = (| lp (rL, lo), lp (rR, lo+lenL) |) *)
-  (*        val possibleOverlap = IntSeq.sub (locs, lo+lenL) *)
-  (*        in *)
-  (*          merge (possibleOverlap, l, r) *)
-  (*        end *)
-  (*   (\* end case *\)) *)
 
 (* **** driver stuff from here on **** *)
 
