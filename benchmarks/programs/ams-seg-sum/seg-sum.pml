@@ -1,4 +1,4 @@
-(* prototype of parallel seg sum *)
+(* prototype of parallel segmented sum *)
 
 structure R = IntRope
 structure S = Shape
