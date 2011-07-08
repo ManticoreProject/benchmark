@@ -56,6 +56,48 @@ fun sums (nSums, locs, lo) ns = let
     go lo
   end
 
+fun fasterSums (nSums, locs, lo) ns = let
+  val seq = IntSeq.tabulate (nSums, fn _ => 0)
+  val len = IntSeq.length ns
+  fun writeAll ps = (case ps
+    of nil => seq
+     | (i,n)::t => (IntSeq.update (seq, i, n); writeAll t)
+    (* end case *))
+  fun lp (i, acc) = 
+    if i-lo >= len then writeAll acc
+    else let
+      val n = IntSeq.sub (ns, i-lo)
+      val loc = IntSeq.sub (locs, i)
+      val acc' = (case acc
+        of (j,s)::t => if j=loc then (j,s+n)::t
+                       else (loc,n)::acc
+	 | nil => (loc,n)::acc
+        (* end case *))
+      in
+        lp (i+1, acc') 
+      end
+  in
+    lp (lo, nil)
+  end
+
+fun listOfSums (locs, lo) ns = let
+  val len = IntSeq.length ns
+  fun lp (i, acc) =
+    if i-lo >= len then List.rev acc
+    else let
+      val n = IntSeq.sub (ns, i-lo)
+      val loc = IntSeq.sub (locs, i)
+      val acc' = (case acc
+        of (j,s)::t => if j=loc then (j,s+n)::t else (loc,n)::acc
+	 | nil => (loc,n)::acc
+        (* end case *))
+      in
+        lp (i+1, acc') 
+      end
+  in
+    lp (lo, nil)
+  end
+
 (* fun showII (ps : (int * int) list) = let *)
 (*   fun lp (ps, acc) = (case ps *)
 (*     of nil => String.concat (List.rev acc) *)
@@ -109,22 +151,52 @@ fun segsum (nss : IF.int_farray) = let
      | S.Lf _ => fail "segsum" "Lf"
     (* end case *))
   val locs = locations (R.length data, shape)
-  fun lp (r, lo) = (case r
-    of R.Leaf ns => sums (nSums, locs, lo) ns
+  val sums = IntSeq.tabulate (nSums, fn _ => 0)
+  fun lp (r, lo) : (int * int) list list = (case r
+    of R.Leaf ns => (listOfSums (locs, lo) ns)::nil
      | R.Cat (_, _, rL, rR) => let
          val lenL = R.length rL
          val (l, r) = (| lp (rL, lo), lp (rR, lo+lenL) |)
-         val possibleOverlap = IntSeq.sub (locs, lo+lenL)
          in
-           merge (possibleOverlap, l, r)
+           l @ r
          end
     (* end case *))
-  val sums = lp (data, 0)
+  fun writeAll pss = let
+    fun pairs ps = (case ps
+      of nil => ()
+       | (i,n)::t => (IntSeq.update (sums, i, n); pairs t)
+      (* end case *))
+    fun firstPair ps = (case ps
+      of nil => ()
+       | (i,n)::t => let
+           val curr = IntSeq.sub (sums, i)
+           val _ = IntSeq.update (sums, i, curr+n) 
+           in
+             pairs t
+           end
+      (* end case *))
+    in
+      List.app firstPair pss
+    end
+  val _ = writeAll (lp (data, 0))
   val data' = R.fromSeq sums
   val shape' = S.Lf (0, R.length data')
   in
     IF.FArray (data', shape')
   end
+
+  (* fun lp (r, lo) = (case r *)
+  (*   of R.Leaf ns => fasterSums (nSums, locs, lo) ns *)
+  (*    | R.Cat (_, _, rL, rR) => let *)
+  (*        val lenL = R.length rL *)
+  (*        val (l, r) = (| lp (rL, lo), lp (rR, lo+lenL) |) *)
+  (*        val possibleOverlap = IntSeq.sub (locs, lo+lenL) *)
+  (*        in *)
+  (*          merge (possibleOverlap, l, r) *)
+  (*        end *)
+  (*   (\* end case *\)) *)
+
+(* **** driver stuff from here on **** *)
 
 fun mkTestF sz = let
   val data = IntRope.tab (sz*sz, fn _ => 1)
@@ -162,9 +234,7 @@ fun getSize args = let
     lp (args, NONE)
   end
 
-fun doit () = let
-  val args = CommandLine.arguments ()
-  val sz = getSize args
+fun doit sz () = let
   val testF = mkTestF sz
   val _ = Print.printLn ("length of testF is " ^ Int.toString (IF.length testF))
   val ss = segsum testF
@@ -172,4 +242,8 @@ fun doit () = let
     Print.printLn ("number of sums: " ^ Int.toString (IF.length ss))
   end
 
-val _ = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), fn () => RunPar.runMicrosec doit)
+val _ = let
+  val sz = getSize (CommandLine.arguments ())
+  in
+    ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), fn () => RunPar.runMicrosec (doit sz))
+  end
