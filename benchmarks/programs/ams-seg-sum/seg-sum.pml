@@ -114,6 +114,28 @@ fun mkTestF sz = let
     IF.FArray (data, shape)
   end
 
+fun mkLeaves n = let
+  fun lp (i, lastHi, acc) = 
+    if i>=n then List.rev acc
+    else let
+      val lo = lastHi
+      val hi = lo+i+1
+      val lf = S.Lf (lo, hi)
+      in 
+        lp (i+1, hi, lf::acc)
+      end
+  in
+    lp (0, 0, [])
+  end
+
+fun mkTestF' sz = let
+  val len = (sz * (sz + 1)) div 2
+  val shape = S.Nd (mkLeaves sz)
+  val data = IntRope.tabulate (len, fn i => i mod 5)
+  in 
+    IF.FArray (data, shape)	      
+  end
+
 fun showMe (ns : IF.int_farray) = let
   val len = IF.length ns
   val (IF.FArray (data, shape)) = ns
@@ -143,7 +165,7 @@ fun getSize args = let
   end
 
 fun doit sz () = let
-  val testF = mkTestF sz
+  val testF = mkTestF' sz
   val _ = Print.printLn ("length of testF is " ^ Int.toString (IF.length testF))
   val ss = segsum testF
   in
