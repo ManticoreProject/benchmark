@@ -161,10 +161,11 @@ fun getSize args = let
 
 fun doit sz () = let
   val testF = mkTestF' sz
-  val _ = Print.printLn ("length of testF is " ^ Int.toString (IF.length testF))
+  (* val _ = Print.printLn ("length of testF is " ^ Int.toString (IF.length testF)) *)
   val ss = segsum testF
+  val n = IF.length ss
   in
-    Print.printLn ("number of sums: " ^ Int.toString (IF.length ss))
+    () (* Print.printLn ("number of sums: " ^ Int.toString (IF.length ss)) *)
   end
 
 fun incantation thunk = let
