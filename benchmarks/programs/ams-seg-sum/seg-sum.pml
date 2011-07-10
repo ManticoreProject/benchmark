@@ -60,27 +60,22 @@ fun segsumv (v, ps) = let
     lp (0, ps)
   end
 
-fun take (n, ps) =
-  if n<0 then fail "take" "n<0"
-  else if n=0 then nil
-  else (case ps
-    of nil => fail "take" "nil"
-     | (i,m)::t =>
-         if n<=m then (i,n)::nil
-	 else (i,m)::take(n-m,t)
-    (* end case *))
-
-fun drop (n, ps) = 
-  if n<0 then fail "drop" "n<0"
-  else if n=0 then ps
-  else (case ps
-    of nil => fail "drop" "nil"
-     | (i,m)::t =>
-         if n<m then (i,m-n)::t
-	 else drop(n-m,t)
-    (* end case *))
-
-fun split (n, ps) = (take (n, ps), drop (n, ps))
+fun split (n, ps) = 
+  if n<0 then fail "split" "n<0"
+  else let
+    fun lp (n, ps, acc) = 
+      if n=0 then (List.rev acc, ps)
+      else (case ps
+        of nil => fail "split" "nil"
+	 | (i,m)::t =>
+             if (n<m) then 
+               lp (0, (i,m-n)::t, (i,n)::acc)
+	     else (* n>=m *)
+               lp (n-m, t, (i,m)::acc)               
+        (* end case *))
+    in
+      lp (n, ps, nil)
+    end
 
 fun segsum nss = let
   val (IF.FArray (data, shape)) = nss
@@ -172,8 +167,16 @@ fun doit sz () = let
     Print.printLn ("number of sums: " ^ Int.toString (IF.length ss))
   end
 
+fun incantation thunk = let
+  val rwg = ImplicitThread.runOnWorkGroup
+  val wg = WorkStealing.workGroup ()
+  in
+    rwg (wg, thunk)
+  end
+
 val _ = let
   val sz = getSize (CommandLine.arguments ())
+  fun doit' () = RunPar.runMicrosec (doit sz)
   in
-    ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), fn () => RunPar.runMicrosec (doit sz))
+    incantation doit'
   end
