@@ -1,14 +1,14 @@
 (* prototype of parallel segmented sum *)
 
-val fail = Fail.fail "nested-seg-sum" 
+fun fail proc msg = raise Fail ("nested-seg-sum." ^ proc ^ ": " ^ msg)
 
 val ln = Print.printLn
 val itos = Int.toString
 
 fun plus (n:int, m:int) = n+m
-fun sum ns = PArray.reduce plus 0 ns
+fun sum ns = PArray.reduce (plus, 0, ns)
 
-fun segsum nss = PArray.map sum nss
+fun segsum nss = [| sum ns | ns in nss |]
 
 (* **** driver stuff from here on **** *)
 
