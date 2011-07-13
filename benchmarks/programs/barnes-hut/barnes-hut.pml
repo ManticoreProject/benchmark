@@ -62,10 +62,10 @@ fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
       val b3 = (midx, midy, rux,   ruy)
       val b4 = (midx, lly,  rux,   midy)
       val (pb1, pb2, pb3, pb4) = 
-	(filter (in_box b1) particles,
-	 filter (in_box b2) particles,
-	 filter (in_box b3) particles,
-	 filter (in_box b4) particles)
+	(| filter (in_box b1) particles,
+	   filter (in_box b2) particles,
+           filter (in_box b3) particles,
+	   filter (in_box b4) particles |)
       val depth' = depth + 1
       val (q1, q2, q3, q4) =
 	 (| build (depth', b1, pb1),
