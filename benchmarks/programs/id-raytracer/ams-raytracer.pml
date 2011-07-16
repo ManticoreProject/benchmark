@@ -495,7 +495,7 @@ structure Main =
 	    fun doit () = IdRaytracer.ray n
 		
 	in
-	    RunPar.run doit
+	    RunPar.runMicrosec doit
 	end
 
   end
