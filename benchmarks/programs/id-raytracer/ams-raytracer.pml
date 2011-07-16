@@ -453,73 +453,51 @@ structure IdRaytracer =
 	  else (true, lcolor)  (* for now *)
 	end;
 
-(*     (\* *)
-(*     % "main" routine *)
-(*     *\) *)
-(*     (\* parallel version *\) *)
-
-(*     fun app1 (f : int * int * (double * double * double) -> unit) = let *)
-(*       fun g arr = let *)
-(*         val n = PArray.length arr *)
-(*         fun lp i =  *)
-(*           if (i >= n) then () *)
-(* 	  else (f (arr!i); lp (i+1)) *)
-(*         in *)
-(*           lp 0 *)
-(*         end *)
-(*       in *)
-(*         g *)
-(*       end *)
-
-(*     fun app2 (f : (int * int * (double * double * double)) parray -> unit) = let *)
-(*       fun g arr = let *)
-(*         val n = PArray.length arr *)
-(*         fun lp i =  *)
-(*           if (i >= n) then () *)
-(* 	  else (f (arr!i); lp (i+1)) *)
-(*         in *)
-(* 	  lp 0 *)
-(*         end *)
-(*       in *)
-(*         g  *)
-(*       end *)
-
-(* (\*	val _ = app2 (app1 (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b))) scene *\) *)
-
+    (*
+    % "main" routine
+    *)
+    (* parallel version *)
     fun ray winsize = let
-      val img = Image.new (winsize, winsize)
-      val lights = testlights
-      val (firstray, scrnx, scrny) = camparams (lookfrom, lookat, vup, fov, winsize)
-      fun f (i, j) = tracepixel (world, lights, i, j, firstray, scrnx, scrny)
-      val scene = [| [| (i, j, f (i, j)) | j in [| 0 to (winsize-1) |] |] | i in [| 0 to (winsize-1) |] |]
-      val _ = PArray.app (PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b))) scene
-      val _ = Image.output("out.ppm", img)
-      val _ = Image.free img	      
-      in
-	()
-      end
+
+(*	val img = Image.new (winsize, winsize) *)
+	val lights = testlights
+	val (firstray, scrnx, scrny) = camparams (lookfrom, lookat, vup, fov, winsize)
+	fun f (i, j) = tracepixel (world, lights, i, j, firstray, scrnx, scrny)
+	val scene = Rope.tabulate (winsize, fn i => Rope.tabulate (winsize, fn j => (i, j, f (i, j))))
+(*
+	val _ = Rope.app (fn row => Rope.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene
+	val _ = Image.output("out.ppm", img)
+	val _ = Image.free img
+*)
+	in
+	  scene
+(* () *)
+	end
 
   end (* IdRaytracer *)
 
-structure Main = struct
+structure Main =
+  struct
 
-  val dfltN = 512
+    val dfltN = 512
 
-  fun getSizeArg args = (case args
-    of arg1 :: arg2 :: args =>
-         if String.same (arg1, "-size") then 
-	   Int.fromString arg2
-    	 else 
-	   getSizeArg (arg2 :: args)
-     | _ => NONE
-    (* end case *))
+    fun getSizeArg args =
+	(case args
+	  of arg1 :: arg2 :: args =>
+	     if String.same (arg1, "-size") then Int.fromString arg2
+	     else getSizeArg (arg2 :: args)
+	   | _ => NONE
+	(* end case *))
 	
-  fun main (_, args) = let
-    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-    in
-      RunPar.run (fn () => IdRaytracer.ray n)
-    end
+    fun main (_, args) =
+	let
+	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
+	    fun doit () = IdRaytracer.ray n
+		
+	in
+	    RunPar.run doit
+	end
 
-end
+  end
 
 val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
