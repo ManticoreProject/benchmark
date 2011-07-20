@@ -1,22 +1,11 @@
 (* prototype of parallel segmented sum *)
 
-structure S = Shape
-structure F = FArray
-structure IS = IntSeq
-structure DS = DoubleSeq
-structure IR = IntRope
-structure DR = DoubleRope
-structure IF = IntFArray
-structure DF = DoubleFArray
-
-val fail = Fail.fail "seg-sum" 
-
 val ln = Print.printLn
 val itos = Int.toString
 
 fun plus (x:double, y:double) = x+y
 
-fun sum (xs : double parray) = PArray.reduce plus 0.0 xs
+fun sum (xs : double parray) = PArray.reduce (plus, 0.0, xs)
 
 fun dotp (sv, v) = sum [| x * (v!i) | (i,x) in sv |]
 
@@ -26,10 +15,11 @@ fun smvm (sm, v) = [| dotp (sv, v) | sv in sm |]
 
 fun smv sz = let
   val vlen = 1000
+  fun upto n = (n * (n+1)) div 2
   fun f i = ((i * 7) mod vlen, Double.fromInt i * 0.001)
-  fun sv n = [| f i | i in [| 0 to (n-1) |] |]
-  val sm = [| sv i | i in [| 1 to sz |] |]
-  val v = [| 1.0 | _ in [| 1 to sz |] |]
+  fun sv n = [| f (i + upto n) | i in [| 0 to n |] |]
+  val sm = [| sv i | i in [| 0 to (sz-1) |] |]
+  val v = [| 1.0 | _ in [| 1 to vlen |] |]
   in
     (sm, v)
   end
