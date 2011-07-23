@@ -5,7 +5,7 @@ val itos = Int.toString
 
 fun plus (x:double, y:double) = x+y
 
-fun sum (xs : double parray) = PArray.reduce (plus, 0.0, xs)
+fun sum (xs : double parray) = PArray.reduce plus (0.0) xs
 
 fun dotp (sv, v) = sum [| x * (v!i) | (i,x) in sv |]
 
