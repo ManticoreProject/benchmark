@@ -565,7 +565,37 @@ structure Main = struct
       lp (args, false, NONE)
     end
 
-  fun tellMeAbout (nss: int Rope.rope Rope.rope) = Print.printLn "yep"
+  fun tellMeAbout (nss: int Rope.rope Rope.rope) = let
+    val itos = Int.toString
+    fun row ns = let
+      val len = Rope.length ns
+      fun tos i = itos (Rope.sub (ns, i))
+      fun lp i = 
+        if i=(len-1) then (tos i ^ "|]")
+        else let
+          val s = (tos i ^ ",")
+          in
+            s ^ (lp (i+1))
+          end
+       in
+         lp 0
+       end
+    fun rows nss = let
+      val len = Rope.length nss
+      fun tos i = row (Rope.sub (nss, i))
+      fun lp i =
+        of i=(len-1) then (tos i ^ "|]")
+        else let
+          val s = tos i ^ ",\n"
+          in
+            s ^ lp (i+1)
+          end
+       in
+         lp 0
+       end
+    in
+      "[|" ^ (rows nss)
+    end
 
   fun main (_, args) = let
     val (n, verbose) = parseArgs args
