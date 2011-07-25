@@ -57,6 +57,70 @@ structure Mandelbrot =
 structure Main =
   struct
 
+  val dfltN = 256
+
+  fun getArgs args = let
+    fun lp (args, chatty, size) = (case args
+      of s::ss =>
+           if String.same (s, "-v") then
+             lp (ss, true, size)
+           else if String.same (s, "-size") then (case ss
+             of s'::ss' => lp (ss', chatty, Int.fromString s')
+              | nil => lp ([], chatty, SOME dfltN)
+             (* end case *))
+           else (* breeze past other options; could be used elsewhere *)
+             lp (ss, chatty, size)
+       | nil => (case size
+           of NONE => (chatty, dfltN)
+            | SOME sz => (chatty, sz)
+           (* end case *))
+      (* end case *))
+    in
+      lp (args, false, NONE)
+    end
+
+  fun tellMeAbout (nss: int Rope.rope Rope.rope) = let
+    val itos = Int.toString
+    fun row ns = let
+      val len = Rope.length ns
+      fun tos i = itos (Rope.sub (ns, i))
+      fun lp i = 
+        if i=(len-1) then (tos i ^ "|]")
+        else let
+          val s = (tos i ^ ",")
+          in
+            s ^ (lp (i+1))
+          end
+       in
+         lp 0
+       end
+    fun rows nss = let
+      val len = Rope.length nss
+      fun tos i = row (Rope.sub (nss, i))
+      fun lp i =
+        if i=(len-1) then (tos i ^ "|]")
+        else let
+          val s = tos i ^ ",\n"
+          in
+            s ^ lp (i+1)
+          end
+       in
+         lp 0
+       end
+    in
+      Print.printLn ("[|" ^ (rows nss))
+    end
+			
+  fun main (_, args) = let
+    val (chatty, n) = getArgs args
+    fun doit () = Mandelbrot.mandelbrot n
+    val counts = RunPar.runMicrosec doit
+    val _ = if chatty then tellMeAbout counts else ()
+    in
+      counts
+    end
+
+(*
     val dfltN = 1024
 
     fun getSizeArg args =
@@ -75,6 +139,7 @@ structure Main =
 	in
 	    ()
 	end
+*)
 
   end
 
