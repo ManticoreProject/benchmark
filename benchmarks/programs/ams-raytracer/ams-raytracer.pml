@@ -523,6 +523,7 @@ structure IdRaytracer = struct
       val lights = testlights
       val (firstray, scrnx, scrny) = camparams (lookfrom, lookat, vup, fov, winsize)
       fun f (i, j) = tracepixel (world, lights, i, j, firstray, scrnx, scrny)
+(*      fun raiseArityHack n = n + 0 *)
       val side = [| 0 to (winsize-1) |]
       val scene = [| [| f (i, j) | j in side |] | i in side |]
       (* val _ = PArray.app (PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b))) scene *)
