@@ -27,10 +27,13 @@ structure Mandelbrot = struct
       val delta = side / (Float.fromInt (N-1))
       val c_re = xBase + (delta * Float.fromInt j)
       val c_im = yBase - (delta * Float.fromInt i)
-      fun loop (cnt, z_re, z_im) = 
+      fun CORE_INNER_LOOP (cnt, z_re, z_im) = 
+(*
         if (cnt >= maxCount) then
           cnt
         else let
+*)
+if (cnt < maxCount) then let
           val z_re_sq = z_re * z_re
 	  val z_im_sq = z_im * z_im
 	  in
@@ -39,11 +42,12 @@ structure Mandelbrot = struct
 	    else let
               val z_re_im = z_re * z_im
               in
-	        loop (cnt+1, (z_re_sq - z_im_sq) + c_re, z_re_im + z_re_im + c_im)
+	        CORE_INNER_LOOP (cnt+1, (z_re_sq - z_im_sq) + c_re, z_re_im + z_re_im + c_im)
               end
 	  end
+else cnt
       in
-	loop (0, c_re, c_im)
+	CORE_INNER_LOOP (0, c_re, c_im)
     end
     val rng = [| 0 to (N-1) |]
     val counts = [| [| elt (i, j) | j in rng |] | i in rng |]
