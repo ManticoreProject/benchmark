@@ -540,22 +540,36 @@ structure IdRaytracer = struct
 
 structure Main = struct
 
-  val dfltN = 512
-
-  fun getSizeArg args = (case args
-    of arg1 :: arg2 :: args =>
-         if String.same (arg1, "-size") then 
-	   Int.fromString arg2
-    	 else 
-	   getSizeArg (arg2 :: args)
-     | _ => NONE
-    (* end case *))
-	
-  fun main (_, args) = let
-    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-    fun doit () = IdRaytracer.ray n
+  fun parseArgs args = let
+    val defaultSize = 512
+    fun lp (args, verbose, size) = (case args
+      of s::ss =>
+           if String.same (s, "-size") then (case ss
+             of s'::ss' => lp (ss', verbose, Int.fromString s')
+              | nil => lp ([], verbose, SOME defaultSize)
+               (* end case *))
+	   else if String.same (s, "-v") then
+             lp (ss, true, size)
+           else (* silently traverse others *)
+             lp (ss, verbose, size)
+       | nil => (case size
+           of NONE => (defaultSize, verbose)
+            | SOME sz => (sz, verbose)
+           (* end case *))
+      (* end case *))
     in
-      RunPar.runMicrosec doit
+      lp (args, false, NONE)
+    end
+
+  fun tellMeAbout (nss: int parray parray) = Print.printLn (PArray.tos_intParr nss)
+
+  fun main (_, args) = let
+    val (n, verbose) = parseArgs args
+    fun doit () = IdRaytracer.ray n
+    val s = RunPar.runMicrosec doit
+    in
+      if verbose then tellMeAbout s
+      else ()      
     end
 
 end
