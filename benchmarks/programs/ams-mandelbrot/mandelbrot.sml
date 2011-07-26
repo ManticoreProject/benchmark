@@ -47,6 +47,9 @@ structure Mandelbrot =
 		in
 		  loop (0, c_re, c_im)
 		end
+	  val tab = Vector.tabulate
+          val counts = tab (N, fn i => tab (N, fn j => elt (i, j)))
+(*
 	  val image = Array.array (N*N, (0.0,0.0,0.0))
 	  fun output (i, j, (r, g, b)) = Array.update (image, i*N + j, (r, g, b));
 	  fun outputImg i = if i < N
@@ -61,35 +64,79 @@ structure Mandelbrot =
 		       loop 0
 		    end
 		  else ()
+*)
 	  in
-	    outputImg 0;
-	    image
+	    counts
 	  end
 
   end
 
-structure Main =
-  struct
+structure Main = struct
 
-    val dfltN = 1024
+  structure V = Vector
 
-    fun getSizeArg args =
-	(case args
-	  of arg1 :: arg2 :: args =>
-	     if String.compare (arg1, "-size") = EQUAL then Int.fromString arg2
-	     else getSizeArg (arg2 :: args)
-	   | _ => NONE
-	(* end case *))
-	
-    fun main (_, args) =
-	let
-	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-	    fun doit () = Mandelbrot.mandelbrot n
-	    val image = RunSeq.run doit
-	in
-	    (* Image.output("mand.ppm", image); Image.free image;*)
-	    OS.Process.success
-	end
+  val dfltN = 256
 
-  end
+  fun tellMeAbout nss = let
+    fun row ns = let
+      val len = V.length ns
+      fun sub i = V.sub (ns, i)
+      fun lp (i, acc) = 
+        if (i >= len) then
+          String.concatWith "," (List.rev acc)
+        else let
+          val s = Int.toString (sub i)
+          in
+            lp (i+1, s::acc)
+          end
+      in
+        lp (0, [])
+      end
+    val len = V.length nss
+    fun sub i = V.sub (nss, i)
+    fun lp (i, acc) = 
+      if (i >= len) then 
+        String.concatWith "\n" (List.rev acc)
+      else let
+        val s = row (sub i)
+        in
+          lp (i+1, s::acc)
+        end      
+    fun println s = (TextIO.print s; TextIO.print "\n")
+    in
+      println (lp (0, []))
+    end
+
+  fun getArgs args = let
+    fun lp (args, chatty, size) = (case args
+      of s::ss =>
+           if (s = "-v") then
+             lp (ss, true, size)
+           else if (s = "-size") then (case ss
+             of s'::ss' => lp (ss', chatty, Int.fromString s')
+              | nil => lp ([], chatty, SOME dfltN)
+             (* end case *))
+           else (* breeze past other options; could be used elsewhere *)
+             lp (ss, chatty, size)
+       | nil => (case size
+           of NONE => (chatty, dfltN)
+            | SOME sz => (chatty, sz)
+           (* end case *))
+      (* end case *))
+    in
+      lp (args, false, NONE)
+    end
+			
+  fun main (_, args) = let
+    val (chatty, n) = getArgs args
+    fun doit () = Mandelbrot.mandelbrot n
+    val counts = RunSeq.runMicrosec doit
+    val _ = if chatty then tellMeAbout counts
+            else ()
+    in
+      counts
+    end
+
+end
+
 
