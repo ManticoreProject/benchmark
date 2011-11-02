@@ -130,5 +130,3 @@ structure Main = struct
 	end
 
 end
-
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
