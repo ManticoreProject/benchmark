@@ -1,0 +1,5 @@
+using the native input with 10 million options on a four-core machine,
+mlton: 2.601
+pml with a parray comprehension: 3.280
+pml with a map: 8.019
+pml with a parray comprehension and sequential semantics: 11.804

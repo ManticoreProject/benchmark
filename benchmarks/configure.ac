@@ -58,7 +58,8 @@ AC_SUBST(MANTI_BENCH_RESULTS)
 MANTICORE_ROOT=""
 AC_ARG_WITH(manticore,
   AS_HELP_STRING([--with-manticore=PATH], [specify location of Manticore root directory]),
-  [MANTICORE_ROOT=$with_manticore])
+  [MANTICORE_ROOT=$with_manticore],
+  [MANTICORE_ROOT=$MANTI_BENCH_ROOT/../..])
 if test x$with_manticore = xyes -o x$with_manticore = xno ; then
   AC_MSG_ERROR([--with-manticore option must specify directory argument])
 elif test x$MANTICORE_ROOT != x ; then

@@ -14,4 +14,8 @@ pushd $MANTI_BENCH_ROOT/programs/quicksort
 ./gen-random-int-list.sh
 popd
 
+pushd $MANTI_BENCH_ROOT/input-data
+gzip -cd mtx.txt.gz > mtx.txt
+popd
+
 # $MANTI_BENCH_ROOT/programs/smvm/gen-mtx.sh
