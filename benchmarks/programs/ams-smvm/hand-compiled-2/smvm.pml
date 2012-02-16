@@ -9,7 +9,7 @@ structure DR = DoubleRope
 structure IF = IntFArray
 structure DF = DoubleFArray
 
-val fail = Fail.fail "seg-sum" 
+fun fail a b = raise Fail (String.concat["seg-sum", a, b])
 
 val ln = Print.printLn
 val itos = Int.toString
