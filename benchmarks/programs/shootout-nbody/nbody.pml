@@ -41,6 +41,7 @@ val bodies =
       2.68067772490389322e~3, 1.62824170038242295e~3, ~9.51592254519715870e~5,
       5.15138902046611451e~5]]
 
+(* val _ = List.map (fn (l) => print(String.concat[String.concatWith "," (List.map Double.toString l), "\n"])) bodies *)
 val N = List.length bodies
 fun sm x = x * SOLAR_MASS
 fun dpy x = x * DAYS_PER_YEAR
@@ -48,29 +49,32 @@ fun mynth i x = nth(x, i)
 fun o (f, g) = fn a => f (g a)
 (* apparently # doesn't work to get elements from lists, this is lame *)
 (* we probably will want Vector.fromList if/when we parallelize this *)
-fun get sel = Seq.fromList (map sel bodies)
+fun fromList (l) = Array.tabulate (List.length l, (fn i => nth (l, i)))
+fun get sel = fromList (map sel bodies)
 val (x, y, z) = (get(mynth 0), get(mynth 1), get(mynth 2))
 (* Do we really need this many parentheses? Compiler complains otherwise... *)
 val (vx, vy, vz) = (get (o(dpy, (mynth 3))), get (o(dpy, (mynth 4))), get (o(dpy, (mynth 5))))
 val m = get (o(sm, (mynth 6)))
 
+
+
 (* one step *)
 fun advance dt =
     let fun pl i = if i>=N then ()
-                   else (Seq.update(x, i, Seq.sub(x, i)+dt*Seq.sub(vx, i))
-                       ; Seq.update(y, i, Seq.sub(y, i)+dt*Seq.sub(vy, i))
-                       ; Seq.update(z, i, Seq.sub(z, i)+dt*Seq.sub(vz, i))
+                   else (Array.update(x, i, Array.sub(x, i)+dt*Array.sub(vx, i))
+                       ; Array.update(y, i, Array.sub(y, i)+dt*Array.sub(vy, i))
+                       ; Array.update(z, i, Array.sub(z, i)+dt*Array.sub(vz, i))
                        ; pl (i+1))
         fun vl (i, j) =
             if i>=N then pl 0
             else if j>=N then vl (i+1, i+2)
-            else let val (dx, dy, dz) = (Seq.sub(x, i)- Seq.sub(x, j), Seq.sub(y, i)- Seq.sub(y, j), Seq.sub(z,i)-Seq.sub(z,j))
+            else let val (dx, dy, dz) = (Array.sub(x, i)- Array.sub(x, j), Array.sub(y, i)- Array.sub(y, j), Array.sub(z,i)-Array.sub(z,j))
                      val dist = Double.sqrt(dx*dx+dy*dy+dz*dz)
                      val mag = dt/(dist*dist*dist)
-                     val (mi, mj) = (Seq.sub(m, i)*mag, Seq.sub(m, j)*mag)
-                 in Seq.update(vx, i, Seq.sub(vx, i)-dx*mj) ; Seq.update(vx, j, Seq.sub(vx, j)+dx*mi)
-                  ; Seq.update(vy, i, Seq.sub(vy, i)-dy*mj) ; Seq.update(vy, j, Seq.sub(vy, j)+dy*mi)
-                  ; Seq.update(vz, i, Seq.sub(vz, i)-dz*mj) ; Seq.update(vz, j, Seq.sub(vz, j)+dz*mi)
+                     val (mi, mj) = (Array.sub(m, i)*mag, Array.sub(m, j)*mag)
+                 in Array.update(vx, i, Array.sub(vx, i)-dx*mj) ; Array.update(vx, j, Array.sub(vx, j)+dx*mi)
+                  ; Array.update(vy, i, Array.sub(vy, i)-dy*mj) ; Array.update(vy, j, Array.sub(vy, j)+dy*mi)
+                  ; Array.update(vz, i, Array.sub(vz, i)-dz*mj) ; Array.update(vz, j, Array.sub(vz, j)+dz*mi)
                   ; vl (i, j+1)
                  end
     in vl (0, 1) end
@@ -79,20 +83,20 @@ fun advance dt =
 fun offmoment () =
     let fun pc v = ~v / SOLAR_MASS
         fun loop (i, px, py, pz) =
-            if i>=N then (Seq.update(vx, 0, pc px) ; Seq.update(vy, 0, pc py) ; Seq.update(vz, 0, pc pz))
-            else loop (i+1, px+Seq.sub(vx, i)*Seq.sub(m, i), py+Seq.sub(vy, i)* Seq.sub(m, i), pz+Seq.sub(vz, i)*Seq.sub(m, i))
+            if i>=N then (Array.update(vx, 0, pc px) ; Array.update(vy, 0, pc py) ; Array.update(vz, 0, pc pz))
+            else loop (i+1, px+Array.sub(vx, i)*Array.sub(m, i), py+Array.sub(vy, i)* Array.sub(m, i), pz+Array.sub(vz, i)*Array.sub(m, i))
     in loop (1, 0.0, 0.0, 0.0) end
 
 fun energy () =
     let fun l (i, j, e) =
             if j >= N then l0 (i+1, e)
-            else let val (dx, dy, dz) = (Seq.sub(x, i)-Seq.sub(x, j), Seq.sub(y, i)-Seq.sub(y, j), Seq.sub(z, i)-Seq.sub(z, j))
+            else let val (dx, dy, dz) = (Array.sub(x, i)-Array.sub(x, j), Array.sub(y, i)-Array.sub(y, j), Array.sub(z, i)-Array.sub(z, j))
                      val dist = Double.sqrt(dx*dx+dy*dy+dz*dz)
-                 in l (i, j+1, e-Seq.sub(m, i)*Seq.sub(m, j)/dist) end
+                 in l (i, j+1, e-Array.sub(m, i)*Array.sub(m, j)/dist) end
         and l0 (i, e) =
             if i>=N then e
-            else let val (x, y, z) = (Seq.sub(vx, i), Seq.sub(vy, i), Seq.sub(vz, i))
-                 in l (i, i+1, e + 0.5*Seq.sub(m, i)*(x*x+y*y+z*z)) end
+            else let val (x, y, z) = (Array.sub(vx, i), Array.sub(vy, i), Array.sub(vz, i))
+                 in l (i, i+1, e + 0.5*Array.sub(m, i)*(x*x+y*y+z*z)) end
     in l0 (0, 0.0) end
 
 fun addloop i = if i > 0 then (advance 0.01 ; addloop (i-1)) else ()
