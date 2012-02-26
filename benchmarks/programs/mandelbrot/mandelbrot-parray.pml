@@ -51,8 +51,9 @@ structure Mandelbrot =
           val pixels = [| [| (i, j, pix2rgb (elt (i, j))) | j in [| 0 to N |] |] | i in [| 0 to N |] |]
 	  val image = Image.new (N, N)
 	  fun output (i, j, (r, g, b)) = Image.update3f (image, i, j, r, g, b)
-          val _ = [| [| output (i, j, v) | (i, j, v) in row |] | row in pixels |] 
 (*	  val _ = Rope.app (fn r => Rope.app (fn (i, j, v) => output (i, j, v)) r) pixels *)
+(*          val _ = [| [| output (i, j, v) | (i, j, v) in row |] | row in pixels |]  *)
+	  val _ = PArray.app (fn r => PArray.app (fn (i, j, v) => output (i, j, v)) r) pixels 
 	  in
 	    image
 	  end
