@@ -478,10 +478,6 @@ structure IdRaytracer =
                                      Double.round(g*1000.0)*1000+
                                      Double.round(b*1000.0))
         in
-            if (i=200 andalso j=200)
-            then print  (String.concat["PIXEL_IN: ", Double.toString r, ", ", Double.toString g, ", ",
-                                       Double.toString b, " --> ", Int.toString result, "\n"])
-            else ();
             result
         end
         fun decodeColor (i,j,c) = let
@@ -489,11 +485,6 @@ structure IdRaytracer =
             val g = (c mod 1000000) div 1000
             val b = ((c mod 1000000) mod 1000)
         in
-            if (i=200 andalso j=200)
-            then print  (String.concat["PIXEL_OUT: ", Double.toString (Double.fromInt r / 1000.0), ", ",
-                                       Double.toString (Double.fromInt g / 1000.0), ", ",
-                                       Double.toString (Double.fromInt b / 1000.0), "\n"])
-            else ();
             (Double.fromInt r / 1000.0, Double.fromInt g / 1000.0, Double.fromInt b / 1000.0)
         end
             
