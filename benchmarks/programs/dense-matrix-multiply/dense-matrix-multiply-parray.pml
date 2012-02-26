@@ -18,7 +18,7 @@ structure DenseMatrixMultiply =
     fun denseMatrixMultiply (m, n) =
 	let
 	    fun vvm (b, a) =
-                PArray.reduce add 0.0 [| bi * ai | bi in b, ai in a |]
+                PArray.reduceUncurried (add, 0.0, [| bi * ai | bi in b, ai in a |])
 (*		R.reduce add 0.0 (R.tabulate (R.length b, fn i => R.sub (b, i) * R.sub (a, i))) *)
 	    fun mvm (n, a) =
                 [| vvm (ni, a) | ni in n |]
