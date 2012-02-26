@@ -6,7 +6,7 @@
 
 structure SMVM = struct
 
-  fun sum a = PArray.reduce (fn (x,y) => x+y) 0.0 a
+  fun sum a = PArray.reduceUncurried ((fn (x,y) => x+y), 0.0, a)
 
   fun dotp (sv, v) = sum [| x * (v!i) | (i, x) in sv |]
 
