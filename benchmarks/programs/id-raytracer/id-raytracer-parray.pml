@@ -464,10 +464,57 @@ structure IdRaytracer =
 	val (firstray, scrnx, scrny) = camparams (lookfrom, lookat, vup, fov, winsize)
 	fun f (i, j) = tracepixel (world, lights, i, j, firstray, scrnx, scrny)
 (*	val scene = Rope.tabulate (winsize, fn i => Rope.tabulate (winsize, fn j => (i, j, f (i, j)))) *)
-        val scene = [| [| (i, j, f (i, j)) | i in [| 0 to winsize |] |] | j in [| 0 to winsize |] |]
+(*        val scene = [| [| (i, j, f (i, j)) | i in [| 0 to winsize |] |] | j in [| 0 to winsize |] |] *)
+        fun encodePoint (i, j) = i*winsize+j
+        fun decodePoint p = let
+            val i = p div winsize
+            val j = p mod winsize
+        in
+            (i, j)
+        end
+
+        fun encodeColor (i,j,(r,g,b)) = let
+            val result = Long.toInt (Double.round(r*1000.0)*1000000+
+                                     Double.round(g*1000.0)*1000+
+                                     Double.round(b*1000.0))
+        in
+            if (i=200 andalso j=200)
+            then print  (String.concat["PIXEL_IN: ", Double.toString r, ", ", Double.toString g, ", ",
+                                       Double.toString b, " --> ", Int.toString result, "\n"])
+            else ();
+            result
+        end
+        fun decodeColor (i,j,c) = let
+            val r = c div 1000000
+            val g = (c mod 1000000) div 1000
+            val b = ((c mod 1000000) mod 1000)
+        in
+            if (i=200 andalso j=200)
+            then print  (String.concat["PIXEL_OUT: ", Double.toString (Double.fromInt r / 1000.0), ", ",
+                                       Double.toString (Double.fromInt g / 1000.0), ", ",
+                                       Double.toString (Double.fromInt b / 1000.0), "\n"])
+            else ();
+            (Double.fromInt r / 1000.0, Double.fromInt g / 1000.0, Double.fromInt b / 1000.0)
+        end
+            
+        fun gen (i, j) = let
+            val c = f (i, j)
+        in
+            (encodePoint (i, j), encodeColor (i, j, c))
+        end
+        fun update (p, c) = let
+            val (i, j) = decodePoint p
+            val (r, g, b) = decodeColor (i, j, c)
+        in
+            Image.update3d (img, i, j, r, g, b)
+        end
+                            
+        val scene = [| [| gen (i,j) | i in [| 0 to winsize |] |] | j in [| 0 to winsize |] |]
 (*	val _ = Rope.app (fn row => Rope.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene *)
 (*        val _ = [| [| Image.update3d (img, i, j, r, g, b) | (i, j, (r, g, b)) in row |] | row in scene |]  *)
-        val _ = PArray.app (fn row => PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene 
+(*        val _ = PArray.app (fn row => PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene  *)
+(*        val _ = PArray.app (fn row => PArray.app (fn (i, j, r, g, b) => Image.update3d (img, i, j, r, g, b)) row) scene *)
+        val _ = PArray.app (fn row => PArray.app (fn (p, c) => update (p, c)) row) scene 
 	val _ = Image.output("out.ppm", img)
 	val _ = Image.free img
 
