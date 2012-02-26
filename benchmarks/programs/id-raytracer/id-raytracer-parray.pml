@@ -466,7 +466,8 @@ structure IdRaytracer =
 (*	val scene = Rope.tabulate (winsize, fn i => Rope.tabulate (winsize, fn j => (i, j, f (i, j)))) *)
         val scene = [| [| (i, j, f (i, j)) | i in [| 0 to winsize |] |] | j in [| 0 to winsize |] |]
 (*	val _ = Rope.app (fn row => Rope.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene *)
-        val _ = [| [| Image.update3d (img, i, j, r, g, b) | (i, j, (r, g, b)) in row |] | row in scene |] 
+(*        val _ = [| [| Image.update3d (img, i, j, r, g, b) | (i, j, (r, g, b)) in row |] | row in scene |]  *)
+        val _ = PArray.app (fn row => PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene 
 	val _ = Image.output("out.ppm", img)
 	val _ = Image.free img
 
