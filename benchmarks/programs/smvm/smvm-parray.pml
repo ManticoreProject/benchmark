@@ -12,7 +12,11 @@ structure SMVM = struct
 
   fun smvm (sm, v) = [| dotp (sv, v) | sv in sm |]
 
-  fun smvmAlt (sm, v) = [| PArray.reduce (fn (x,y) => x+y) 0.0 [| x*(v!i) | (i,x) in sv |] | sv in sm |]
+  fun smvmAlt (sm, v) = let
+    val m = [| [| x*(v!i) | (i,x) in sv |] | sv in sm |] 
+    in
+      [| PArray.reduce (fn (x,y) => x+y) 0.0 v | v in m |]
+    end
 
 end
 
@@ -90,7 +94,7 @@ structure Main =
                     |]
             val _ = out "d"
             fun doitN (n) = (if n=0 then () else (
-                             SMVM.smvm (m, v);
+                             SMVM.smvmAlt (m, v);
                              doitN (n-1)))
             val _ = out "e"
             fun doit () = doitN 2
