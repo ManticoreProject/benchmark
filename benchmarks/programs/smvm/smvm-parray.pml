@@ -6,16 +6,20 @@
 
 structure SMVM = struct
 
-  fun sum a = PArray.reduceUncurried ((fn (x,y) => x+y), 0.0, a)
+  fun sum a = PArray.reduce (fn (x,y) => x+y) 0.0 a
 
   fun dotp (sv, v) = sum [| x * (v!i) | (i, x) in sv |]
 
   fun smvm (sm, v) = [| dotp (sv, v) | sv in sm |]
 
+  fun smvmAlt (sm, v) = [| PArray.reduce (fn (x,y) => x+y) 0.0 [| x*(v!i) | (i,x) in sv |] | sv in sm |]
+
 end
 
 structure Main =
   struct
+
+    fun out s = Print.printLn s
 
     structure A = Array
 
@@ -50,11 +54,23 @@ structure Main =
             (rows, C)
         end
 
-(*    fun rows2sm rows = PArray.tab (A.length rows, fn r => Rope.fromList (A.sub (rows, r))) *)
-    fun rows2sm rows = [| [| List.nth(A.sub (rows,r), i)
-                             | i in [| 0 to List.length (A.sub (rows,r)) |]
-                          |] | r in [| 0 to A.length rows |]
-                       |]
+    fun rows2sm (rows : (int * double) list A.array) = let
+      val _ = out "r2sm: a"
+      fun sub i = A.sub (rows, i)
+      val _ = out "r2sm: b"
+      fun rowEnd r = List.length (sub r) - 1
+      val _ = out "r2sm: c"
+      fun nth (ps : (int * double) list, i) = List.nth (ps, i)
+      val _ = out "r2sm: d"
+      val n = A.length rows - 1
+      val _ = out "r2sm: e"
+      val BANANA = [| 0 to n |]
+      val _ = out "r2sm: f"
+      in
+        [| [| nth (sub r,i)
+              | i in [| 0 to rowEnd r |] |]
+           | r in BANANA |]
+      end
 
     val epsilon = 0.0000000001
 
@@ -64,15 +80,21 @@ structure Main =
         
     fun main (_, args) =
         let
+            val _ = out "a"
             val (mtx, C) = readFromFile ()
-            val (mtx, v) = RunPar.runSilent(fn _ => (bumpSM (rows2sm mtx),
-                                [| Rand.randDouble (0.0, 10000.0) |
-                                   _ in [| 0 to C |] |] ) )
+            val _ = out "b"
+            val m = (rows2sm mtx)
+            val _ = out "c"
+            val v = [| Rand.randDouble (0.0, 10000.0) |
+                           _ in [| 0 to C |]
+                    |]
+            val _ = out "d"
             fun doitN (n) = (if n=0 then () else (
-                             SMVM.smvm (mtx, v);
+                             SMVM.smvm (m, v);
                              doitN (n-1)))
-                           
-            fun doit () = doitN 100
+            val _ = out "e"
+            fun doit () = doitN 2
+            val _ = out "f"
         in
             RunPar.run doit
         end
