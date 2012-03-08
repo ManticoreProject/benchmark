@@ -13,10 +13,16 @@ structure SMVM = struct
   fun smvm (sm, v) = [| dotp (sv, v) | sv in sm |]
 
   fun smvmAlt (sm, v) = let
-    val m = [| [| x*(v!i) | (i,x) in sv |] | sv in sm |] 
+    fun add (a,b) = a+b
     in
-      [| PArray.reduce (fn (x,y) => x+y) 0.0 v | v in m |]
+      [| PArray.reduce add 0.0 [| x*(v!i) | (i,x) in sv |] | sv in sm |]
     end
+
+(*   fun smvmAlt (sm, v) = let *)
+(*     val m = [| [| x*(v!i) | (i,x) in sv |] | sv in sm |]  *)
+(*     in *)
+(*       [| PArray.reduce (fn (x,y) => x+y) 0.0 v | v in m |] *)
+(*     end *)
 
 end
 
@@ -54,6 +60,7 @@ structure Main =
                          lp ()
                      end)
         in
+	    Print.printLn "readFromFile: here goes!";
             lp ();
             (rows, C)
         end
