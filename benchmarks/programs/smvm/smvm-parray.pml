@@ -66,17 +66,17 @@ structure Main =
         end
 
     fun rows2sm (rows : (int * double) list A.array) = let
-      val _ = out "r2sm: a"
+(*      val _ = out "r2sm: a" *)
       fun sub i = A.sub (rows, i)
-      val _ = out "r2sm: b"
+(*      val _ = out "r2sm: b" *)
       fun rowEnd r = List.length (sub r) - 1
-      val _ = out "r2sm: c"
+(*      val _ = out "r2sm: c" *)
       fun nth (ps : (int * double) list, i) = List.nth (ps, i)
-      val _ = out "r2sm: d"
+(*      val _ = out "r2sm: d" *)
       val n = A.length rows - 1
-      val _ = out "r2sm: e"
+(*      val _ = out "r2sm: e" *)
       val BANANA = [| 0 to n |]
-      val _ = out "r2sm: f"
+(*      val _ = out "r2sm: f" *)
       in
         [| [| nth (sub r,i)
               | i in [| 0 to rowEnd r |] |]
@@ -91,21 +91,21 @@ structure Main =
         
     fun main (_, args) =
         let
-            val _ = out "a"
+(*            val _ = out "a" *)
             val (mtx, C) = readFromFile ()
-            val _ = out "b"
+(*            val _ = out "b" *)
             val m = (rows2sm mtx)
-            val _ = out "c"
+(*            val _ = out "c" *)
             val v = [| Rand.randDouble (0.0, 10000.0) |
                            _ in [| 0 to C |]
                     |]
-            val _ = out "d"
+(*            val _ = out "d" *)
             fun doitN (n) = (if n=0 then () else (
                              SMVM.smvmAlt (m, v);
                              doitN (n-1)))
-            val _ = out "e"
+(*            val _ = out "e" *)
             fun doit () = doitN 2
-            val _ = out "f"
+(*            val _ = out "f" *)
         in
             RunPar.run doit
         end
