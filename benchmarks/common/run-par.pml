@@ -29,6 +29,16 @@ structure RunPar (* sig
 	    
   val runMicrosec = mkRun (SOME Time.toStringMicrosec)
 
-  val runSilent = mkRun NONE
+  fun runSilent f = let
+    val b = Time.now ()
+#ifndef SEQUENTIAL
+    val ans = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), f)
+#else
+    val ans = f ()
+#endif
+    val e = Time.now ()
+    in
+      ans
+    end
 
 end
