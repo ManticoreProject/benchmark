@@ -60,7 +60,6 @@ structure Main =
                          lp ()
                      end)
         in
-	    Print.printLn "readFromFile: here goes!";
             lp ();
             (rows, C)
         end
@@ -104,7 +103,7 @@ structure Main =
                              SMVM.smvmAlt (m, v);
                              doitN (n-1)))
 (*            val _ = out "e" *)
-            fun doit () = doitN 2
+            fun doit () = doitN 1
 (*            val _ = out "f" *)
         in
             RunPar.run doit
