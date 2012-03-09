@@ -112,9 +112,9 @@ structure Main =
           in
             lp args
           end		   
-        val (mtx, C) = readFromFile infile
-        val m = rows2sm mtx
-        val v = [| Rand.randDouble (0.0, 10000.0) | _ in [| 0 to C |] |]
+        val (mtx, C) = RunPar.runSilent (fn _ => readFromFile infile)
+        val m = RunPar.runSilent (fn _ => rows2sm mtx)
+        val v = RunPar.runSilent (fn _ => [| Rand.randDouble (0.0, 10000.0) | _ in [| 0 to C |] |])
         fun doitN n = 
           if n<=1 then 
             SMVM.smvmAlt (m, v)
