@@ -34,9 +34,9 @@ structure Main =
     structure A = Array
 
   (* reads from any matrix-market named mtx.txt -- just strip off the header comments first *)
-    fun readFromFile () =
+    fun readFromFile infile =
         let
-            val f = TextIO.openIn "../../input-data/mtx.txt"
+            val f = TextIO.openIn infile (* "../../input-data/mtx.txt" *)
             fun rdd d = Option.valOf (Double.fromString d)
             fun rdi d = Option.valOf (Int.fromString d)
           (* number of rows, number of columns, number of nonzeros *)
@@ -88,25 +88,43 @@ structure Main =
     fun bumpSV2 sv = PArray.map (fn (i,x) => (i-1, x-epsilon)) sv
     fun bumpSM sm = PArray.map (fn sv => bumpSV2 (bumpSV1 sv)) sm
         
-    fun main (_, args) =
-        let
-(*            val _ = out "a" *)
-            val (mtx, C) = readFromFile ()
-(*            val _ = out "b" *)
-            val m = (rows2sm mtx)
-(*            val _ = out "c" *)
-            val v = [| Rand.randDouble (0.0, 10000.0) |
-                           _ in [| 0 to C |]
-                    |]
-(*            val _ = out "d" *)
-            fun doitN (n) = (if n=0 then () else (
-                             SMVM.smvmAlt (m, v);
-                             doitN (n-1)))
-(*            val _ = out "e" *)
-            fun doit () = doitN 1
-(*            val _ = out "f" *)
+    fun last xs =
+     (case xs 
+       of x::nil => x
+        | x::xs => last xs
+        | nil => (Print.printLn "last:empty"; raise Fail "last:empty")
+       (* end case *))
+
+    fun looksLikeMatrixFilename s = 
+     (case String.tokenize "." s
+        of nil => false
+         | s::nil => false
+         | ss => String.same (last ss, "txt")	
+        (* end case *))
+
+    fun main (_, args) = let
+      val infile = let
+        fun lp args =
+          (case args
+            of s::ss => if looksLikeMatrixFilename s then s else lp ss
+             | nil => "../../input-data/mtx.txt"
+            (* end case *))
+          in
+            lp args
+          end		   
+        val (mtx, C) = readFromFile infile
+        val m = rows2sm mtx
+        val v = [| Rand.randDouble (0.0, 10000.0) | _ in [| 0 to C |] |]
+        fun doitN n = 
+          if n<=1 then 
+            SMVM.smvmAlt (m, v)
+          else
+           (SMVM.smvmAlt (m, v);
+            doitN (n-1))
+        fun doit () = doitN 1
+        val res = RunPar.runMicrosec doit
         in
-            RunPar.run doit
+          PArray.app (fn x => Print.printLn (Double.toString x)) res
         end
 
   end
