@@ -112,20 +112,20 @@ structure Main =
           in
             lp args
           end		   
-        val (mtx, C) = readFromFile infile
-        val m = rows2sm mtx
+        val (mtx, C) = RunPar.runSilent (fn _ => readFromFile infile)
+        val m = RunPar.runSilent (fn _ => rows2sm mtx)
         fun dbl i = let
           val d = 0.1 + Double.fromInt i
           (* val _ = Print.printLn ("dbl: " ^ Double.toString d) *)
           in
             d
           end
-        val GUAVA = [| dbl n | n in [| 0 to C |] |]
-        val v = 
+        val GUAVA = RunPar.runSilent (fn _ => [| dbl n | n in [| 0 to C |] |])
+        val v = RunPar.runSilent (fn _ =>
           if String.same (infile, "id5-mtx.txt") then  
 	      [| 1.0 | n in [| 0 to C |] |]
 	  else
-	      GUAVA
+	      GUAVA)
 (* (\* +debug *\) *)
 (*         val dtos = Double.toString *)
 (*         fun lp i = if i>C then () else (Print.printLn (dtos (v!i)); lp (i+1)) *)
