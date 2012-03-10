@@ -112,9 +112,26 @@ structure Main =
           in
             lp args
           end		   
-        val (mtx, C) = RunPar.runSilent (fn _ => readFromFile infile)
-        val m = RunPar.runSilent (fn _ => rows2sm mtx)
-        val v = RunPar.runSilent (fn _ => [| Rand.randDouble (0.0, 10000.0) | _ in [| 0 to C |] |])
+        val (mtx, C) = readFromFile infile
+        val m = rows2sm mtx
+        fun dbl i = let
+          val d = 0.1 + Double.fromInt i
+          (* val _ = Print.printLn ("dbl: " ^ Double.toString d) *)
+          in
+            d
+          end
+        val GUAVA = [| dbl n | n in [| 0 to C |] |]
+        val v = 
+          if String.same (infile, "id5-mtx.txt") then  
+	      [| 1.0 | n in [| 0 to C |] |]
+	  else
+	      GUAVA
+(* (\* +debug *\) *)
+(*         val dtos = Double.toString *)
+(*         fun lp i = if i>C then () else (Print.printLn (dtos (v!i)); lp (i+1)) *)
+(*         val _ = Print.printLn "let's look at v:"       *)
+(* 	val _ = lp 0 *)
+(* (\* -debug *\) *)
         fun doitN n = 
           if n<=1 then 
             SMVM.smvmAlt (m, v)
@@ -123,6 +140,7 @@ structure Main =
             doitN (n-1))
         fun doit () = doitN 1
         val res = RunPar.runMicrosec doit
+	val _ = Print.printLn ("elt 0: " ^ Double.toString (res!0))
         in
           PArray.app (fn x => Print.printLn (Double.toString x)) res
         end
