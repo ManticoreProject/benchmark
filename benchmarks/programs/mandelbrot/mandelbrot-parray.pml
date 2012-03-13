@@ -19,16 +19,31 @@ structure Mandelbrot =
 	if cnt >= maxCount then
 	    (0.0, 0.0, 0.0)
 	else let
-		val w = Float.fromInt cnt / (Float.fromInt (maxCount-1))
+		val w = Double.fromInt cnt / (Double.fromInt (maxCount-1))
 	    in
 		(w, w, 0.25 + w*0.75)
 	    end
 
+    fun rgbToInt (r, g, b) = let
+      fun round x = Long.toInt (Double.round x)
+      fun f c = round (255.0 * c)
+      in
+        (65536*f(r)) + (256*f(g)) + f(b)
+      end
+
+    fun spoofRGBToInt (r, g, b) = let
+      val r' = Rand.inRangeInt (0, 256)
+      val g' = Rand.inRangeInt (0, 256)
+      val b' = Rand.inRangeInt (0, 256)
+      in
+        (256*256+r') + (256+g') + b'
+      end
+
     fun mandelbrot N = let
 	  fun elt (i, j) = let
-	        val delta = side / (Float.fromInt (N-1))
-		val c_re = xBase + (delta * Float.fromInt j)
-		val c_im = yBase - (delta * Float.fromInt i)
+	        val delta = side / (Double.fromInt (N-1))
+		val c_re = xBase + (delta * Double.fromInt j)
+		val c_im = yBase - (delta * Double.fromInt i)
 		fun loop (cnt, z_re, z_im) = 
 		    if (cnt < maxCount)
 		      then let
@@ -47,13 +62,10 @@ structure Mandelbrot =
 		in
 		  loop (0, c_re, c_im)
 		end
-(*	  val pixels = Rope.tabulate (N, fn i => Rope.tabulate (N, fn j => (i, j, pix2rgb (elt (i, j))))) *)
-          val pixels = [| [| (i, j, pix2rgb (elt (i, j))) | j in [| 0 to N |] |] | i in [| 0 to N |] |]
+          val pixels = [| [| rgbToInt(pix2rgb (elt (i, j))) | j in [| 0 to N-1 |] |] | i in [| 0 to N-1 |] |]
 	  val image = Image.new (N, N)
-	  fun output (i, j, (r, g, b)) = Image.update3f (image, i, j, r, g, b)
-(*	  val _ = Rope.app (fn r => Rope.app (fn (i, j, v) => output (i, j, v)) r) pixels *)
-(*          val _ = [| [| output (i, j, v) | (i, j, v) in row |] | row in pixels |]  *)
-	  val _ = PArray.app (fn r => PArray.app (fn (i, j, v) => output (i, j, v)) r) pixels 
+(*	  fun output (i, j, (r, g, b)) = Image.update3f (image, i, j, r, g, b)
+	val _ = PArray.app (fn r => PArray.app (fn (i, j, v) => output (i, j, v)) r) pixels  *)
 	  in
 	    image
 	  end

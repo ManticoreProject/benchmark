@@ -254,6 +254,21 @@ structure IdRaytracer =
 	  (firstray, scrnx, scrny)
 	end;
 
+    fun rgbToInt (r, g, b) = let
+      fun round x = Long.toInt (Double.round x)
+      fun f c = round (255.0 * c)
+      in
+        (65536*f(r)) + (256*f(g)) + f(b)
+      end
+
+    fun spoofRGBToInt (r, g, b) = let
+      val r' = Rand.inRangeInt (0, 256)
+      val g' = Rand.inRangeInt (0, 256)
+      val b' = Rand.inRangeInt (0, 256)
+      in
+        (256*256+r') + (256+g') + b'
+      end
+
     (*
     % color the given pixel
     *)
@@ -263,11 +278,14 @@ structure IdRaytracer =
 			(vecscale scrny (Double.fromInt y)));
       val (hit, dist, sp) = trace (spheres, pos, dir);  (* pick first intersection *)
 						    (* return color of the pixel x,y *)
-      in
+      val result = 
 	if hit then
 	  shade (lights, sp, pos, dir, dist, (1.0,1.0,1.0))
 	else
 	  background
+      in
+	rgbToInt result
+        (* spoofRGBToInt result *)
       end
 
     (*
@@ -464,10 +482,8 @@ structure IdRaytracer =
 	val (firstray, scrnx, scrny) = camparams (lookfrom, lookat, vup, fov, winsize)
 	fun f (i, j) = tracepixel (world, lights, i, j, firstray, scrnx, scrny)
 (*	val scene = Rope.tabulate (winsize, fn i => Rope.tabulate (winsize, fn j => (i, j, f (i, j)))) *)
-        val scene = [| [| (i, j, f (i, j)) | i in [| 0 to winsize |] |] | j in [| 0 to winsize |] |]
-(*	val _ = Rope.app (fn row => Rope.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene *)
-(*        val _ = [| [| Image.update3d (img, i, j, r, g, b) | (i, j, (r, g, b)) in row |] | row in scene |]  *)
-        val _ = PArray.app (fn row => PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene 
+        val scene = [| [| f (i, j) | i in [| 0 to winsize-1 |] |] | j in [| 0 to winsize-1 |] |]
+(**        val _ = PArray.app (fn row => PArray.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene  **)
 	val _ = Image.output("out.ppm", img)
 	val _ = Image.free img
 
@@ -494,7 +510,6 @@ structure Main =
 	let
 	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
 	    fun doit () = IdRaytracer.ray n
-		
 	in
 	    RunPar.run doit
 	end

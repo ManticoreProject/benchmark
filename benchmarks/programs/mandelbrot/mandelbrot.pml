@@ -49,8 +49,8 @@ structure Mandelbrot =
 		end
 	  val pixels = Rope.tabulate (N, fn i => Rope.tabulate (N, fn j => (i, j, pix2rgb (elt (i, j)))))
 	  val image = Image.new (N, N)
-	  fun output (i, j, (r, g, b)) = Image.update3f (image, i, j, r, g, b)
-	  val _ = Rope.app (fn r => Rope.app (fn (i, j, v) => output (i, j, v)) r) pixels
+(*	  fun output (i, j, (r, g, b)) = Image.update3f (image, i, j, r, g, b)
+	  val _ = Rope.app (fn r => Rope.app (fn (i, j, v) => output (i, j, v)) r) pixels *)
 	  in
 	    image
 	  end

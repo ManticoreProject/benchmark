@@ -459,14 +459,14 @@ structure IdRaytracer =
     (* parallel version *)
     fun ray winsize = let
 
-	val img = Image.new (winsize, winsize)
+(*	val img = Image.new (winsize, winsize) *)
 	val lights = testlights
 	val (firstray, scrnx, scrny) = camparams (lookfrom, lookat, vup, fov, winsize)
 	fun f (i, j) = tracepixel (world, lights, i, j, firstray, scrnx, scrny)
 	val scene = Rope.tabulate (winsize, fn i => Rope.tabulate (winsize, fn j => (i, j, f (i, j))))
-	val _ = Rope.app (fn row => Rope.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene
+(*	val _ = Rope.app (fn row => Rope.app (fn (i, j, (r, g, b)) => Image.update3d (img, i, j, r, g, b)) row) scene
 	val _ = Image.output("out.ppm", img)
-	val _ = Image.free img
+	val _ = Image.free img *)
 
 	in
 	  ()
