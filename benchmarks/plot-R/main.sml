@@ -28,14 +28,23 @@ structure Main = struct
       end
       val runData = List.foldr handleRun ILM.empty runs
       val procs = ListMergeSort.sort Int.> (ILM.listKeys runData)
+      val outF = TextIO.openOut outFile
       fun doProc n = let
           val SOME(times) = ILM.find (runData, n)
       in
-          print(concat[Int.toString n, ", ", String.concatWith "," (List.map Real.toString times), "\n"])
+          TextIO.output (outF, (concat[Int.toString n, ", ", String.concatWith "," (List.map Real.toString times), "\n"]))
       end
+                     
           
    in
-      print(concat[name, ", ", String.concatWith "," (List.tabulate ((IntInf.toInt trials), Int.toString)), "\n"]);
-      List.map doProc procs
+      TextIO.output (outF, (concat[name, ", ", String.concatWith "," (List.tabulate ((IntInf.toInt trials), Int.toString)), "\n"]));
+      List.map doProc procs;
+      TextIO.closeOut outF
   end
+
+  fun main (s, ss) = (
+      if List.length ss < 1
+      then print ("Requires 1 argument: the name of the file to convert\n")
+      else doFile (hd ss);
+      0)
 end
