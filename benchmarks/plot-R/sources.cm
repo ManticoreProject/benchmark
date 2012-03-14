@@ -1,0 +1,11 @@
+Library
+  structure Main
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/json-lib.cm
+  $/pp-lib.cm
+  $/ml-lpt-lib.cm
+
+  main.sml
