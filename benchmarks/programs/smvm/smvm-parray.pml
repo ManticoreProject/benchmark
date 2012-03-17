@@ -51,12 +51,16 @@ structure Main =
                    | SOME line => 
                      let
                        (* row, column, value *)
-                         val r::c::v::nil = String.tokenize " " line
+                         val tokens = String.tokenize " " line
+                         val r = List.nth (tokens, 0)
+                         val c = List.nth (tokens, 1)
+                         val v = List.nth (tokens, 2)
                          val r = rdi r - 1
                          val c = rdi c - 1
                          val cols = A.sub (rows, r)
+                         val v = rdd v
                      in
-                         A.update (rows, r, (c, rdd v)::cols);
+                         A.update (rows, r, (c, v)::cols);
                          lp ()
                      end)
         in
@@ -139,10 +143,11 @@ structure Main =
            (SMVM.smvmAlt (m, v);
             doitN (n-1))
         fun doit () = doitN 1
-        val res = RunPar.runMicrosec doit
-	val _ = Print.printLn ("elt 0: " ^ Double.toString (res!0))
+        val res = RunPar.run doit
+(*	val _ = Print.printLn ("elt 0: " ^ Double.toString (res!0)) *)
         in
-          PArray.app (fn x => Print.printLn (Double.toString x)) res
+(*          PArray.app (fn x => Print.printLn (Double.toString x)) res *)
+        ()
         end
 
   end
