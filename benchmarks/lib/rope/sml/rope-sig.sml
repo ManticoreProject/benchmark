@@ -69,4 +69,6 @@ val filter : ('a -> bool) -> 'a rope -> 'a rope
 
 val app : ('a -> unit) -> 'a rope -> unit
 
+val foreach : (int * 'a -> unit) -> 'a rope -> unit
+
 end

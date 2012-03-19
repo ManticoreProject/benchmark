@@ -43,7 +43,7 @@ structure R = RopeImplFn (
     fun numProcs () = 4
     val par2 = fn (f, g) => (f (), g ())
     val parN = fn l => List.map (fn f => f ()) l
-    val hungryProcs = randHP
+    val hungryProcs = everyHP
   end
   val C = 2.0)
 end (* local *)
@@ -213,7 +213,6 @@ fun testAll iters ns = let
 	testTab n;
         print "scan\n";
 	testScan n;
-
  () )
   fun iter i =
         if i < iters then (
@@ -371,8 +370,19 @@ fun testSplitJoinMC len = let
     ()
   end
 
+fun testForeach len = let
+  val xs = R.tabulate (len, fn i => i)
+ val _ = R.foreach (fn (i, x) => if i <> x then print ("i="^Int.toString i^
+							" x="^Int.toString x^"\n")
+				  else ())
+	  xs
+  in
+    ()
+  end
+
 fun doit () = testAll 4 [15, 100, 1000, 10000]
 
 val _ = doit ()
+val _ = withLeafSize 1 (fn _ => withLTS (fn _ => testForeach 1000))
 
 end

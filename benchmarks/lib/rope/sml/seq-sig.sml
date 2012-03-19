@@ -60,4 +60,9 @@ val filterUntil : (unit -> bool) -> ('a -> bool) -> 'a seq
 
 val app : ('a -> unit ) -> 'a seq -> unit
 
+val foreach : int -> (int * 'a -> unit) -> 'a seq -> unit
+
+val foreachUntil : (unit -> bool) -> int -> (int * 'a -> unit) -> 'a seq 
+    -> ('a seq * unit, unit) progress
+
 end
