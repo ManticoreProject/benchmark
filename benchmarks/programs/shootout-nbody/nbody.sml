@@ -41,6 +41,9 @@ val (x, y, z) = (get #1, get #2, get #3)
 val (vx, vy, vz) = (get (dpy o #4), get (dpy o #5), get (dpy o #6))
 val m = get (sm o #7)
 
+(* timing stuff: [cumulative time, start time, end time] *)
+(* val timing = Array.array(3,Time.fromMicroseconds(0)) *)
+
 (* one step *)
 fun advance dt =
     let fun pl i = if i>=N then ()
@@ -58,15 +61,16 @@ fun advance dt =
                  in (vx, i) <- vx$i-dx*mj ; (vx, j) <- vx$j+dx*mi
                   ; (vy, i) <- vy$i-dy*mj ; (vy, j) <- vy$j+dy*mi
                   ; (vz, i) <- vz$i-dz*mj ; (vz, j) <- vz$j+dz*mi
-                  ; vl (i, j+1)
-                 end
+                  ; vl (i, j+1) end
     in vl (0, 1) end
 
 (* calculate initial velocity for the sun *)
 fun offmoment () =
     let fun %v = ~v / SOLAR_MASS
         fun loop (i, px, py, pz) =
-            if i>=N then ((vx, 0) <- %px ; (vy, 0) <- %py ; (vz, 0) <- %pz)
+            if i>=N then ((vx, 0) <- %px 
+                        ; (vy, 0) <- %py 
+                        ; (vz, 0) <- %pz)
             else loop (i+1, px+vx$i*m$i, py+vy$i*m$i, pz+vz$i*m$i)
     in loop (1, 0.0, 0.0, 0.0) end
 
@@ -89,4 +93,9 @@ fun pr x = app print [(String.translate (fn #"~" => "-" | c => str c) o
 
 val n = valOf (Int.fromString (hd (CommandLine.arguments ()))) handle _ => 1
 
-val _ = (offmoment () ; pr (energy ()) ; addloop n ; pr (energy ()))
+val _ = (offmoment ()  
+       ; pr (energy ())  
+       ; addloop n  
+       ; pr (energy ()))
+
+(* val _ = app print [IntInf.toString(Time.toMicroseconds(timing$0)), "\n"] *)
