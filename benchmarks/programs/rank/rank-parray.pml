@@ -32,7 +32,7 @@ structure Main =
     fun main (_, args) =
 	let
 	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-	    val a = [| 1 to n |]
+	    val a = [| 0 to n |]
 	    fun doit () = Rank.rank a
 	in
 	    RunPar.run doit
