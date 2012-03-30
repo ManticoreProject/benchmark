@@ -231,14 +231,14 @@ structure BlackScholes (*: sig
                1.0 - (std_normal_pdf x) * (magic_poly x)
   end
 
+
   fun price (parr) = let
              val spot = parr!0
-	     val spot = parr!1
-             val strike = parr!2
-             val interest = parr!3
-             val volatility = parr!5
-             val time = parr!6
-             val opt_type = parr!7
+	     val strike = parr!1
+             val interest = parr!2
+             val volatility = parr!4
+             val time = parr!5
+             val opt_type = parr!6
              val derivagem = parr!8
 	val denom = volatility * Double.sqrt (time)
 	val strike_exp = strike * MyBasis.exp (~interest * time)
