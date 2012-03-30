@@ -107,7 +107,7 @@ structure BlackScholes (*: sig
 
     type float = double
 
-    datatype OptionType = Put | Call
+(*    datatype OptionType = Put | Call
 
     datatype option_t = Option of (
 	float *         (* spot price *)
@@ -120,12 +120,12 @@ structure BlackScholes (*: sig
 	float *         (* dividend values (not used here) *)
 	float           (* expected answer from DerivaGem *)
       )
+*)
+    val dummy_option =  [|
+	    123.0, 234.0, 345.0, 456.0, 567.0, 678.0, 1.0, 789.0, 890.0
+      |]
 
-    val dummy_option = Option (
-	    123.0, 234.0, 345.0, 456.0, 567.0, 678.0, Put, 789.0, 890.0
-      )
-
-  fun readData (infname : string) : option_t list = let
+  fun readData (infname : string)  = let
     fun real_of_string (s : string) : float = Option.valOf (Double.fromString s)
 
     val inf = TextIO.openIn infname
@@ -141,7 +141,7 @@ structure BlackScholes (*: sig
 	    spot::strike::interest::div_rate::volatility::time::opt_type::div_vals::derivagem::nil
 	  )  = let 
         val retval = 
-          Option (
+           [|
             real_of_string spot,
             real_of_string strike,
             real_of_string interest,
@@ -149,16 +149,16 @@ structure BlackScholes (*: sig
             real_of_string volatility,
             real_of_string time,
             (* TODO throw exception if neither "P" nor "C" *)
-            (if String.same (opt_type, "P") then Put else Call),
+            (if String.same (opt_type, "P") then 1.0:double else 0.0:double),
             real_of_string div_vals,
             real_of_string derivagem
-          )
+          |]
           (*
         val _ = Print.printLn (MyBasis.join ("' '",
         (spot::strike::interest::div_rate::volatility::time::opt_type::div_vals::derivagem::nil)))
 
         val _ = Print.printLn 
-          ((fn (Option (_, _, _, _, _, _, opt_type, _, _)) 
+          ((fn ( (_, _, _, _, _, _, opt_type, _, _)) 
               => ((case opt_type of Put => "Put" | Call => "Call" ))) 
             retval)
         *)
@@ -231,9 +231,15 @@ structure BlackScholes (*: sig
                1.0 - (std_normal_pdf x) * (magic_poly x)
   end
 
-  fun price (Option (
-	spot, strike, interest, _, volatility, time, opt_type, _, derivagem
-      )) = let
+  fun price (parr) = let
+             val spot = parr!0
+	     val spot = parr!1
+             val strike = parr!2
+             val interest = parr!3
+             val volatility = parr!5
+             val time = parr!6
+             val opt_type = parr!7
+             val derivagem = parr!8
 	val denom = volatility * Double.sqrt (time)
 	val strike_exp = strike * MyBasis.exp (~interest * time)
 	val log_term = MyBasis.ln (spot / strike)
@@ -242,9 +248,9 @@ structure BlackScholes (*: sig
 	val d2 = d1 - denom
 	val n_d1 = std_normal_cdf d1
 	val n_d2 = std_normal_cdf d2
-	val retval = case opt_type of
-                   Put => strike_exp * (1.0 - n_d2) - spot * (1.0 - n_d1)
-                 | Call => spot * n_d1 - strike_exp * n_d2
+	val retval = if opt_type > 0.0
+                     then strike_exp * (1.0 - n_d2) - spot * (1.0 - n_d1)
+                     else spot * n_d1 - strike_exp * n_d2
                  (*
     val _ = MyBasis.debug [
       ("type", (case opt_type of Put => 1.0 | Call => 0.0 )), 
@@ -253,9 +259,7 @@ structure BlackScholes (*: sig
       ("n_d2", n_d2), ("retval", retval), ("derivagem", derivagem) ]
       *)
 	in
-	  if Double.abs (retval - derivagem) > 0.001
-      then "E"
-      else ""
+	  Double.abs (retval - derivagem)
 	end
 
   end
@@ -264,22 +268,22 @@ structure Main =
   struct
 
     fun main (_, args) = let
-	  val options = BlackScholes.readData (List.hd args)
-	  fun doit () = mapP (BlackScholes.price, (fromListP options))
+	  val options = PArray.fromList (BlackScholes.readData (List.hd args))
+	  fun doit () = [| BlackScholes.price p | p in options |]
 	  in
 	    (* TextIO.outputLine logfile (hd args); 
         *)
-	    Print.printLn (PArray.toString (fn x => x) "" (RunPar.run doit))
+	    RunPar.run doit
 	  end
 
-    fun main_map (_, args) = let
+(*    fun main_map (_, args) = let
 	  val options = BlackScholes.readData (List.hd args)
 	  fun doit () = map BlackScholes.price options
 	  in
 	    (* TextIO.outputLine logfile (hd args); 
         *)
 	    Print.printLn (String.concat (RunPar.run doit))
-	  end
+	  end*)
 
   end
 
