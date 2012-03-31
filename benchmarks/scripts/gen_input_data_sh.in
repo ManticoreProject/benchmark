@@ -18,4 +18,8 @@ pushd $MANTI_BENCH_ROOT/input-data
 gzip -cd mtx.txt.gz > mtx.txt
 popd
 
+pushd $MANTI_BENCH_ROOT/input-data/black-scholes
+gzip -cd 500K.gz > in_500K.txt
+popd
+
 # $MANTI_BENCH_ROOT/programs/smvm/gen-mtx.sh
