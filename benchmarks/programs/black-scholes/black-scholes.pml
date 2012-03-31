@@ -121,9 +121,9 @@ structure BlackScholes (*: sig
 	float           (* expected answer from DerivaGem *)
       )
 *)
-    val dummy_option =  [|
+    val dummy_option =  [
 	    123.0, 234.0, 345.0, 456.0, 567.0, 678.0, 1.0, 789.0, 890.0
-      |]
+      ]
 
   fun readData (infname : string)  = let
     fun real_of_string (s : string) : float = Option.valOf (Double.fromString s)
@@ -135,13 +135,24 @@ structure BlackScholes (*: sig
       (Option.composePartial (Int.fromString, TextIO.inputLine)
       inf)
 
+    fun convert (l : double list Array.array) : double parray parray  = let
+        val len = Array.length l
+        val items = [| 0 to 8 |]
+    in
+        (* BUGBUG FIXME:
+         * i and j are reversed due to a bug in mkTab2D!
+         *)
+        [| [| List.nth (Array.sub(l, i), j) | i in items |] |
+         j in [| 0 to len-1 |] |]
+    end
+
       (* string list -> Option
       * TODO throw an exception for invalid input *)
     fun option_of_fields (
 	    spot::strike::interest::div_rate::volatility::time::opt_type::div_vals::derivagem::nil
 	  )  = let 
         val retval = 
-           [|
+           [
             real_of_string spot,
             real_of_string strike,
             real_of_string interest,
@@ -152,7 +163,7 @@ structure BlackScholes (*: sig
             (if String.same (opt_type, "P") then 1.0:double else 0.0:double),
             real_of_string div_vals,
             real_of_string derivagem
-          |]
+          ]
           (*
         val _ = Print.printLn (MyBasis.join ("' '",
         (spot::strike::interest::div_rate::volatility::time::opt_type::div_vals::derivagem::nil)))
@@ -169,13 +180,21 @@ structure BlackScholes (*: sig
 
       (* TODO does this leave the file open? does that matter? *)
       (* see comments with MyBasis.readLines function *)
-  val options =
-    map (fn line => option_of_fields (String.tokenize " " line))
-        (MyBasis.readLines inf)
+    fun genOptions () = let
+        val options = Array.array (num_options, dummy_option)
+        fun lp (i, lines) =
+            case lines
+             of nil => options
+              | line::lines => (
+                Array.update (options, i, option_of_fields (String.tokenize " " line));
+                lp (i+1, lines))
+    in
+        lp (0, MyBasis.readLines inf)
+    end
+
+  val options = genOptions ()
   in
-    if num_options = List.length options
-    then options
-    else [] (* TODO exception here *)
+    convert options
   end
 
   fun writePrices outfname prices = let
@@ -268,13 +287,15 @@ structure Main =
   struct
 
     fun main (_, args) = let
-	  val options = PArray.fromList (BlackScholes.readData (List.hd args))
-	  fun doit () = [| BlackScholes.price p | p in options |]
-	  in
+        val file = if List.length args > 0 then List.hd args
+                   else (print "Requires a file name argument\n"; raise Fail "Missing argument")
+        val options = BlackScholes.readData file
+	fun doit () = [| BlackScholes.price p | p in options |]
+    in
 	    (* TextIO.outputLine logfile (hd args); 
         *)
-	    RunPar.run doit
-	  end
+	RunPar.run doit
+    end
 
 (*    fun main_map (_, args) = let
 	  val options = BlackScholes.readData (List.hd args)
