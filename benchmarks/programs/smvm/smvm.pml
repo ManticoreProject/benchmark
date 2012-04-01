@@ -73,7 +73,7 @@ structure Main =
                              SMVM.smvm (mtx, v);
                              doitN (n-1)))
                            
-	    fun doit () = doitN 100
+	    fun doit () = doitN 1
 	in
 	    RunPar.run doit
 	end
