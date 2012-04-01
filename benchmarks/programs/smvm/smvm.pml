@@ -39,9 +39,13 @@ structure Main =
 		   | SOME line => 
 		     let
 		       (* row, column, value *)
-			 val r::c::v::nil = String.tokenize " " line
-			 val r = rdi r - 1
-			 val c = rdi c - 1
+                       (* row, column, value *)
+                         val tokens = String.tokenize " " line
+                         val r = List.nth (tokens, 0)
+                         val c = List.nth (tokens, 1)
+                         val v = List.nth (tokens, 2)
+                         val r = rdi r - 1
+                         val c = rdi c - 1
 			 val cols = A.sub (rows, r)
 		     in
 			 A.update (rows, r, (c, rdd v)::cols);
