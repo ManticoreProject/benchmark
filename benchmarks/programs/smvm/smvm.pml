@@ -22,9 +22,9 @@ structure Main =
     structure A = Array
 
   (* reads from any matrix-market named mtx.txt -- just strip off the header comments first *)
-    fun readFromFile () =
+    fun readFromFile infile =
 	let
-	    val f = TextIO.openIn "../../input-data/mtx.txt"
+	    val f = TextIO.openIn infile (* "../../input-data/mtx.txt" *)
 	    fun rdd d = Option.valOf (Double.fromString d)
 	    fun rdi d = Option.valOf (Int.fromString d)
 	  (* number of rows, number of columns, number of nonzeros *)
@@ -64,9 +64,32 @@ structure Main =
     fun bumpSV2 sv = Rope.map (fn (i,x) => (i-1, x-epsilon)) sv
     fun bumpSM sm = Rope.map (fn sv => bumpSV2 (bumpSV1 sv)) sm
 	
+    fun last xs =
+     (case xs 
+       of x::nil => x
+        | x::xs => last xs
+        | nil => (Print.printLn "last:empty"; raise Fail "last:empty")
+       (* end case *))
+
+    fun looksLikeMatrixFilename s = 
+     (case String.tokenize "." s
+        of nil => false
+         | s::nil => false
+         | ss => String.same (last ss, "txt")	
+        (* end case *))
+
     fun main (_, args) =
 	let
-	    val (mtx, C) = readFromFile ()
+            val infile = let
+                fun lp args =
+                    (case args
+                      of s::ss => if looksLikeMatrixFilename s then s else lp ss
+                       | nil => "../../input-data/mtx.txt"
+                    (* end case *))
+            in
+                lp args
+            end		   
+            val (mtx, C) = readFromFile infile
 	    val (mtx, v) = RunPar.runSilent(fn _ => (bumpSM (rows2sm mtx),
 				Rope.fromList (List.tabulate (C, fn _ => Rand.randDouble (0.0, 10000.0)))))
             fun doitN (n) = (if n=0 then () else (
