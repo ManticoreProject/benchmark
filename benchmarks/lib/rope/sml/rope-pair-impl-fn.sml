@@ -41,7 +41,11 @@ functor RopePairImplFn (
   val toSeq : 'a RTy.rope -> 'a RTy.Seq.seq
   val take   : 'a RTy.rope * int -> 'a RTy.rope
   val drop   : 'a RTy.rope * int -> 'a RTy.rope
+  val seqDrop : 'a RTy.Seq.seq * int -> 'a RTy.Seq.seq
+  val seqSub : 'a RTy.Seq.seq * int -> 'a
   val map : ('a -> 'b) -> 'a RTy.rope -> 'b RTy.rope
+  val sub : 'a RTy.rope * int -> 'a
+  val fromListRev : 'a list -> 'a RTy.Seq.seq
 ) : ROPE_PAIR = struct
 
 exception UnequalLengths
@@ -51,6 +55,8 @@ type 'a seq = 'a Seq.seq
 datatype rope = datatype RTy.rope
 datatype gen_ctx = datatype RTy.gen_ctx
 datatype progress = datatype Progress.progress
+
+fun failwith s = (print (s^"\n"); raise Fail "\n")
 
 fun unequalLengths () = raise Fail "unequal lengths"
 
@@ -65,6 +71,8 @@ fun nextMap cur = next leftmostLeaf nccat2 cur
 
 fun empty () = leaf (Seq.empty ())
 
+type ('a, 'b) icur = int * ('a, 'b) RTy.gen_cur
+
 fun equalizeLengths (rp0, rp1) = let
   val l0 = length rp0
   val l1 = length rp1
@@ -74,48 +82,57 @@ fun equalizeLengths (rp0, rp1) = let
     else (take (rp0, l), take (rp1, l))
   end
 
-fun nextN ((rp, c), n) = let
-  fun f (rp, c, n) =
-    if n < 0 then raise Fail "neg"
-    else if n = 0 then
-      ((rp, c), empty ())
-    else if length rp >= n then
-      ((drop (rp, n), c), take (rp, n))
-    else (case nextMap (empty (), c)
-      of Done rp' => ((empty (), GCTop), nccat2 (rp, rp'))
-       | More (s', c') => let
-	   val (cur'', rp') = f (leaf s', c', n - length rp)
-	   in
-	     (cur'', nccat2 (rp, rp'))
-	   end)
-  val (cur', rp') = f (rp, c, n)
+fun nextICur (i, (rp, c)) =
+  if i < length rp then ((i+1, (rp, c)), sub (rp, i))
+  else (case nextMap (empty (), c)
+   of Done rp' => ((i+1, (rp, GCTop)), sub (rp, i))
+    | More (s', c') => nextICur (0, (leaf s', c')))
+
+fun hdICur (i, (rp, _)) = sub (rp, i)
+
+fun curOfICur (i, (rp, c)) = if i = 0 then (rp, c) else (drop (rp, i), c) 
+
+fun icurOfCur cur = (0, cur)
+
+fun seqMapPairUntil cond f (s0, icur1) = let
+  val len = length (leaf s0)
+  fun lp (i, icur1, acc) = 
+    if i < len then
+      if cond () then
+	More (seqDrop (s0, i), icur1, fromListRev acc) 
+      else let
+	val (icur', x) = nextICur icur1 
+	in
+	  lp (i+1, icur', f (seqSub (s0, i), x)::acc) 
+	end
+    else
+      Done (icur1, fromListRev acc)
   in
-    (cur', toSeq rp')
+    lp (0, icur1, nil)
   end
 
 fun mapUntil cond f (cur0, cur1) = let
-  fun m (s0, c0, cur1) = let
-    val (cur1', s1) = nextN (cur1, Seq.length s0) 
-    in
-      case Seq.mapPairUntil cond f (s0, s1)
-       of More (us0, us1, ps) => 
-	 if numUnprocessedMap (leaf us0, c0) < 2 then 
-	     (case nextMap (leaf (Seq.cat2 (ps, Seq.mapPair f (us0, us1))), c0)
-	       of Done p' => Done p'
-		| More (s0', c0') => m (s0', c0', cur1'))
-	 else let
-	   val c0' = if Seq.length ps = 0 then c0 else GCRight (leaf ps, c0)
-	   val (rp1, c1) = cur1'
-           in
-	     More ((leaf us0, c0'), (nccat2 (leaf us1, rp1), c1))
-	   end
-	| Done (us1, ps) => (case nextMap (leaf ps, c0)
-            of Done p' => Done p'
-	     | More (s0', c0') => m (s0', c0', cur1'))
-    end
+  fun m (s0, c0, icur1) = (case seqMapPairUntil cond f (s0, icur1) 
+     of More (us0, icur1', ps) => 
+       if numUnprocessedMap (leaf us0, c0) < 2 then 
+	 (case (seqMapPairUntil (fn _ => false) f (us0, icur1'))
+	   of Done (icur1'', ps') =>
+	      (case nextMap (leaf (Seq.cat2 (ps, ps')), c0)
+		of Done p' => Done p'
+		 | More (s0', c0') => m (s0', c0', icur1''))
+	    | _ => failwith "bogus")
+       else let
+	 val c0' = if Seq.length ps = 0 then c0 else GCRight (leaf ps, c0)
+	 val cur1 = curOfICur icur1'
+	 in
+	   More ((leaf us0, c0'), cur1)
+	 end 
+      | Done (icur1', ps) => (case nextMap (leaf ps, c0)
+	  of Done p' => Done p'
+	   | More (s0', c0') => m (s0', c0', icur1')))
   val (s0, c0) = leftmostLeaf cur0
   in
-    m (s0, c0, cur1)
+    m (s0, c0, icurOfCur cur1) 
   end
 
 fun map f (rp0, rp1) = let

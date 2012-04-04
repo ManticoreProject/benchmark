@@ -43,7 +43,7 @@ structure R = RopeImplFn (
     fun numProcs () = 4
     val par2 = fn (f, g) => (f (), g ())
     val parN = fn l => List.map (fn f => f ()) l
-    val hungryProcs = everyHP
+    val hungryProcs = randHP
   end
   val C = 2.0)
 end (* local *)
@@ -401,7 +401,7 @@ val _ = test := r'
 
 fun doit () = testAll 4 [15, 100, 1000, 10000]
 
-val _ = withLeafSize 8 (fn _ => withLTS (fn _ => testMapPair 1000))
+val _ = withLeafSize 51 (fn _ => withLTS (fn _ => testMapPair 1000))
 (*
 val _ = doit ()
 val _ = withLeafSize 1 (fn _ => withLTS (fn _ => testForeach 1000))

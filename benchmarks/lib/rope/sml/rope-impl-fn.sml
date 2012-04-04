@@ -1150,6 +1150,10 @@ structure Pair = RopePairImplFn (
   val take = take
   val drop = drop
   val map = map
+  val seqDrop = Seq.drop
+  val seqSub = Seq.sub
+  val sub = sub
+  val fromListRev = Seq.fromListRev
 )
 
 end
