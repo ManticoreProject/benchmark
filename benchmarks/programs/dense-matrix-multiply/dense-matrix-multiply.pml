@@ -19,7 +19,6 @@ structure DenseMatrixMultiply =
     fun denseMatrixMultiply (m, n) =
 	let
 	    fun vvm (b, a) =
-(*		R.reduce add 0.0 (R.tabulate (R.length b, fn i => R.sub (b, i) * R.sub (a, i)))*)
 		R.reduce add 0.0 (RopePair.map mul (b, a))
 	    fun mvm (n, a) =
 		R.map (fn ni => vvm (ni, a)) n
