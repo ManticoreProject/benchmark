@@ -190,12 +190,9 @@ fun app f rp = let
 
 (*** Cursor navigation ***)
 
-datatype ('a, 'b) gen_ctx
-  = GCTop
-  | GCLeft of ('a, 'b) gen_ctx * 'a
-  | GCRight of 'b * ('a, 'b) gen_ctx
+datatype gen_ctx = datatype RTy.gen_ctx
 
-type ('a, 'b) gen_cur = 'a * ('a, 'b) gen_ctx
+type ('a, 'b) gen_cur = ('a, 'b) RTy.gen_cur
 
 fun ctxLength lengthL lengthR (c : ('a,'b) gen_ctx) = let
   fun len c = (case c
@@ -284,11 +281,11 @@ fun splitCursor (jL, bL) (jR, bR) (f, c) = let
     (p, jR (f, u))
   end
 
-datatype dir = Left | Right
-type ('a, 'b) unzipped_gen_ctx = 
-   'b list * 'a list * dir list
-type ('a, 'b) unzipped_gen_cur =
-   'a * ('a, 'b) unzipped_gen_ctx
+datatype dir = datatype RTy.dir
+
+type ('a, 'b) unzipped_gen_ctx = ('a, 'b) RTy.unzipped_gen_ctx
+
+type ('a, 'b) unzipped_gen_cur = ('a, 'b) RTy.unzipped_gen_cur
 
 fun unzippedCtxOK (ls, rs, ds) =
   List.length rs = List.length (List.filter (fn x => x = Left) ds) andalso
@@ -1129,5 +1126,30 @@ fun filter' f rp = (case ChunkingPolicy.get ()
    | ChunkingPolicy.LTS PPT => filterLTS PPT f rp)
 fun filter f rp = balance (filter' f rp)
 (*end*)
+
+structure Pair = RopePairImplFn (
+  structure RTy = RTy
+  structure RT = RT
+  val length = length
+  val leaf = leaf
+  val nccat2 = nccat2
+  val ccat2 = ccat2
+  val leftmostLeaf = leftmostLeaf
+  val start = start
+  val finish = finish
+  val next = next
+  val cursorAtIx = cursorAtIx
+  val numUnprocessed = numUnprocessed
+  val join = join
+  val encodeRope = encodeRope
+  val decodeRope = decodeRope
+  val zipCursor = zipCursor
+  val unzipCursor = unzipCursor
+  val splitAt = splitAt
+  val toSeq = toSeq
+  val take = take
+  val drop = drop
+  val map = map
+)
 
 end

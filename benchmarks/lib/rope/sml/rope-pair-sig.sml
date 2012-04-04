@@ -1,9 +1,7 @@
 signature ROPE_PAIR =
 sig
 
-structure R : ROPE
-
-type 'a rope = 'a R.rope
+type 'a rope
 
 exception UnequalLengths
 

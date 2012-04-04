@@ -65,4 +65,9 @@ val foreach : int -> (int * 'a -> unit) -> 'a seq -> unit
 val foreachUntil : (unit -> bool) -> int -> (int * 'a -> unit) -> 'a seq 
     -> ('a seq * unit, unit) progress
 
+val mapPair : ('a * 'b -> 'c) -> ('a seq * 'b seq) -> 'c seq
+
+val mapPairUntil : (unit -> bool) -> ('a * 'b -> 'c) -> ('a seq * 'b seq)
+           -> ('a seq * 'b seq * 'c seq, 'b seq * 'c seq) progress
+
 end

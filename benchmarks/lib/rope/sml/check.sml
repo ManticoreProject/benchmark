@@ -109,7 +109,7 @@ fun vtest () = R.toList (!test)
 
 fun error s = print ("!!!!error: "^s)
 
-fun notequal () = raise Fail "not equal"
+fun notequal () = print "not equal!!!\n"
 
 fun testTab n = let
   val r = R.tabulate (n, fn i => i)
@@ -380,9 +380,30 @@ fun testForeach len = let
     ()
   end
 
+fun testMapPair d = let
+  val r = randRope (fn _ => rand () mod 100) d
+  val r2 = R.tabulate (R.length r, fn i => i)
+  val _ =     orig := r;
+  val r'' = withSequential (fn _ => R.tabulate (R.length r, fn i => R.sub (r, i) + R.sub (r2, i)))
+  val _ =     seq := r'';;
+  val r' = R.Pair.map (fn (x, y) => ((*print (Int.toString x^" " ^ Int.toString y^"\n"); *)x + y)) (r, r2)
+val _ = test := r'
+  val alleq = ListPair.allEq (fn (x, y) => x = y) (R.toList r'', R.toList r')
+  in
+    seq := r'';
+    test := r';
+    if not alleq then
+	notequal ()
+    else ();
+    ()
+  end
+
+
 fun doit () = testAll 4 [15, 100, 1000, 10000]
 
+val _ = withLeafSize 8 (fn _ => withLTS (fn _ => testMapPair 1000))
+(*
 val _ = doit ()
 val _ = withLeafSize 1 (fn _ => withLTS (fn _ => testForeach 1000))
-
+*)
 end

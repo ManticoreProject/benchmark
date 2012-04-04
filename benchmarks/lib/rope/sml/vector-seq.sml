@@ -178,5 +178,27 @@ val app = Vector.app
       lp 0
     end
 
+fun min (x, y) = if x < y then x else y
+
+fun mapPair f (s0, s1) = 
+  if length s0 = length s1 then 
+      tabulate (length s0, fn i => f (sub (s0, i), sub (s1, i))) 
+  else 
+      raise Fail "mapPair"
+
+fun mapPairUntil cond f (s0, s1) = let
+  val len = length s0
+  fun lp (i, acc) = 
+    if i < len then
+      if cond () then
+	More (drop (s0, i), drop (s1, i), fromListRev acc)
+      else
+	lp (i+1, f (sub (s0, i), sub (s1, i))::acc)
+    else
+      Done (drop (s1, i), fromListRev acc)
+  in
+    if length s0 = length s1 then lp (0, nil)
+    else raise Fail "mapPairUntil"
+  end
 
 end

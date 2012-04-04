@@ -71,4 +71,6 @@ val app : ('a -> unit) -> 'a rope -> unit
 
 val foreach : (int * 'a -> unit) -> 'a rope -> unit
 
+structure Pair : ROPE_PAIR where type 'a rope = 'a rope
+
 end
