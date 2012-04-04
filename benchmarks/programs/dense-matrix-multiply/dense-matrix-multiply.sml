@@ -20,15 +20,16 @@ structure DenseMatrixMultiply =
     structure R = Rope
 
     fun add (x : real, y) = x + y
+    fun mul (x : real, y) = x * y
 
     fun denseMatrixMultiply (m, n) =
 	let
 	    fun vvm (b, a) =
-		R.reduce add 0.0 (R.tabulate (R.length b, fn i => R.sub (b, i) * R.sub (a, i)))
+		R.reduce add 0.0 (R.Pair.map mul (b, a))
 	    fun mvm (n, a) =
-		R.tabulate (R.length n, fn i => vvm (R.sub (n, i), a))
+		R.map (fn ni => vvm (ni, a)) n
 	in
-	    R.tabulate (R.length m, fn i => mvm (n, R.sub (m, i)))
+	    R.map (fn mi => mvm (n, mi)) m
 	end
 
   end
