@@ -11,6 +11,8 @@
  *)
 
 
+structure Array = UnsafeDoubleArray
+
 exception parrayOutOfBounds;
 
 val pi = 3.14159265358979323 
@@ -46,13 +48,12 @@ val (x, y, z) = (get(mynth 0), get(mynth 1), get(mynth 2))
 val (vx, vy, vz) = (get (o(dpy, (mynth 3))), get (o(dpy, (mynth 4))), get (o(dpy, (mynth 5))))
 val m = get (o(sm, (mynth 6)))
 
-
-
-
-
 (* one step *)
 fun advance dt =
-    let fun pl () =
+    let
+        val zero = [| 0.0 |]
+        val zeros = [| zero, zero, zero |]
+        fun pl () =
             let fun newpos(coord, i) = 
                 if i >= N then  raise parrayOutOfBounds
                 else if coord = 0 then Array.update(x, i, Array.sub(x, i) + dt*Array.sub(vx, i))
@@ -79,9 +80,9 @@ fun advance dt =
                         let fun geti(i, j) = dvels!j!(i - j - 1)
                             fun sumP a = reduceP (fn (x, y) => x + y) 0.0 a
                             val ifirsts  = if i < N - 1 then [|[| (ds!coord)!0 | ds in dvels!i |] | coord in [|0 to 2|]|]
-                                           else [| [|0.0|], [|0.0|], [|0.0|] |]
+                                           else zeros
                             val iseconds = if i > 0 then [|[| ((geti(i, j)!coord)!1) | j in [| 0 to i - 1|]|] | coord in [|0 to 2|]|]
-                                           else [| [|0.0|], [|0.0|], [|0.0|] |]
+                                           else zeros
                             val xsum = sumP (concatP(ifirsts!0, iseconds!0))
                             val ysum = sumP (concatP(ifirsts!1, iseconds!1))
                             val zsum = sumP (concatP(ifirsts!2, iseconds!2))
