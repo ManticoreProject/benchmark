@@ -142,7 +142,7 @@ structure Main =
           else
            (SMVM.smvmAlt (m, v);
             doitN (n-1))
-        fun doit () = doitN 1
+        fun doit () = doitN 25
         val res = RunPar.run doit
 (*	val _ = Print.printLn ("elt 0: " ^ Double.toString (res!0)) *)
         in
