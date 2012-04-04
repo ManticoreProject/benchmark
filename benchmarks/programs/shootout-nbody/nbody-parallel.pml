@@ -74,16 +74,18 @@ fun advance dt =
                 val dvels = [|[|dvs (i, j) | j in [|i + 1 to N - 1|]|] | i in [|0 to N-2|]|]  
                 (* now we need to merge dvels back into vx, vy, vz, which requires knowing how things are ordered, i believe, so we can map-reduce *)
                 fun newvels (i, dvels) = (* just add up all appropriate values AND then update vx, vy, vz *)
-                    if i >= N then raise parrayOutOfBounds
+                    if i >= N then (print "out of bounds\n" ; raise parrayOutOfBounds)
                     else
                         let fun geti(i, j) = dvels!j!(i - j - 1)
                             fun sumP a = reduceP (fn (x, y) => x + y) 0.0 a
-                            val ifirsts  = [|[| (ds!coord)!0 | ds in dvels!i |] | coord in [|0 to 2|]|]
-                            val iseconds = [|[| ((geti(i, j)!coord)!1) | j in [| 0 to i - 1|]|] | coord in [|0 to 2|]|]
+                            val ifirsts  = if i < N - 1 then [|[| (ds!coord)!0 | ds in dvels!i |] | coord in [|0 to 2|]|]
+                                           else [| [|0.0|], [|0.0|], [|0.0|] |]
+                            val iseconds = if i > 0 then [|[| ((geti(i, j)!coord)!1) | j in [| 0 to i - 1|]|] | coord in [|0 to 2|]|]
+                                           else [| [|0.0|], [|0.0|], [|0.0|] |]
                             val xsum = sumP (concatP(ifirsts!0, iseconds!0))
                             val ysum = sumP (concatP(ifirsts!1, iseconds!1))
                             val zsum = sumP (concatP(ifirsts!2, iseconds!2))
-                        in  Array.update(vx, i, Array.sub(vx, i) + xsum)
+                        in Array.update(vx, i, Array.sub(vx, i) + xsum)
                         ;  Array.update(vy, i, Array.sub(vy, i) + ysum)
                         ;  Array.update(vz, i, Array.sub(vz, i) + zsum) end
             in [|newvels(i, dvels) | i in [|0 to N-1|] |] end
