@@ -1,0 +1,12 @@
+Library
+
+	structure Main
+  	structure MIS
+is
+
+	$/basis.cm
+	$/smlnj-lib.cm
+
+	../../common/run-seq.sml
+	../../lib/rope/sml/sources.cm
+	mis.sml
