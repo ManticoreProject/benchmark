@@ -1127,6 +1127,8 @@ fun filter' f rp = (case ChunkingPolicy.get ()
 fun filter f rp = balance (filter' f rp)
 (*end*)
 
+fun flatten rps = balance (reduce nccat2 (empty ()) rps)
+
 structure Pair = RopePairImplFn (
   structure RTy = RTy
   structure RT = RT

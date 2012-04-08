@@ -90,6 +90,8 @@ fun graphToString G = let
     R.reduce (op ^) "" edgelists
   end
 
+val printGraph = print o graphToString
+
 fun checkGraph (G : graph) = let
   val n = R.length G
   fun vertexOK v = 
@@ -218,22 +220,52 @@ val G2 = compressGraph (G2, R.fromList [false, true, true, true, true])
 val _ = checkGraph G2
 val _ = isIndependentSet G2 W2
 
-val rand = Random.rand (0, 100000)
+val rand = Random.rand (0, 1000000)
 
-(* Takes a vertex id i, a number of vertices n and a floating-point 
- * number p and generates a random edgelist where for some vertex j
- * there exists an edge between i and j with probability p.
- *)
-fun randEdgelist (i, n, p) = let
+fun randEdgeList (n, p) i = let
   val flags = R.tabulate (n, fn j => Random.randReal rand < p)
   val ids = R.Pair.map (fn (flg, i) => if flg then i else ~1) 
-			(flags, enumerate flags)
+			(flags, R.tabulate (n, fn i => i))
+  val outIds = R.filter (fn x => x >= 0 andalso x <> i) ids
+  val edges = R.map (fn x => (i, x)) outIds
+  val edges' = R.map (fn x => (x, i)) outIds
   in
-    (i, R.filter (fn x => x >= 0 andalso x <> i) ids)
+    R.cat2 (edges, edges')
   end
 
-fun randGraph (n, p) : graph =
-  R.tabulate (n, fn i => randEdgelist (i, n, p))
+fun randEdgeLists (n, p) = let
+  val res = randEdgeList (n, p)
+  val ess = List.tabulate (n, res)
+  in
+    R.catN ess
+  end
+
+fun uniq (n, es) = let
+  val bs = writeBits (n, es)
+  val is = R.Pair.map (fn (i, b) => if b then i else ~1) (R.tabulate (n, fn i => i), bs)
+  in
+    R.filter (fn i => i <> ~1) is
+  end
+
+fun adjList (n, es) : graph = let
+  fun vertex (lo, es) = (lo, uniq (n, R.map snd es))
+  fun f (lo, hi, es) =
+    if hi - lo = 0 then
+      R.empty ()
+    else if hi - lo = 1 then
+      R.singleton (vertex (lo, es))
+    else let
+      val m = (lo + hi) div 2
+      val es1 = f (lo, m, R.filter (fn (v, _) => v < m) es)
+      val es2 = f (m, hi, R.filter (fn (v, _) => v >= m) es)
+      in
+        R.cat2 (es1, es2)
+      end
+  in
+    f (0, n, es)
+  end
+
+fun randGraph (n, p) = adjList (n, randEdgeLists (n, p))
 
 fun mkPi n = let
   val a = Array.tabulate (n, fn i => i)
@@ -254,6 +286,23 @@ end
 
 structure Main = struct
 
-fun main (_, args) = ()
+    val dfltN = 3
+
+    fun getSizeArg args =
+	(case args
+	  of arg1 :: arg2 :: args =>
+	     if String.compare (arg1, "-size") = EQUAL then Int.fromString arg2
+	     else getSizeArg (arg2 :: args)
+	   | _ => NONE
+	(* end case *))
+
+
+fun main (_, args) = let
+  val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
+  val x = MIS.mkTest n
+  fun doit () = MIS.parallelGreedyMIS x
+  in
+    RunSeq.run doit
+  end
 
 end
