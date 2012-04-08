@@ -74,7 +74,7 @@ fun compressGraph (G : graph, flags : bool parray) : graph = let
   fun newLabel v = newVertexLabels!v
   val G' = filterVerticesByFlags (G, flags)
   in 
-    [| (v, [| newLabel l | l in [| newLabel e <> ~1 | e in edges |] |] | (v, edges) in G' |]
+    [| (v, [| newLabel l | l in [| newLabel e <> ~1 | e in edges |] |]) | (v, edges) in G' |]
   end
 
 (* Parallel greedy algorithm for maximal independent set *)
