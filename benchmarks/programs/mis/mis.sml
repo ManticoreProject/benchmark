@@ -102,6 +102,21 @@ fun checkGraph (G : graph) = let
 fun bitsToString (r : bool R.rope) : string =
   "[ "^R.reduce (op ^) "" (R.map (fn b => if b then "t " else "f ") r) ^" ]"
 
+fun areNeighbors G (v0, v1) = let
+  val (_, edges) = R.sub (G, v0)
+  in
+    exists (R.map (fn v' => v' = v1) edges)
+  end
+
+fun isIndependentSet G W = let
+  fun check v = 
+    if exists (R.map (fn v' => areNeighbors G (v, v') orelse areNeighbors G (v', v)) W)
+       then raise Fail "isIndependentSet"
+    else ()
+  in
+    R.app check W
+  end
+
 (*** MIS algorithm ***)
 
 (* Returns true if vertex index n occurs earlier w.r.t. total ordering pi
@@ -201,6 +216,7 @@ val _ = printW W2
 val _ = checkGraph G2
 val G2 = compressGraph (G2, R.fromList [false, true, true, true, true])
 val _ = checkGraph G2
+val _ = isIndependentSet G2 W2
 
 val rand = Random.rand (0, 100000)
 
