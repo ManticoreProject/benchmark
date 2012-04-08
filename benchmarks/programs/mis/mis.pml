@@ -9,6 +9,8 @@
 
 structure MIS = struct
 
+structure P = PArray
+
 (*** Support routines ***)
 
 fun fst (x, _) = x
@@ -16,10 +18,10 @@ fun snd (_, y) = y
 fun add (x, y) = x + y
 
 fun exists (r : bool parray) : bool =
-  reduceP (fn (x, y) => x orelse y) false r
+  P.reduce (fn (x, y) => x orelse y) false r
 
 fun enumerate (bs : bool parray) : int parray = 
-  scanP add 0 [| if b then 1 else 0 | b in bs |]
+  P.scan add 0 [| if b then 1 else 0 | b in bs |]
 
 (*** Graphs ***)
 
@@ -74,15 +76,15 @@ fun compressGraph (G : graph, flags : bool parray) : graph = let
   fun newLabel v = newVertexLabels!v
   val G' = filterVerticesByFlags (G, flags)
   in 
-    [| (v, [| newLabel l | l in [| newLabel e <> ~1 | e in edges |] |]) | (v, edges) in G' |]
+    [| (v, [| newLabel e | e in edges where newLabel e <> ~1 |] ) | (v, edges) in G' |]
   end
 
 (* Parallel greedy algorithm for maximal independent set *)
 fun parallelGreedyMIS (G : graph, pi : vertex_idx parray) : vertex_id parray = 
-  if lengthP G = 0 then
+  if P.length G = 0 then
     [| |]
   else let
-    val n = lengthP G
+    val n = P.length G
     (* Let W be the set of vertices in V (where G = (V, E)) with no earlier
      * neighbors (based on pi) and N be the set of those vertices which
      * are neighbored by a vertex in W.
@@ -90,31 +92,57 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx parray) : vertex_id parray =
     val Wneighbors = [| noEarlierNeighbors pi (i, v) | v in G, i in [| 0 to n-1 |] |]
     val Wflags = [| Option.isSome n | n in Wneighbors |]
     val W = [| id | (id, _) in filterVerticesByFlags (G, Wflags) |]
-    val NvertexIdxs = reduceP concatP [| |]
+    val NvertexIdxs = P.reduce P.concat [| |]
 		       [| (case n of NONE => [| |]
 				   | SOME edges => edges)
                            | n in Wneighbors |]
-    val Nflags = writeBitsP (lengthP G, NvertexIdxs)
+    val Nflags = P.writeBits (P.length G, NvertexIdxs)
     val V'flags = [| not (w orelse n) | w in Wflags, n in Nflags |]
     (* Remove MIS vertices and their neighbors from the graph *)
     val G' = compressGraph (G, V'flags)
     in
-      concatP (W, parallelGreedyMIS (G', pi))
+      P.concat (W, parallelGreedyMIS (G', pi))
     end
 
-(* Takes a vertex id i, a number of vertices n and a floating-point 
- * number p and generates a random edgelist where for some vertex j
- * there exists an edge between i and j with probability p.
- *)
-fun randEdgelist (i, n, p) = let
-  val flags = [| Rand.randDouble (0.0, 1.0) < p | x in [| 0 to n-1 |] |]
-  val ids = [| if flg then i else ~1 | flg in flags, i in enumerate flags |]
+fun randEdgeList (n, p) i = let
+  val flags = [| Rand.randDouble (0.0, 1.0) < p | _ in [| 0 to n-1 |] |]
+  val ids = [| if flg then i else ~1 | flg in flags, i in [| 0 to n-1 |] |]
+  val outIds = [| x | x in ids where x >= 0 andalso x <> i |]
+  val edges = [| (i, x) | x in outIds |]
+  val edges' = [| (x, i) | x in outIds |]
   in
-    (i, [| id | id in ids where id >= 0 andalso id <> i |])
+    P.concat (edges, edges')
   end
 
-fun randGraph (n, p) : graph =
-  [| randEdgelist (i, n, p) | i in [| 0 to n-1 |] |]
+fun randEdgeLists (n, p) = 
+  P.flatten [| randEdgeList (n, p) i | i in [| 0 to n-1 |] |]
+
+fun uniq (n, es) = let
+  val bs = P.writeBits (n, es)
+  val is = [| if b then i else ~1 | i in [| 0 to n-1 |], b in bs |]
+  in
+    [| i | i in is where i <> ~1 |]
+  end
+
+fun adjList (n, es) : graph = let
+  fun vertex (lo, es) = (lo, uniq (n, [| e | (_, e) in es |]))
+  fun f (lo, hi, es) =
+    if hi - lo = 0 then
+      [| |]
+    else if hi - lo = 1 then
+      [| vertex (lo, es) |]
+    else let
+      val m = (lo + hi) div 2
+      val es1 = f (lo, m, [| (v, e) | (v, e) in es where v < m |])
+      val es2 = f (m, hi,  [| (v, e) | (v, e) in es where v >= m |])
+      in
+        P.concat (es1, es2)
+      end
+  in
+    f (0, n, es)
+  end
+
+fun randGraph (n, p) = adjList (n, randEdgeLists (n, p))
 
 fun randNat n = let
   val v = Rand.inRangeInt (0, 10000)
@@ -156,7 +184,7 @@ structure Main =
     fun main (_, args) =
 	let
 	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-	    val x = RunPar.runSilent (fn _ => mkTest n)
+	    val x = RunPar.runSilent (fn _ => MIS.mkTest n)
 	    fun doit () = MIS.parallelGreedyMIS x
 	in
 	    RunPar.run doit
