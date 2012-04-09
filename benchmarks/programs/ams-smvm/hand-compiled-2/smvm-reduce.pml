@@ -47,10 +47,10 @@ fun segdesFromShape s = let
     case s
       of S.Nd ls => let
            val sd = lp (0, ls, nil) 
-           (* val _ = ln "original shape:" *)
-	   (* val _ = ln (S.toString s) *)
-	   (* val _ = ln "segdes:" *)
-	   (* val _ = ln (pstos sd) *)
+           val _ = ln "original shape:"
+	   val _ = ln (S.toString s)
+	   val _ = ln "segdes:"
+	   val _ = ln (pstos sd)
            in
              sd
            end
@@ -80,33 +80,6 @@ fun segreducev (f, init, v, ps) = let
     lp (0, ps)
   end
 
-(*
-fun partsum (v, lo, len) = let
-  val hi = lo+len
-  fun sub i = DS.sub (v, i)
-  fun lp (i, acc) =
-    if i>=hi then acc
-    else lp (i+1, acc + sub(i))
-  in
-    lp (lo, 0.0:double)
-  end
-*)
-
-(*fun segsumv (v, ps) = let
-  fun lp (i, ps) = (case ps
-    of nil => nil
-     | (j,n)::t => let
-         val s = partsum (v, i, n)
-         in
-           (j,s)::lp(i+n,t)
-         end *)
-    (* end case *)(* )
-  in
-    lp (0, ps)
-  end
-*)
-fun segsumv (v, ps) = segreducev ((fn(x,y) => x+y), 0.0:double, v, ps)
-
 fun split (n, ps) = 
   if n<0 then fail "split" "n<0"
   else let
@@ -124,11 +97,11 @@ fun split (n, ps) =
       lp (n, ps, nil)
     end
 
-fun segsum nss = let
+fun segreduce (f,init,nss) = let
   val (DF.FArray (data, shape)) = nss
   val segdes = segdesFromShape shape
   fun lp (r, ps) = (case r
-    of DR.Leaf v => segsumv(v,ps)::nil
+    of DR.Leaf v => segreducev (f, init, v, ps)::nil
      | DR.Cat (_, _, rL, rR) => let
          val nL = DR.length rL
          val (psL, psR) = split (nL, ps)
@@ -140,13 +113,15 @@ fun segsum nss = let
   val pss = lp (data, segdes)
   (* val _ = Print.printLn "in segsum: computed pss:" *)
   (* val _ = Print.printLn (psstos pss) *)
-  val sums = DS.tabulate (List.length segdes, fn _ => 0.0)
+  val sums = DS.tabulate (List.length segdes, fn _ => init)
   val _ = writePairs sums pss
   val data' = DR.fromSeq sums
   val shape' = S.Lf (0, DR.length data')
   in
     DF.FArray (data', shape')
   end
+
+fun segsum nss = segreduce ((fn(x,y) => x+y),0.0,nss)
 
 fun prodv (iv : IS.int_seq, dv : DS.double_seq, v : DS.double_seq) = let
   val n = IS.length iv
