@@ -64,7 +64,7 @@ fun noEarlierNeighbors (pi : vertex_idx parray)
  * (It does *not* relabel edges)
  *)
 fun filterVerticesByFlags (G : graph, flags : bool parray) : graph =
-  [| v | v in G, flag in flags where flag |]
+   [| v | (v, flag) in [| (v, flag) | (v, flag) in [| (v, flag) | v in G, flag in flags |] where flag |] |]
 
 (* Takes a graph G and a sequence of flags (one per vertex) and
  * returns the subgraph containing the flagged vertices.
