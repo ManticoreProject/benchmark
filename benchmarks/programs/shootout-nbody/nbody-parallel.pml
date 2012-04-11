@@ -50,47 +50,62 @@ val m = get (o(sm, (mynth 6)))
 
 (* one step *)
 fun advance dt =
-    let
-        val zero = [| 0.0 |]
-        val zeros = [| zero, zero, zero |]
-        fun pl () =
-            let fun newpos(coord, i) = 
-                if i >= N then  raise parrayOutOfBounds
-                else if coord = 0 then Array.update(x, i, Array.sub(x, i) + dt*Array.sub(vx, i))
-                else if coord = 1 then Array.update(y, i, Array.sub(y, i) + dt*Array.sub(vy, i))
-                else if coord = 2 then Array.update(z, i, Array.sub(z, i) + dt*Array.sub(vz, i))
-                else raise parrayOutOfBounds
-            in [|[|newpos(coord, i) | i in [|0 to N-1|]|] | coord in [|0 to 2|]|] end
+    let val none = (0.0, 0.0, 0.0)
+        fun pl (i) = 
+            if i = N then ()
+            else if i < N then 
+                (Array.update(x, i, Array.sub(x, i) + dt*Array.sub(vx, i))
+                ; Array.update(y, i, Array.sub(y, i) + dt*Array.sub(vy, i))
+                ; Array.update(z, i, Array.sub(z, i) + dt*Array.sub(vz, i))
+                ; pl(i + 1))
+            else raise parrayOutOfBounds
         fun vl () =
             let fun dvs (i, j) =
-                    if i >= N then raise parrayOutOfBounds
-                    else if j >= N then raise parrayOutOfBounds
-                    else let val (dx, dy, dz) = (Array.sub(x, i)- Array.sub(x, j), Array.sub(y, i)- Array.sub(y, j), Array.sub(z,i)-Array.sub(z,j))
+                    if i < N andalso j < N then
+                         let val (dx, dy, dz) = (Array.sub(x, i)- Array.sub(x, j), Array.sub(y, i)- Array.sub(y, j), Array.sub(z,i)-Array.sub(z,j))
                              val dist = Double.sqrt(dx*dx+dy*dy+dz*dz)
-                             val ds = [|dx, dy, dz|]
                              val mag = dt/(dist*dist*dist)
                              val (mi, mj) = (Array.sub(m, i)*mag, Array.sub(m, j)*mag)
-                             fun onecoord (d, mi, mj) = [|~d*mj, d*mi|]
-                        in [|onecoord(d, mi, mj) | d in ds |] end (* is this syntax okay?*)
+                             fun onecoord (d, mi, mj) = (~d*mj, d*mi)
+                        in (onecoord(dx, mi, mj), onecoord(dy, mi, mj), onecoord(dz, mi, mj)) end
+                    else raise parrayOutOfBounds
                 val dvels = [|[|dvs (i, j) | j in [|i + 1 to N - 1|]|] | i in [|0 to N-2|]|]  
                 (* now we need to merge dvels back into vx, vy, vz, which requires knowing how things are ordered, i believe, so we can map-reduce *)
                 fun newvels (i, dvels) = (* just add up all appropriate values AND then update vx, vy, vz *)
-                    if i >= N then (print "out of bounds\n" ; raise parrayOutOfBounds)
-                    else
-                        let fun geti(i, j) = dvels!j!(i - j - 1)
-                            fun sumP a = reduceP (fn (x, y) => x + y) 0.0 a
-                            val ifirsts  = if i < N - 1 then [|[| (ds!coord)!0 | ds in dvels!i |] | coord in [|0 to 2|]|]
-                                           else zeros
-                            val iseconds = if i > 0 then [|[| ((geti(i, j)!coord)!1) | j in [| 0 to i - 1|]|] | coord in [|0 to 2|]|]
-                                           else zeros
-                            val xsum = sumP (concatP(ifirsts!0, iseconds!0))
-                            val ysum = sumP (concatP(ifirsts!1, iseconds!1))
-                            val zsum = sumP (concatP(ifirsts!2, iseconds!2))
+                    if i = N then ()
+                    else if i < N then
+                        let fun getfirsts(i, j) = (* assumes that i < j *)
+                                if i < N-1 andalso j < N-1 then
+                                    let val (sumx, sumy, sumz) = getfirsts(i, j + 1)
+                                        val ((dx,_),(dy,_),(dz, _)) = dvels!i!(j-i-1)
+                                    in (dx + sumx, dy + sumy, dz + sumz) end
+                                else if i < N-1 andalso j = N-1 then
+                                    let val ((dx,_), (dy,_), (dz,_))= dvels!i!(j-i-1)
+                                    in (dx, dy, dz) end
+                                else if i = N-1 then none
+                                else raise parrayOutOfBounds
+                            fun getseconds (j, i) = 
+                                if i = 0 then none
+                                else if j < i - 1 then 
+                                    let val (sumx, sumy, sumz) = getseconds(j + 1, i)
+                                        val ((_,dx),(_,dy),(_,dz)) = dvels!j!(i - j - 1)
+                                    in (sumx + dx, sumy + dy, sumz + dz) end
+                                else if j = i - 1 then 
+                                    let val ((_,dx),(_,dy),(_,dz)) = dvels!j!(i - j - 1)
+                                    in (dx, dy, dz) end
+                                else raise parrayOutOfBounds
+                            val (xfirsts, yfirsts, zfirsts) = getfirsts(i, i + 1)
+                            val (xseconds, yseconds, zseconds) = getseconds (0, i)
+                            val xsum = xfirsts + xseconds
+                            val ysum = yfirsts + yseconds
+                            val zsum = zfirsts + zseconds
                         in Array.update(vx, i, Array.sub(vx, i) + xsum)
                         ;  Array.update(vy, i, Array.sub(vy, i) + ysum)
-                        ;  Array.update(vz, i, Array.sub(vz, i) + zsum) end
-            in [|newvels(i, dvels) | i in [|0 to N-1|] |] end
-    in vl() ; pl() end
+                        ;  Array.update(vz, i, Array.sub(vz, i) + zsum)
+                        ;  newvels(i + 1, dvels) end
+                    else raise parrayOutOfBounds
+            in newvels(0, dvels) end
+    in vl() ; pl(0) end
 
 
 
