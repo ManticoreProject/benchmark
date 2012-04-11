@@ -1,5 +1,6 @@
 Library
-
+	structure LeafSize
+	structure ChunkingPolicy
 	structure Main
   	structure MIS
 is

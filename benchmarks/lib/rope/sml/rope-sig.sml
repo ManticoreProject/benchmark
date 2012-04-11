@@ -27,6 +27,8 @@ val splitN     : 'a rope * int -> 'a rope list
 (* concatenates a rope of ropes *)
 val flatten    : 'a rope rope -> 'a rope
 
+val ccat2       : 'a rope * 'a rope -> 'a rope
+
 (* take (rp, i) *)
 (* O(log n) returns the first i elements of the rope rp *)
 (* it raises Subscript if i < 0 or i >= length l *)

@@ -104,7 +104,7 @@ fun checkGraph (G : graph) = let
 fun bitsToString (r : bool R.rope) : string =
   "[ "^R.reduce (op ^) "" (R.map (fn b => if b then "t " else "f ") r) ^" ]"
 
-fun areNeighbors G (v0, v1) = let
+fun areNeighbors G (v0 : vertex_id, v1 : vertex_id) = let
   val (_, edges) = R.sub (G, v0)
   in
     exists (R.map (fn v' => v' = v1) edges)
@@ -181,19 +181,11 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx R.rope) : vertex_id R.rope =
     val V'flags = R.map not (logicalOr (Wflags, Nflags))
     (* Remove MIS vertices and their neighbors from the graph *)
     val G' = compressGraph (G, V'flags)
-(*
-val _ = print "----\n"
-val _ = print (graphToString G)
-val _ = print (bitsToString Wflags^"\n")
-val _ = print ("|G'|="^Int.toString (R.length G')^"\n")
-val _ = print (graphToString G')
-val _ = print "\n----\n"
-*)
-(*val _ = print (Int.toString (R.length G')^"\n")*)
     in
       R.cat2 (W, parallelGreedyMIS (G', pi))
     end
 
+(*
 val G0 : graph = mkGraph [[]]
 val _ = checkGraph G0
 val G0 = filterVerticesByFlags (G0, R.fromList [true])
@@ -219,6 +211,7 @@ val _ = checkGraph G2
 val G2 = compressGraph (G2, R.fromList [false, true, true, true, true])
 val _ = checkGraph G2
 val _ = isIndependentSet G2 W2
+*)
 
 val rand = Random.rand (0, 1000000)
 
@@ -247,25 +240,67 @@ fun uniq (n, es) = let
     R.filter (fn i => i <> ~1) is
   end
 
-fun adjList (n, es) : graph = let
-  fun vertex (lo, es) = (lo, uniq (n, R.map snd es))
-  fun f (lo, hi, es) =
-    if hi - lo = 0 then
-      R.empty ()
-    else if hi - lo = 1 then
-      R.singleton (vertex (lo, es))
-    else let
-      val m = (lo + hi) div 2
-      val es1 = f (lo, m, R.filter (fn (v, _) => v < m) es)
-      val es2 = f (m, hi, R.filter (fn (v, _) => v >= m) es)
-      in
-        R.cat2 (es1, es2)
-      end
+fun quicksort (cmp, xs) =
+  if R.length xs <= 1 then
+      xs
+  else let
+    val p = R.sub (xs, R.length xs div 2)
+    val (lt, eq, gt) = ( R.filter (fn x => cmp(x, p) = LESS) xs, 
+			 R.filter (fn x => cmp(x, p) = EQUAL) xs,
+			 R.filter (fn x => cmp(x, p) = GREATER) xs )
+    val (l, u) = ( quicksort (cmp,lt), quicksort (cmp,gt) )
+    in
+      R.cat2 (l, (R.cat2 (eq, u)))
+    end
+
+fun tail (rp : 'a R.rope) : 'a R.rope * 'a = let
+  val n = R.length rp
+  val rp' = R.take (rp, n-1)
   in
-    f (0, n, es)
+    (rp', R.sub (rp, n-1)) 
   end
 
-fun randGraph (n, p) = adjList (n, randEdgeLists (n, p))
+fun head (rp : 'a R.rope) : 'a * 'a R.rope = 
+  if R.length rp = 1 then
+    (R.sub (rp, 0), R.empty ())
+  else let
+    val rp' = R.drop (rp, 1)
+    in
+      (R.sub (rp, 0), rp')
+    end
+
+fun combine (vs0 : graph, vs1 : graph) : graph = 
+  if R.isEmpty vs0 orelse R.isEmpty vs1 then
+    R.cat2 (vs0, vs1)
+  else let
+    val (vs0', (v0, e0)) = tail vs0
+    val ((v1, e1), vs1') = head vs1
+    in
+      if v0 = v1 then
+	R.cat2 (vs0', R.cat2 (R.singleton (v0, R.cat2 (e0, e1)), vs1'))
+      else if v1 - v0 = 1 then
+	R.cat2 (vs0, vs1)
+      else let
+	val vsi = List.tabulate (v1 - v0 - 1, fn i => R.singleton (i + v0 + 1, R.empty ()))
+handle _ => raise Fail (Int.toString v0^" " ^Int.toString v1)
+        in
+	  R.catN (vs0 :: vsi @ [vs1])
+        end
+    end
+
+fun adjList (n, es) = let
+  val adjlist0 = R.map (fn (v0, v1) => R.singleton (v0, R.singleton v1)) es
+  val adjlist = R.cat2 (R.reduce combine (R.empty ()) adjlist0, R.empty ())
+  in
+    R.map (fn (v, es) => (v, uniq (n, es))) adjlist
+  end
+
+fun randGraph (n, p) = let
+  val edges = randEdgeLists (n, p)
+  val edges' = quicksort(fn ((v0, _), (v1, _)) => Int.compare (v0, v1), edges)
+  in
+    adjList (n, edges')
+  end
 
 fun mkPi n = let
   val a = Array.tabulate (n, fn i => i)
@@ -280,7 +315,15 @@ fun mkPi n = let
     R.tabulate (n, fn i => Array.sub (a, i))
   end
 
-fun mkTest n = (randGraph (n, 0.5), mkPi n)
+fun mkTest (n, p) = (randGraph (n, p), mkPi n)
+
+fun check (n, p) = let
+  val (G, pi) = mkTest (n, p)
+  val _ = print "Starting MIS\n"
+  val W = parallelGreedyMIS (G, pi)
+  in
+    isIndependentSet G W
+  end
 
 end
 
@@ -299,7 +342,8 @@ structure Main = struct
 
 fun main (_, args) = let
   val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-  val x = MIS.mkTest n
+  val p = 1.0 / real n
+  val x = MIS.mkTest (n, p)
   fun doit () = MIS.parallelGreedyMIS x
   in
     RunSeq.run doit
