@@ -29,27 +29,6 @@ fun mapi (f : (int * 'a) -> 'b) (r : 'a R.rope) : 'b R.rope =
 fun exists (r : bool R.rope) : bool =
   R.reduce (fn (x, y) => x orelse y) false r
 
-(* writeBits (n, ixs) *)
-(* Takes an integer n and a set of indices ixs and returns a
- * boolean array in which element i is true iff i is in ixs. *)
-(* pre: for any i in ixs, 0 <= i < n *)
-fun writeBits (n : int, ixs : int R.rope) : bool R.rope = let
-  fun doit (lo, hi, ixs) =
-    if hi - lo = 0 then
-      R.empty ()
-    else if hi - lo = 1 then
-      R.singleton (R.length ixs > 0)
-    else let
-      val m = (hi + lo) div 2
-      val (los, his) = (doit (lo, m, R.filter (fn x => x < m) ixs),
-			doit (m, hi, R.filter (fn x => x >= m) ixs))
-      in
-        R.ccat2 (los, his)
-      end
-  in
-    doit (0, n, ixs)
-  end
-
 fun logicalOr (xs : bool R.rope, ys : bool R.rope) : bool R.rope =
   R.Pair.map (fn (x, y) => x orelse y) (xs, ys)
 
@@ -69,12 +48,6 @@ type vertex_id = int
 type vertex_idx = int
 type edge_list = vertex_idx R.rope
 type graph = (vertex_id * edge_list) R.rope
-
-fun mkGraph ess = let
-  val edgelists = List.map R.fromList ess
-  in
-    R.Pair.zip (R.tabulate (List.length ess, fn i => i), R.fromList edgelists)
-  end
 
 (*** Debugging ***)
 
@@ -117,6 +90,12 @@ fun isIndependentSet G W = let
     else ()
   in
     R.app check W
+  end
+
+fun graphOfEdgelists ess = let
+  val edgelists = List.map R.fromList ess
+  in
+    R.Pair.zip (R.tabulate (List.length ess, fn i => i), R.fromList edgelists)
   end
 
 (*** MIS algorithm ***)
@@ -177,7 +156,7 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx R.rope) : vertex_id R.rope =
     val NvertexIdxs = R.reduce R.cat2 (R.empty ()) 
 		       (R.map (fn x => (case x of NONE => R.empty ()
 						| SOME edges => edges)) Wneighbors)
-    val Nflags = writeBits (R.length G, NvertexIdxs)
+    val Nflags = R.writeBits (R.length G, NvertexIdxs)
     val V'flags = R.map not (logicalOr (Wflags, Nflags))
     (* Remove MIS vertices and their neighbors from the graph *)
     val G' = compressGraph (G, V'flags)
@@ -213,32 +192,23 @@ val _ = checkGraph G2
 val _ = isIndependentSet G2 W2
 *)
 
+(*** Random graph generation ***)
+
 val rand = Random.rand (0, 1000000)
 
+fun randVertexIx n = Random.randNat rand mod n
+
 fun randEdgeList (n, p) i = let
-  val flags = R.tabulate (n, fn j => Random.randReal rand < p)
-  val ids = R.Pair.map (fn (flg, i) => if flg then i else ~1) 
-			(flags, R.tabulate (n, fn i => i))
-  val outIds = R.filter (fn x => x >= 0 andalso x <> i) ids
+  val ids = R.tabulate (10, fn _ => randVertexIx n)
+  val outIds = R.filter (fn x => x <> i) ids
   val edges = R.map (fn x => (i, x)) outIds
   val edges' = R.map (fn x => (x, i)) outIds
   in
     R.cat2 (edges, edges')
   end
 
-fun randEdgeLists (n, p) = let
-  val res = randEdgeList (n, p)
-  val ess = List.tabulate (n, res)
-  in
-    R.catN ess
-  end
-
-fun uniq (n, es) = let
-  val bs = writeBits (n, es)
-  val is = R.Pair.map (fn (i, b) => if b then i else ~1) (R.tabulate (n, fn i => i), bs)
-  in
-    R.filter (fn i => i <> ~1) is
-  end
+fun randEdgeLists (n, p) = 
+  R.flatten (R.tabulate (n, randEdgeList (n, p)))
 
 fun quicksort (cmp, xs) =
   if R.length xs <= 1 then
@@ -269,6 +239,26 @@ fun head (rp : 'a R.rope) : 'a * 'a R.rope =
       (R.sub (rp, 0), rp')
     end
 
+fun combineIxs (ixs0 : int R.rope, ixs1 : int R.rope) : int R.rope = 
+  if R.isEmpty ixs0 orelse R.isEmpty ixs1 then
+    R.cat2 (ixs0, ixs1)
+  else let
+    val (ixs0', ix0) = tail ixs0
+    val (ix1, ixs1') = head ixs1
+    in
+      if ix0 = ix1 then
+	R.cat2 (ixs0', ixs1')
+      else
+	R.cat2 (ixs0, ixs1)
+    end
+
+fun uniq (n, es) = let
+  val es' = quicksort (Int.compare, es)
+  val nes = R.map R.singleton es'
+  in
+    R.reduce combineIxs (R.empty ()) nes
+  end
+
 fun combine (vs0 : graph, vs1 : graph) : graph = 
   if R.isEmpty vs0 orelse R.isEmpty vs1 then
     R.cat2 (vs0, vs1)
@@ -282,7 +272,6 @@ fun combine (vs0 : graph, vs1 : graph) : graph =
 	R.cat2 (vs0, vs1)
       else let
 	val vsi = List.tabulate (v1 - v0 - 1, fn i => R.singleton (i + v0 + 1, R.empty ()))
-handle _ => raise Fail (Int.toString v0^" " ^Int.toString v1)
         in
 	  R.catN (vs0 :: vsi @ [vs1])
         end

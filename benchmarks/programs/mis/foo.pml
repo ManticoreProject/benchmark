@@ -52,4 +52,19 @@ fun filterVerticesByFlags (G : graph, flags : ibool parray) : graph =
 
 val x = filterVerticesByFlags ([| (0, [|1|]) |], [| ifalse |])
 
+(* For a particular graph G, takes a total ordering on the vertices
+ * of G, pi, and a vertex v in G and the edge list of v, edges, 
+ * and returns SOME edges if v has no earlier neighbors (w.r.t. pi)
+ * and NONE otherwise. 
+ *)
+(*
+fun noEarlierNeighbors (pi : vertex_idx parray) 
+		       (i : int, (v : vertex_id, edges : edge_list))
+    : edge_list option =
+  if exists [| isEarlier pi i e | e in edges |] = itrue then
+    NONE
+  else
+    SOME edges
+*)
+
 end

@@ -24,10 +24,6 @@ val catN       : 'a rope list -> 'a rope
 val split2     : 'a rope -> 'a rope * 'a rope
 (* O(m) splits a rope into m pieces of equal size *)
 val splitN     : 'a rope * int -> 'a rope list
-(* concatenates a rope of ropes *)
-val flatten    : 'a rope rope -> 'a rope
-
-val ccat2       : 'a rope * 'a rope -> 'a rope
 
 (* take (rp, i) *)
 (* O(log n) returns the first i elements of the rope rp *)
@@ -71,9 +67,17 @@ val scan : ('a * 'a -> 'a) -> 'a -> 'a rope -> 'a rope
 (* argument rope *)
 val filter : ('a -> bool) -> 'a rope -> 'a rope
 
-(* Imperative operations *)
 val app : ('a -> unit) -> 'a rope -> unit
+
 val foreach : (int * 'a -> unit) -> 'a rope -> unit
+
+(* writeBits (n, ixs) *)
+(* Takes an integer n and a set of indices ixs and returns a
+ * boolean array in which element i is true iff i is in ixs. *)
+(* pre: for any i in ixs, 0 <= i < n *)
+val writeBits : int * int rope -> bool rope
+
+val flatten : 'a rope rope -> 'a rope
 
 structure Pair : ROPE_PAIR where type 'a rope = 'a rope
 

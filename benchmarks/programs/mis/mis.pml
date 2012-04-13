@@ -14,17 +14,16 @@ structure MIS = struct
 fun fst (x, _) = x
 fun snd (_, y) = y
 fun add (x, y) = x + y
+fun randNat n = let
+  val v = Rand.inRangeInt (0, 10000)
+  val v = if v < 0 then ~1 * v else v
+  in
+    v mod n
+  end
 
-type ibool = int
-val itrue = 1
-val ifalse = 0
+fun exists (r : bool parray) : bool =
+  PArray.reduce (fn (x, y) => x orelse y) false r
 
-fun iorelse (x, y) = if x = 1 orelse y = 1 then 1 else 0
-
-fun exists (r : ibool parray) : ibool =
-  PArray.reduce (fn (x, y) => iorelse (x, y)) ifalse r
-
-(*
 fun enumerate (bs : bool parray) : int parray = 
   PArray.scan add 0 [| if b then 1 else 0 | b in bs |]
 
@@ -69,17 +68,15 @@ fun noEarlierNeighbors (pi : vertex_idx parray)
 
 (* Takes a graph G and a sequence of flags (one per vertex) and
  * returns the subgraph containing the flagged vertices.
- * (It does *not* relabel edges)
+ * (It does *not* refresh edges)
  *)
 fun filterVerticesByFlags (G : graph, flags : bool parray) : graph =
    [| v | (v, flag) in [| (v, flag) | (v, flag) in [| (v, flag) | v in G, flag in flags |] where flag |] |]
-*)
 
-(*
 (* Takes a graph G and a sequence of flags (one per vertex) and
  * returns the subgraph containing the flagged vertices.
- * It relabels the edges to account the movement of the vertices.
-*)
+ * It refreshes the edges to account the movement of the vertices.
+ *)
 fun compressGraph (G : graph, flags : bool parray) : graph = let
   val newVertexLabels = 
         [| if flg then i else ~1 | flg in flags, i in enumerate flags |]
@@ -114,67 +111,6 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx parray) : vertex_id parray =
       PArray.concat (W, parallelGreedyMIS (G', pi))
     end
 
-*)
-
-(*
-fun randEdgeList (n, p) i = let
-  val flags = [| Rand.randDouble (0.0, 1.0) < p | _ in [| 0 to n-1 |] |]
-  val ids = [| if flg then i else ~1 | flg in flags, i in [| 0 to n-1 |] |]
-  val outIds = [| x | x in ids where x >= 0 andalso x <> i |]
-  val edges = [| (i, x) | x in outIds |]
-  val edges' = [| (x, i) | x in outIds |]
-  in
-    PArray.concat (edges, edges')
-  end
-
-fun randEdgeLists (n, p) = 
-  PArray.flatten [| randEdgeList (n, p) i | i in [| 0 to n-1 |] |]
-
-fun uniq (n, es) = let
-  val bs = PArray.writeBits (n, es)
-  val is = [| if b then i else ~1 | i in [| 0 to n-1 |], b in bs |]
-  in
-    [| i | i in is where i <> ~1 |]
-  end
-
-fun adjList (n, es) : graph = let
-  fun vertex (lo, es) = (lo, uniq (n, [| e | (_, e) in es |]))
-  fun f (lo, hi, es) =
-    if hi - lo = 0 then
-      (PArray.empty ())
-    else if hi - lo = 1 then
-      [| vertex (lo, es) |]
-    else let
-      val m = (lo + hi) div 2
-      val (es1, es2) = (| f (lo, m, [| (v, e) | (v, e) in es where v < m |]),
-			  f (m, hi, [| (v, e) | (v, e) in es where v >= m |]) |)
-      in
-        PArray.concat (es1, es2)
-      end
-  in
-    f (0, n, es)
-  end
-
-fun randGraph (n, p) = let
-    val b = Time.now ()
-  val es = randEdgeLists (n, p)
-    val e = Time.now ()
-    val _ = Print.printLn ("Time spent in randEdgeLists: " ^ (Time.toStringMicrosec (e-b))) 
-    val b = Time.now ()
-  val adj = adjList (n, es)
-    val e = Time.now ()
-    val _ = Print.printLn ("Time spent in adjList: " ^ (Time.toStringMicrosec (e-b))) 
-  in
-    adj
-  end
-
-fun randNat n = let
-  val v = Rand.inRangeInt (0, 10000)
-  val v = if v < 0 then ~1 * v else v
-  in
-    v mod n
-  end
-
 fun mkPi n = let
   val a = Array.tabulate (n, fn i => i)
   fun swap (i, j) = let
@@ -188,12 +124,110 @@ fun mkPi n = let
     [| Array.sub (a, i) | i in [| 0 to n-1 |] |]
   end
 
+(*** Random graph generation ***)
+
+structure R = Rope
+
+fun randVertexIx n = Rand.inRangeInt (0, n)
+
+fun randEdgeList (n, p) i = let
+  val ids = R.tabulate (10, fn _ => randVertexIx n)
+  val outIds = R.filter (fn x => x <> i) ids
+  val edges = R.map (fn x => (i, x)) outIds
+  val edges' = R.map (fn x => (x, i)) outIds
+  in
+    R.cat2 (edges, edges')
+  end
+
+fun randEdgeLists (n, p) = 
+  R.flatten (R.tabulate (n, randEdgeList (n, p)))
+
+fun quicksort (cmp, xs) =
+  if R.length xs <= 1 then
+      xs
+  else let
+    val p = R.sub (xs, R.length xs div 2)
+    val (lt, eq, gt) = ( R.filter (fn x => cmp(x, p) = LESS) xs, 
+			 R.filter (fn x => cmp(x, p) = EQUAL) xs,
+			 R.filter (fn x => cmp(x, p) = GREATER) xs )
+    val (l, u) = ( quicksort (cmp,lt), quicksort (cmp,gt) )
+    in
+      R.cat2 (l, (R.cat2 (eq, u)))
+    end
+
+fun tail (rp (* : 'a R.rope *)) (* : 'a R.rope * 'a *) = let
+  val n = R.length rp
+  val rp' = R.take (rp, n-1)
+  in
+    (rp', R.sub (rp, n-1)) 
+  end
+
+fun head (rp (* : 'a R.rope *)) (*: 'a * 'a R.rope *) = 
+  if R.length rp = 1 then
+    (R.sub (rp, 0), R.empty ())
+  else let
+    val rp' = R.drop (rp, 1)
+    in
+      (R.sub (rp, 0), rp')
+    end
+
+fun combineIxs (ixs0 (* : int R.rope *), ixs1 (* : int R.rope *)) (* : int R.rope *) = 
+  if R.isEmpty ixs0 orelse R.isEmpty ixs1 then
+    R.cat2 (ixs0, ixs1)
+  else let
+    val (ixs0', ix0) = tail ixs0
+    val (ix1, ixs1') = head ixs1
+    in
+      if ix0 = ix1 then
+	R.cat2 (ixs0', ixs1')
+      else
+	R.cat2 (ixs0, ixs1)
+    end
+
+fun uniq (n, es) = let
+  val es' = quicksort (Int.compare, es)
+  val nes (* : int R.rope R.rope *) = R.map R.singleton es'
+  in
+    R.reduce combineIxs (R.empty ()) nes
+  end
+
+fun combine (vs0, vs1) = 
+  if R.isEmpty vs0 orelse R.isEmpty vs1 then
+    R.cat2 (vs0, vs1)
+  else let
+    val (vs0', (v0, e0)) = tail vs0
+    val ((v1, e1), vs1') = head vs1
+    in
+      if v0 = v1 then
+	R.cat2 (vs0', R.cat2 (R.singleton (v0, R.cat2 (e0, e1)), vs1'))
+      else if v1 - v0 = 1 then
+	R.cat2 (vs0, vs1)
+      else let
+	val vsi = List.tabulate (v1 - v0 - 1, fn i => R.singleton (i + v0 + 1, R.empty ()))
+        in
+	  R.catN (vs0 :: vsi @ [vs1])
+        end
+    end
+
+fun adjList (n, es) = let
+  val adjlist0 = R.map (fn (v0, v1) => R.singleton (v0, R.singleton v1)) es
+  val adjlist = R.cat2 (R.reduce combine (R.empty ()) adjlist0, R.empty ())
+  in
+    R.map (fn (v, es) => (v, uniq (n, es))) adjlist
+  end
+
+fun randGraph (n, p) = let
+  val edges = randEdgeLists (n, p)
+  val edges' = quicksort(fn ((v0, _), (v1, _)) => Int.compare (v0, v1), edges)
+  val G = adjList (n, edges')
+  in
+    PArray.fromRope (R.map (fn (v, edges) => (v, PArray.fromRope edges)) G)
+  end
+
 fun mkTest (n, p) = (randGraph (n, p), mkPi n)
-*)
 
 end
 
-(*
 structure Main =
   struct
 
@@ -210,7 +244,7 @@ structure Main =
     fun getProbArg args =
 	(case args
 	  of arg1 :: arg2 :: args =>
-	     if String.same (arg1, "-prob") then Double.fromString arg2
+	     if String.same (arg1, "-edges") then Int.fromString arg2
 	     else getProbArg (arg2 :: args)
 	   | _ => NONE
 	(* end case *))
@@ -218,14 +252,15 @@ structure Main =
     fun main (_, args) =
 	let
 	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-	    val p = (case getProbArg args of NONE => 0.3 | SOME p => p)
-	    val x = RunPar.runSilent (fn _ => MIS.mkTest (n, p))
+	    val p = (case getProbArg args of NONE => 10 | SOME p => p)
+	    val x = RunPar.runSilent (fn _ => MIS.mkTest (n, 0.1))
 	    fun doit () = MIS.parallelGreedyMIS x
 	in
+Print.printLn "doit";
 	    RunPar.run doit
 	end
 
   end
 
 val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
- *)
+

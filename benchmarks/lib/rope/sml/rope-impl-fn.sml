@@ -1128,8 +1128,6 @@ fun filter' f rp = (case ChunkingPolicy.get ()
 fun filter f rp = balance (filter' f rp)
 (*end*)
 
-fun flatten rps = balance (reduce nccat2 (empty ()) rps)
-
 structure Pair = RopePairImplFn (
   structure RTy = RTy
   structure RT = RT
@@ -1158,5 +1156,16 @@ structure Pair = RopePairImplFn (
   val sub = sub
   val fromListRev = Seq.fromListRev
 )
+
+fun fromArray a = tabulate (Array.length a, fn i => Array.sub (a, i))
+
+fun writeBits (n : int, ixs : int rope) : bool rope = let
+  val a = Array.array (n, false)
+  val _ = app (fn ix => Array.update (a, ix, true)) ixs
+  in
+    fromArray a
+  end
+
+fun flatten rps = balance (reduce nccat2 (empty ()) rps)
 
 end
