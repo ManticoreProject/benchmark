@@ -39,9 +39,9 @@ fun enumerate (bs : bool parray) : int parray =
  *    filterByFlag ([1,2,3,4], [false,false,true,true]) ==> [3,4]
  *)
 fun filterByFlag (xs, flags) = let
-  val ps = [| (x, flag) | x in xs, flag in flags |]
+  val pairs = [| (x, flag) | x in xs, flag in flags |]
   in
-    [| x | (x, _) in [| (x, flag) | (x, flag) in ps where flag |] |]
+    [| x | (x, _) in [| (x, flag) | (x, flag) in pairs where flag |] |]
   end
 
 (*** Graphs ***)
@@ -103,6 +103,8 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx parray) : vertex_id parray =
      *)
     val Wflags = [| noEarlierNeighbors pi (i, v) | v in G, i in [| 0 to n-1 |] |]
     val (W, Wneighbors) = PArrayPair.unzip (filterByFlag (G, Wflags))
+    (* Let N be the set of those vertices which are neighbored by a vertex
+     * in W. *)
     val Nflags = PArray.writeBits (n, PArray.flatten Wneighbors)
     val V'flags = [| not (w orelse n) | w in Wflags, n in Nflags |]
     (* Remove MIS vertices and their neighbors from the graph *)
