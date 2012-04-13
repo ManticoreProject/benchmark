@@ -32,8 +32,22 @@ fun exists (r : bool R.rope) : bool =
 fun logicalOr (xs : bool R.rope, ys : bool R.rope) : bool R.rope =
   R.Pair.map (fn (x, y) => x orelse y) (xs, ys)
 
+(* Takes a sequence of booleans and returns a sequence of equal
+ * length where each element counts the number of true values
+ * occuring at earlier positions in the boolean sequence. 
+ *   e.g.,
+ *     enumerate [true, false, true, false] ==> [0, 1, 1, 2]
+ *)
 fun enumerate (bs : bool R.rope) : int R.rope = 
   R.scan add 0 (R.map (fn b => if b then 1 else 0) bs)
+
+(* Takes sequence of values xs and a sequence of flags of equal length
+ * and returns the sequence of xs_i for which flags_i = true.
+ *  e.g.,
+ *    filterByFlag ([1,2,3,4], [false,false,true,true]) ==> [3,4]
+ *)
+fun filterByFlag (xs :'a R.rope, flags : bool R.rope) : 'a R.rope =
+  R.map fst (R.filter snd (R.Pair.zip (xs, flags)))
 
 (*** Graphs ***)
 
@@ -113,16 +127,8 @@ fun isEarlier (pi : vertex_idx R.rope)
  * and NONE otherwise. 
  *)
 fun noEarlierNeighbors (pi : vertex_idx R.rope) 
-		       (i : int, (v : vertex_id, edges : edge_list))
-    : edge_list option =
-  if exists (R.map (isEarlier pi i) edges) then NONE else SOME edges
-
-(* Takes a graph G and a sequence of flags (one per vertex) and
- * returns the subgraph containing the flagged vertices.
- * (It does *not* relabel edges)
- *)
-fun filterVerticesByFlags (G : graph, flags : bool R.rope) : graph =
-  R.map fst (R.filter snd (R.Pair.zip (G, flags)))
+		       (i : int, (v : vertex_id, edges : edge_list)) : bool =
+  not (exists (R.map (isEarlier pi i) edges))  
 
 (* Takes a graph G and a sequence of flags (one per vertex) and
  * returns the subgraph containing the flagged vertices.
@@ -133,9 +139,8 @@ fun compressGraph (G : graph, flags : bool R.rope) : graph = let
         R.Pair.map (fn (flg, i) => if flg then i else ~1) 
 	           (flags, enumerate flags)
   fun newLabel v = R.sub (newVertexLabels, v)
-  val G' = filterVerticesByFlags (G, flags)
+  val G' = filterByFlag (G, flags)
   in 
-    if R.length G <> R.length flags then raise Fail "compressGraph" else ();
     R.map (fn (v, edges) =>
 	      (v, R.map newLabel (R.filter (fn e => newLabel e <> ~1) edges)))
 	  G'
@@ -147,16 +152,13 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx R.rope) : vertex_id R.rope =
     R.empty ()
   else let
     (* Let W be the set of vertices in V (where G = (V, E)) with no earlier
-     * neighbors (based on pi) and N be the set of those vertices which
-     * are neighbored by a vertex in W.
+     * neighbors (based on pi).
      *)
-    val Wneighbors = mapi (noEarlierNeighbors pi) G
-    val Wflags = R.map Option.isSome Wneighbors
-    val W = R.map fst (filterVerticesByFlags (G, Wflags))
-    val NvertexIdxs = R.reduce R.cat2 (R.empty ()) 
-		       (R.map (fn x => (case x of NONE => R.empty ()
-						| SOME edges => edges)) Wneighbors)
-    val Nflags = R.writeBits (R.length G, NvertexIdxs)
+    val Wflags = mapi (noEarlierNeighbors pi) G
+    val (W, Wneighbors) = R.Pair.unzip (filterByFlag (G, Wflags))
+    (* Let N be the set of those vertices which are neighbored by a vertex
+     * in W. *)
+    val Nflags = R.writeBits (R.length G, R.flatten Wneighbors)
     val V'flags = R.map not (logicalOr (Wflags, Nflags))
     (* Remove MIS vertices and their neighbors from the graph *)
     val G' = compressGraph (G, V'flags)
@@ -164,23 +166,21 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx R.rope) : vertex_id R.rope =
       R.cat2 (W, parallelGreedyMIS (G', pi))
     end
 
-(*
-val G0 : graph = mkGraph [[]]
+
+val G0 : graph = graphOfEdgelists [[]]
 val _ = checkGraph G0
-val G0 = filterVerticesByFlags (G0, R.fromList [true])
 (*val W0 = parallelGreedyMIS (G0, R.tabulate (R.length G0, fn i => i))*)
 val _ = checkGraph G0
-val G0 = filterVerticesByFlags (G0, R.fromList [false])
 val _ = checkGraph G0
 
-val G1 = mkGraph [[1],[0]]
+val G1 = graphOfEdgelists [[1],[0]]
 val _ = checkGraph G1
 (*val W1 = parallelGreedyMIS (G1, R.tabulate (R.length G1, fn i => i))*)
 val G1 = compressGraph (G1, R.fromList [false, true])
 val S1 = graphToString G1
 val _ = checkGraph G1
 
-val G2 = mkGraph [[1,2],[0,2],[0,1,3],[2,4],[3]]
+val G2 = graphOfEdgelists [[1,2],[0,2],[0,1,3],[2,4],[3]]
 val _ = print (graphToString G2)
 val foo = noEarlierNeighbors (R.tabulate (R.length G2, fn i => i)) (0, (R.sub (G2, 0)))
 val _ = print "********\n"
@@ -190,7 +190,8 @@ val _ = checkGraph G2
 val G2 = compressGraph (G2, R.fromList [false, true, true, true, true])
 val _ = checkGraph G2
 val _ = isIndependentSet G2 W2
-*)
+
+
 
 (*** Random graph generation ***)
 
@@ -198,8 +199,8 @@ val rand = Random.rand (0, 1000000)
 
 fun randVertexIx n = Random.randNat rand mod n
 
-fun randEdgeList (n, p) i = let
-  val ids = R.tabulate (10, fn _ => randVertexIx n)
+fun randEdgeList (n, k) i = let
+  val ids = R.tabulate (k, fn _ => randVertexIx n)
   val outIds = R.filter (fn x => x <> i) ids
   val edges = R.map (fn x => (i, x)) outIds
   val edges' = R.map (fn x => (x, i)) outIds
@@ -207,8 +208,8 @@ fun randEdgeList (n, p) i = let
     R.cat2 (edges, edges')
   end
 
-fun randEdgeLists (n, p) = 
-  R.flatten (R.tabulate (n, randEdgeList (n, p)))
+fun randEdgeLists (n, k) = 
+  R.flatten (R.tabulate (n, randEdgeList (n, k)))
 
 fun quicksort (cmp, xs) =
   if R.length xs <= 1 then
@@ -304,10 +305,10 @@ fun mkPi n = let
     R.tabulate (n, fn i => Array.sub (a, i))
   end
 
-fun mkTest (n, p) = (randGraph (n, p), mkPi n)
+fun mkTest (n, k) = (randGraph (n, k), mkPi n)
 
-fun check (n, p) = let
-  val (G, pi) = mkTest (n, p)
+fun check (n, k) = let
+  val (G, pi) = mkTest (n, k)
   val _ = print "Starting MIS\n"
   val W = parallelGreedyMIS (G, pi)
   in
@@ -318,21 +319,20 @@ end
 
 structure Main = struct
 
-    val dfltN = 3
+val dfltN = 1000
 
-    fun getSizeArg args =
-	(case args
-	  of arg1 :: arg2 :: args =>
-	     if String.compare (arg1, "-size") = EQUAL then Int.fromString arg2
-	     else getSizeArg (arg2 :: args)
-	   | _ => NONE
-	(* end case *))
-
+fun getSizeArg args =
+(case args
+  of arg1 :: arg2 :: args =>
+     if String.compare (arg1, "-size") = EQUAL then Int.fromString arg2
+     else getSizeArg (arg2 :: args)
+   | _ => NONE
+(* end case *))
 
 fun main (_, args) = let
   val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-  val p = 1.0 / real n
-  val x = MIS.mkTest (n, p)
+  val k = 10
+  val x = MIS.mkTest (n, k)
   fun doit () = MIS.parallelGreedyMIS x
   in
     RunSeq.run doit

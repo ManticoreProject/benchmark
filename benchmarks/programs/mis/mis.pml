@@ -24,8 +24,25 @@ fun randNat n = let
 fun exists (r : bool parray) : bool =
   PArray.reduce (fn (x, y) => x orelse y) false r
 
+(* Takes a sequence of booleans and returns a sequence of equal
+ * length where each element counts the number of true values
+ * occuring at earlier positions in the boolean sequence. 
+ *   e.g.,
+ *     enumerate [true, false, true, false] ==> [0, 1, 1, 2]
+ *)
 fun enumerate (bs : bool parray) : int parray = 
   PArray.scan add 0 [| if b then 1 else 0 | b in bs |]
+
+(* Takes sequence of values xs and a sequence of flags of equal length
+ * and returns the sequence of xs_i for which flags_i = true.
+ *  e.g.,
+ *    filterByFlag ([1,2,3,4], [false,false,true,true]) ==> [3,4]
+ *)
+fun filterByFlag (xs, flags) = let
+  val ps = [| (x, flag) | x in xs, flag in flags |]
+  in
+    [| x | (x, _) in [| (x, flag) | (x, flag) in ps where flag |] |]
+  end
 
 (*** Graphs ***)
 
@@ -59,19 +76,8 @@ fun isEarlier (pi : vertex_idx parray)
  * and NONE otherwise. 
  *)
 fun noEarlierNeighbors (pi : vertex_idx parray) 
-		       (i : int, (v : vertex_id, edges : edge_list))
-    : edge_list option =
-  if exists [| isEarlier pi i e | e in edges |] then
-    NONE
-  else
-    SOME edges
-
-(* Takes a graph G and a sequence of flags (one per vertex) and
- * returns the subgraph containing the flagged vertices.
- * (It does *not* refresh edges)
- *)
-fun filterVerticesByFlags (G : graph, flags : bool parray) : graph =
-   [| v | (v, flag) in [| (v, flag) | (v, flag) in [| (v, flag) | v in G, flag in flags |] where flag |] |]
+		       (i : int, (v : vertex_id, edges : edge_list)) : bool =
+  not (exists [| isEarlier pi i e | e in edges |])
 
 (* Takes a graph G and a sequence of flags (one per vertex) and
  * returns the subgraph containing the flagged vertices.
@@ -81,7 +87,7 @@ fun compressGraph (G : graph, flags : bool parray) : graph = let
   val newVertexLabels = 
         [| if flg then i else ~1 | flg in flags, i in enumerate flags |]
   fun newLabel v = newVertexLabels!v
-  val G' = filterVerticesByFlags (G, flags)
+  val G' = filterByFlag (G, flags)
   in 
     [| (v, [| newLabel e | e in edges where newLabel e <> ~1 |] ) | (v, edges) in G' |]
   end
@@ -93,17 +99,11 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx parray) : vertex_id parray =
   else let
     val n = PArray.length G
     (* Let W be the set of vertices in V (where G = (V, E)) with no earlier
-     * neighbors (based on pi) and N be the set of those vertices which
-     * are neighbored by a vertex in W.
+     * neighbors (based on pi).
      *)
-    val Wneighbors = [| noEarlierNeighbors pi (i, v) | v in G, i in [| 0 to n-1 |] |]
-    val Wflags = [| Option.isSome n | n in Wneighbors |]
-    val W = [| id | (id, _) in filterVerticesByFlags (G, Wflags) |]
-    val NvertexIdxs = PArray.reduce PArray.concat (PArray.empty ())
-		       [| (case n of NONE => (PArray.empty ())
-				   | SOME edges => edges)
-                           | n in Wneighbors |]
-    val Nflags = PArray.writeBits (PArray.length G, NvertexIdxs)
+    val Wflags = [| noEarlierNeighbors pi (i, v) | v in G, i in [| 0 to n-1 |] |]
+    val (W, Wneighbors) = PArrayPair.unzip (filterByFlag (G, Wflags))
+    val Nflags = PArray.writeBits (n, PArray.flatten Wneighbors)
     val V'flags = [| not (w orelse n) | w in Wflags, n in Nflags |]
     (* Remove MIS vertices and their neighbors from the graph *)
     val G' = compressGraph (G, V'flags)
