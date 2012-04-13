@@ -34,6 +34,17 @@ type vertex_idx = int
 type edge_list = vertex_idx parray
 type graph = (vertex_id * edge_list) parray
 
+(* Takes sequence of values xs and a sequence of flags of equal length
+ * and returns the sequence of xs_i for which flags_i = true.
+ *  e.g.,
+ *    filterByFlag ([1,2,3,4], [false,false,true,true]) ==> [3,4]
+ *)
+fun filterByFlag (xs : (vertex_id * edge_list) parray, flags) = let
+  val pairs = [| (x, flag) | x in xs, flag in flags |]
+  in
+    [| x | (x, _) in [| (x, flag) | (x, flag) in pairs where flag = itrue |] |]
+  end
+
 (*** MIS algorithm ***)
 
 (* Returns true if vertex index n occurs earlier w.r.t. total ordering pi
@@ -43,14 +54,7 @@ fun isEarlier (pi : vertex_idx parray)
 	      (x : vertex_idx) (n : vertex_idx) : ibool = 
   if pi!n < pi!x then itrue else ifalse
 
-(* Takes a graph G and a sequence of flags (one per vertex) and
- * returns the subgraph containing the flagged vertices.
- * (It does *not* relabel edges)
- *)
-fun filterVerticesByFlags (G : graph, flags : ibool parray) : graph =
-   [| v | (v, flag) in [| (v, flag) | (v, flag) in [| (v, flag) | v in G, flag in flags |] where flag = itrue |] |]
-
-val x = filterVerticesByFlags ([| (0, [|1|]) |], [| ifalse |])
+val x = filterByFlag ([|(1,PArray.empty())|],[|ifalse,itrue,ifalse|])
 
 (* For a particular graph G, takes a total ordering on the vertices
  * of G, pi, and a vertex v in G and the edge list of v, edges, 
