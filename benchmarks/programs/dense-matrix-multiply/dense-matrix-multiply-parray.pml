@@ -17,11 +17,11 @@ structure DenseMatrixMultiply =
 
     fun denseMatrixMultiply (m, n) =
 	let
-	    fun vvm (b, a) =
-                PArray.reduce add 0.0 [| bi * ai | bi in b, ai in a |]
+(*	    fun vvm (b, a) =
+                PArray.reduce add 0.0 [| bi * ai | bi in b, ai in a |] *)
 (*		R.reduce add 0.0 (R.tabulate (R.length b, fn i => R.sub (b, i) * R.sub (a, i))) *)
 	    fun mvm (n, a) =
-                [| vvm (ni, a) | ni in n |]
+                [|  PArray.reduce add 0.0 [| bi * ai | bi in ni, ai in a |] | ni in n |]
 (*		R.tabulate (R.length n, fn i => vvm (R.sub (n, i), a)) *)
 	in
             [| mvm (n, mi) | mi in m |]
