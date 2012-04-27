@@ -19,18 +19,18 @@ fun mandel (h, w) =
             let val (Cr, Ci) = (Double.fromInt(x)*2.0/Double.fromInt(w)-1.5, Double.fromInt(y)*2.0/Double.fromInt(h)-1.0)
                 fun lp (r, i, k) =
                     let val (r2, i2) = (r*r, i*i)
-                        val _ = print (Int.toString k)
-                    in r2+i2 <= L2 andalso
-                        (k=0 orelse lp (r2-i2+Cr, (r+r)*i+Ci, k-1)) end
+                    in if r2 + i2 > L2 then false
+                       else if k = 0 then true
+                       else lp (r2-i2+Cr, (r+r)*i+Ci, k-1) end
             in lp (0.0, 0.0, K) end
         val allells = [| [| p (x, y) | x in [| 0 to dim-1 |] |] | y in [| 0 to dim-1 |] |]
-        fun mandelPrint (image, x, y, b:long, n:long) = 
-            if y >= dim then ()
-            else if x >= dim then (out(Word64.toInt(Word64.lsh(b, n))) ; mandelPrint(image, 0, y+1, 0, 64))
-            else if n = 0 then out(Word64.toInt b)
-            else mandelPrint(image, x+1, y, b+b+(if allells!x!y then 1 else 0), n-1)
-     in app print ["P4\n", Int.toString h, " ", Int.toString w, "\n"]
-     	; mandelPrint(allells, 0, 0, 0, 64) end
+        fun xl (x, y, b, n) = 
+            if x = w then (out(Word64.toInt(Word64.lsh(b, n))); yl (y + 1))
+            else let val (b, n) = if n = 0 then (out(Word64.toInt b) ; (0, 8)) else (b, n)
+                 in xl (x+1, y, b+b+(if allells!y!x then 1 else 0), n-1) end
+        and yl y = if y < h then xl (0, y, 0, 8) else ()
+     in (app print ["P4\n", Int.toString h, " ", Int.toString w, "\n"]
+     	; yl 0) end
 
 val n = Option.valOf (Int.fromString (List.hd (CommandLine.arguments ()))) handle _ => 600
 
