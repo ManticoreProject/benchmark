@@ -11,7 +11,7 @@
 
 val (K, L2) = (50, 4.0)
 
-fun out(b) = Print.printOrd(b)
+fun out(b) = (*Print.printOrd(b)*) ()
 
 fun mandel (h, w) =
     let val dim = w 
