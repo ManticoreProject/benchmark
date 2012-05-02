@@ -10,6 +10,31 @@ structure TicTacToe = struct
 
   val empty : board = List.tabulate (9, fn _ => NONE)
 
+  (* Transposition Table *)
+  val unused = ~2
+  (* 3^10 = 59,049 *)
+  val transTable = Array.tabulate (59049, fn _ => unused)
+
+  fun boardToIndex (p,b) = let
+      fun handleItem i =
+          case i
+           of SOME X => 1
+            | SOME O => 2
+            | NONE => 0
+      val nums = List.map handleItem b
+      val (res, _) = List.foldr (fn (b, (sum, base)) => (sum+b*base,base*3)) (case p of X => 1 |_=>0,3) nums
+  in
+      res
+  end
+
+  fun lookupTrans (p, b) =
+      case Array.sub (transTable, boardToIndex (p,b))
+       of ~2 => NONE
+        | x => SOME x
+
+  fun setTrans (p, b, i) =
+      Array.update (transTable, boardToIndex (p,b), i)
+
   exception IllegalMove
 
   (* isOccupied : board * int -> bool *)
@@ -141,18 +166,26 @@ structure TicTacToe = struct
 		Rose ((b, selectFrom scores), trees)
 	  end
 
+  fun minimaxTrans (p : player) (b : board) : game_tree =
+        if gameOver(b) then
+	  mkLeaf (b, score b)
+	else (case lookupTrans (p,b)
+               of SOME x => Rose ((b, x), [])
+                | NONE => (let 
+                               val trees = map (minimaxTrans (other p)) (successors (b, p))
+	                       val scores = map (#2 o top) trees
+	                       val selectFrom = (case p of X => listmax | O => listmin)
+                               val final = selectFrom scores
+	                   in
+                               setTrans (p, b, final);
+		               Rose ((b, final), trees)
+	                   end))
   (* DEBUGGING *)	
 
   (* addMaps : int list * int list -> int list *)
   fun addMaps ([], ms) = ms
     | addMaps (ns, []) = ns
     | addMaps (n::ns, m::ms) = (n+m)::addMaps(ns,ms)
-
-  (* pathLengths : 'a rose_tree -> int list *)
-  fun pathLengths (t : 'a rose_tree) : int list =
-    (case t
-      of Rose (x, []) => [1]
-       | Rose (_, ts) => 0 :: (foldl addMaps [] (map pathLengths ts)))
 
   (* go : unit -> (board * int) * int *)
   fun go () = let
@@ -176,7 +209,13 @@ structure Main =
     fun main (_, args) =
 	let
 	    fun doit () = T.minimax T.X T.empty
-	    val T.Rose ((b, _), _) = RunSeq.run doit
+            val _ = print "Baseline:\n"
+	    val tree as T.Rose ((b, _), _) = RunSeq.run doit
+            val _ = print (concat["Tree size: ", Int.toString (T.size tree), "\n"])
+            val _ = print "Transposition:\n"
+	    fun doit2 () = T.minimaxTrans T.X T.empty
+	    val tree as T.Rose ((b, _), _) = RunSeq.run doit2
+            val _ = print (concat["Tree size: ", Int.toString (T.size tree), "\n"])
 	in
 	    (* by checking for a bogus value in the results list, we can hopefully ensure that the
 	     * algorithm is execute in its entirety and that key parts are not optimized away by
