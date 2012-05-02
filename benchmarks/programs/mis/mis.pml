@@ -11,8 +11,8 @@ structure MIS = struct
 
 (*** Support routines ***)
 
-fun fst (x, _) = x
-fun snd (_, y) = y
+(*fun fst (x, _) = x *)
+(*fun snd (_, y) = y *)
 fun add (x, y) = x + y
 fun randNat n = let
   val v = Rand.inRangeInt (0, 10000)
@@ -79,6 +79,22 @@ fun noEarlierNeighbors (pi : vertex_idx parray)
 		       (i : int, (v : vertex_id, edges : edge_list)) : bool =
   not (exists [| isEarlier pi i e | e in edges |])
 
+
+(**** monomorphic versions of otherwise polymorphic operators  ****)
+
+fun customUnzip p = let
+  fun fst (x:int, y:int parray) = x
+  fun snd (x:int, y:int parray) = y
+  in
+    (PArray.map fst p, PArray.map snd p)
+  end
+
+fun customFilterByFlag (xs : graph, flags) = let
+  val pairs = [| (x, flag) | x in xs, flag in flags |]
+  in
+    [| x | (x, _) in [| (x, flag) | (x, flag) in pairs where flag |] |]
+  end
+
 (* Takes a graph G and a sequence of flags (one per vertex) and
  * returns the subgraph containing the flagged vertices.
  * It refreshes the edges to account the movement of the vertices.
@@ -87,7 +103,7 @@ fun compressGraph (G : graph, flags : bool parray) : graph = let
   val newVertexLabels = 
         [| if flg then i else ~1 | flg in flags, i in enumerate flags |]
   fun newLabel v = newVertexLabels!v
-  val G' = filterByFlag (G, flags)
+  val G' = customFilterByFlag (* filterByFlag *) (G, flags)
   in 
     [| (v, [| newLabel e | e in edges where newLabel e <> ~1 |] ) | (v, edges) in G' |]
   end
@@ -102,15 +118,17 @@ fun parallelGreedyMIS (G : graph, pi : vertex_idx parray) : vertex_id parray =
      * neighbors (based on pi).
      *)
     val Wflags = [| noEarlierNeighbors pi (i, v) | v in G, i in [| 0 to n-1 |] |]
-    val (W, Wneighbors) = PArrayPair.unzip (filterByFlag (G, Wflags))
+    val (W, Wneighbors) = customUnzip (* PArrayPair.unzip *) (customFilterByFlag (* filterByFlag *) (G, Wflags))
     (* Let N be the set of those vertices which are neighbored by a vertex
      * in W. *)
     val Nflags = PArray.writeBits (n, PArray.flatten Wneighbors)
     val V'flags = [| not (w orelse n) | w in Wflags, n in Nflags |]
+    val V'flags = [| true |]
     (* Remove MIS vertices and their neighbors from the graph *)
     val G' = compressGraph (G, V'flags)
     in
-      PArray.concat (W, parallelGreedyMIS (G', pi))
+      PArray.empty ()
+      (*PArray.concat (W, parallelGreedyMIS (G', pi))*)
     end
 
 fun mkPi n = let
