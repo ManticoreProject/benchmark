@@ -11,7 +11,7 @@
 
 val (K, L2) = (50, 4.0)
 
-fun out b = ()(*TextIO.output1 (TextIO.stdOut, Byte.byteToChar b)*)
+fun out b = TextIO.output1 (TextIO.stdOut, Byte.byteToChar b)
 
 fun mandel (h, w) =
    let fun p (x, y) =
