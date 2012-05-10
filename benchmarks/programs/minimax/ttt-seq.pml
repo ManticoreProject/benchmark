@@ -14,6 +14,31 @@ structure TicTacToe = struct
 
   val empty : board = List.tabulate (9, fn _ => NONE)
 
+  (* Transposition Table *)
+  val unused = ~2
+  (* 3^10 = 59,049 *)
+  val transTable = Array.tabulate (59049, fn _ => unused)
+
+  fun boardToIndex (p,b) = let
+      fun handleItem i =
+          case i
+           of SOME X => 1
+            | SOME O => 2
+            | NONE => 0
+      val nums = List.map handleItem b
+      val (res, _) = List.foldr (fn (b, (sum, base)) => (sum+b*base,base*3)) (case p of X => 1 |_=>0,3) nums
+  in
+      res
+  end
+
+  fun lookupTrans (p, b) =
+      case Array.sub (transTable, boardToIndex (p,b))
+       of ~2 => NONE
+        | x => SOME x
+
+  fun setTrans (p, b, i) =
+      Array.update (transTable, boardToIndex (p,b), i)
+
   (* isOccupied : board * int -> bool *)
   fun isOccupied (b,i) = isSome(List.nth(b,i))
 
@@ -151,6 +176,22 @@ structure TicTacToe = struct
 	       | Y => Rose ((b, listmin scores), trees)
 	  end
 
+  fun minimaxTrans (p : player) (b : board) : game_tree =
+        if gameOver(b) then
+	  mkLeaf (b, score b)
+	else (case lookupTrans (p,b)
+               of SOME x => Rose ((b, x), [])
+                | NONE => (let 
+                               val trees = map (minimaxTrans (other p)) (successors (b, p))
+	                       val scores = map (compose (snd, top)) trees
+                               val final = (case p
+                                             of X => listmax scores
+                                              | Y => listmin scores)
+	                   in
+                               setTrans (p, b, final);
+		               Rose ((b, final), trees)
+	                   end))
+
 end
 
 structure Main =
@@ -161,8 +202,10 @@ structure Main =
     fun main (_, args) =
 	let
 	    fun doit () = T.minimax T.X T.empty
+	    fun doit2 () = T.minimaxTrans T.X T.empty
 	in
-	    RunSeq.run doit
+	    RunSeq.run doit;
+	    RunSeq.run doit2
 	end
 
   end
