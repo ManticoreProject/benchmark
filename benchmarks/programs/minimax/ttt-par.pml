@@ -51,6 +51,34 @@ structure TicTacToe = struct
   fun setTrans (p, b, i) =
       Array.update (transTable, boardToIndex (p,b), i)
 
+  fun lookupTransFun (tbl, p, b) =
+      case Array.sub (tbl, boardToIndex (p,b))
+       of ~2 => NONE
+        | x => SOME x
+
+  fun updateTrans (tbl, p, b, i) = (
+      Array.update (tbl, boardToIndex (p, b), i);
+      tbl)
+
+  fun mergeTrans (tbl1, tbl2) = let
+      val len = 59049
+      fun lp i =
+          if i = len
+          then tbl1
+          else (let
+                    val i1 = UnsafeArray.sub (tbl1, i)
+                    val i2 = UnsafeArray.sub (tbl2, i)
+                in
+                    if i1 < i2
+                    then UnsafeArray.update (tbl1, i, i2)
+                    else ();
+                    lp (i+1)
+                end)
+  in
+      lp 0
+  end
+      
+
   (* isOccupied : board * int -> bool *)
   fun isOccupied (b,i) = isSome(List.nth(b,i))
 
@@ -176,6 +204,7 @@ structure TicTacToe = struct
   (* Build the tree and score it at the same time. *)
   (* p is the player to move *)
   (* X is max, O is min *)
+  (* Parallel, no transposition table *)
   fun minimax (p : player) (b : board) : game_tree =
         if gameOver(b) then
 	  mkLeaf (b, score b)
@@ -188,6 +217,7 @@ structure TicTacToe = struct
 	       | Y => Rose ((b, listmin scores), trees)
 	  end
 
+  (* Sequential, transposition table *)
   fun minimaxTrans (p : player) (b : board) : game_tree =
         if gameOver(b) then
 	  mkLeaf (b, score b)
@@ -203,7 +233,30 @@ structure TicTacToe = struct
                                setTrans (p, b, final);
 		               Rose ((b, final), trees)
 	                   end))
-             
+
+  (* Parallel, functional transposition table *)
+  fun minimaxTransParFun (p : player, tbl) (b : board) =
+        if gameOver(b) then
+	  (tbl, mkLeaf (b, score b))
+	else (case lookupTransFun (tbl, p, b)
+               of SOME x => (tbl, Rose ((b, x), []))
+                | NONE => (let 
+                               val l = parMap ((minimaxTransParFun (other p, tbl)), (successors (b, p)))
+                               val (tbls, trees) = List.unzip l
+                               val tbl = case tbls
+                                          of tbl::nil => tbl
+                                           | tbl::tbls => List.foldl (fn (t1, t2) => mergeTrans (t1, t2)) tbl tbls
+                                           | _ => (print "HUH?"; raise Fail "")
+	                       val scores = map (compose (snd, top)) trees
+                               val final = (case p
+                                             of X => listmax scores
+                                              | Y => listmin scores)
+                               val tbl = updateTrans (tbl, p, b, final)
+	                   in
+		               (tbl, Rose ((b, final), trees))
+	                   end))
+
+  (* Parallel, unprotected transposition table *)
   fun minimaxTransPar (p : player) (b : board) : game_tree =
         if gameOver(b) then
 	  mkLeaf (b, score b)
@@ -228,13 +281,22 @@ structure Main =
 
     fun main (_, args) =
 	let
-	    fun doit () = T.minimax T.X T.empty
-	    fun doit2 () = T.minimaxTrans T.X T.empty
-	    fun doit3 () = T.minimaxTransPar T.X T.empty
+	    fun doit () = (T.minimax T.X T.empty; ())
+	    fun doit2 () = (T.minimaxTrans T.X T.empty; ())
+	    fun doit3 () = (T.minimaxTransPar T.X T.empty; ())
+                           
+            (* 3^10 = 59,049 *)
+            val transTable = Array.tabulate (59049, fn _ => ~2)
+	    fun doit4 () = (T.minimaxTransParFun (T.X, transTable) T.empty; ())
 	in
+            print "Parallel: \n";
 	    RunPar.run doit;
+            print "Seq+trans: \n";
 	    RunPar.run doit2;
-	    RunPar.run doit3
+            print "Par+trans: \n";
+	    RunPar.run doit3; 
+            print "Par+fun-trans: \n";
+	    RunPar.run doit4
 	end
 
   end
