@@ -71,4 +71,13 @@ fun noEarlierNeighbors (pi : vertex_idx parray)
     SOME edges
 *)
 
+(* 
+val G = [| (0,[|1|]) |]
+val x = G!0
+val H = [| v | v in G |]
+*)
+
+val AAA = [| [|1|] |]
+val BBB = [| v | v in AAA |]
+
 end
