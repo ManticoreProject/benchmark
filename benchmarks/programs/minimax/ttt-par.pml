@@ -30,6 +30,18 @@ structure TicTacToe = struct
   val unused = ~2
   (* 3^10 = 59,049 *)
   val transTable = Array.tabulate (59049, fn _ => unused)
+  fun resetTransTable () =
+      Array.appi (fn (i, _) => UnsafeArray.update (transTable, i, unused)) transTable
+
+  fun countUsed' tbl =
+      Array.foldl (fn (a, acc) =>
+                      if (a > ~2)
+                      then acc+1
+                      else acc)
+                  0 tbl
+  fun countUsed () =
+      countUsed' transTable
+
 
   fun boardToIndex (p,b) = let
       fun handleItem i =
@@ -288,15 +300,21 @@ structure Main =
             (* 3^10 = 59,049 *)
             val transTable = Array.tabulate (59049, fn _ => ~2)
 	    fun doit4 () = (T.minimaxTransParFun (T.X, transTable) T.empty; ())
+            fun size (_, t) = T.size t
 	in
             print "Parallel: \n";
 	    RunPar.run doit;
+            print (String.concat[" states: ", Int.toString (T.size (T.minimax T.X T.empty)), "\n"]);
             print "Seq+trans: \n";
 	    RunPar.run doit2;
+            print (String.concat[" states: ", Int.toString (T.countUsed()), "\n"]);
             print "Par+trans: \n";
-	    RunPar.run doit3; 
+            T.resetTransTable();
+	    RunPar.run doit3;
+            print (String.concat[" states: ", Int.toString (T.countUsed()), "\n"]);
             print "Par+fun-trans: \n";
-	    RunPar.run doit4
+	    RunPar.run doit4;
+            print (String.concat[" states: ", Int.toString (T.countUsed' transTable), "\n"])
 	end
 
   end
