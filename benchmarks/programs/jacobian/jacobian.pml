@@ -31,6 +31,7 @@ structure Jac = struct
       [| PArray.reduce add 0.0 [| x*(v!i) | (i,x) in sv |] | sv in sm |]
     end
 
+  (* FIXME: Broken in some mysterious way. *)
   fun jacobian (mtx, vec, i) = let
     fun lp (v, j) =
       if (j = 0) then v

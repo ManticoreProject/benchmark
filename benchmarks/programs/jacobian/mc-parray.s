@@ -71666,9 +71666,9 @@ doGC248E:
 letJoinK.2486:
 	movq	%r8, %rcx
 gcTest2491:
-	movq	%r11, %rbx
-	movq	448(%rbx), %rax
-	subq	%rsi, %rax
+	movq	%r11, %r9
+	movq	448(%r9), %rbx
+	subq	%rsi, %rbx
 	jg	L249A
 doGC2492:
 	movq	$131075, -8(%rsi)
@@ -71681,7 +71681,11 @@ doGC2492:
 S_case2499:
 	movq	%rdi, %rbx
 case.2493:
-	movl	16(%rcx), %edx
+	movq	$65537, -8(%rsi)
+	movl	16(%rcx), %r10d
+	movl	%r10d, (%rsi)
+	movq	%rsi, %rdx
+	addq	$16, %rsi
 	jmp	letJoinK.2494
 L249A:
 letJoinKCheck.248F:
@@ -71694,110 +71698,117 @@ letJoinKCheck.248F:
 S_case2498:
 	movq	%rdi, %rbx
 case.2495:
-	movl	8(%rcx), %edx
+	movq	$65537, -8(%rsi)
+	movl	8(%rcx), %r12d
+	movl	%r12d, (%rsi)
+	movq	%rsi, %rdx
+	addq	$16, %rsi
 letJoinK.2494:
 	/* Liveout:  GP={%r10 %r9 %r8 %rdi}  */
 	movq	$196609, -8(%rsi)
 	movq	$1, (%rsi)
 	movl	%eax, 8(%rsi)
-	movl	%edx, 16(%rsi)
-	movq	%rsi, %rdx
+	movl	(%rdx), %r13d
+	movl	%r13d, 16(%rsi)
+	movq	%rsi, %r13
 	addq	$32, %rsi
 	movq	$131075, -8(%rsi)
 	movq	%rcx, (%rsi)
-	movq	%rdx, 8(%rsi)
-	movq	%rsi, %rdi
+	movq	%r13, 8(%rsi)
+	movq	%rsi, %r14
 	addq	$24, %rsi
-	movq	$2818051, -8(%rsi)
-	movq	24(%rbx), %r9
-	movq	%r9, (%rsi)
-	movq	32(%rbx), %r10
-	movq	%r10, 8(%rsi)
-	movq	40(%rbx), %r12
-	movq	%r12, 16(%rsi)
-	movq	64(%rbx), %r13
-	movq	%r13, 24(%rsi)
-	movq	72(%rbx), %r14
-	movq	%r14, 32(%rsi)
+	movq	$2949311, -8(%rsi)
+	movq	24(%rbx), %r15
+	movq	%r15, (%rsi)
+	movq	32(%rbx), %rdi
+	movq	%rdi, 8(%rsi)
+	movq	40(%rbx), %r9
+	movq	%r9, 16(%rsi)
+	movq	64(%rbx), %r10
+	movq	%r10, 24(%rsi)
+	movq	72(%rbx), %r12
+	movq	%r12, 32(%rsi)
 	movq	80(%rbx), %r15
 	movq	%r15, 40(%rsi)
-	movq	88(%rbx), %rax
-	movq	%rax, 48(%rsi)
+	movq	88(%rbx), %rdi
+	movq	%rdi, 48(%rsi)
 	movq	96(%rbx), %r9
 	movq	%r9, 56(%rsi)
 	movq	104(%rbx), %r10
 	movq	%r10, 64(%rsi)
 	movq	112(%rbx), %r12
 	movq	%r12, 72(%rsi)
-	movq	120(%rbx), %r13
-	movq	%r13, 80(%rsi)
-	movq	128(%rbx), %r14
-	movq	%r14, 88(%rsi)
-	movq	136(%rbx), %r15
-	movq	%r15, 96(%rsi)
-	movq	144(%rbx), %rax
-	movq	%rax, 104(%rsi)
-	movq	152(%rbx), %r9
-	movq	%r9, 112(%rsi)
-	movq	160(%rbx), %r10
-	movq	%r10, 120(%rsi)
-	movq	168(%rbx), %r12
-	movq	%r12, 128(%rsi)
-	movq	176(%rbx), %r13
-	movq	%r13, 136(%rsi)
-	movq	184(%rbx), %r14
-	movq	%r14, 144(%rsi)
-	movq	192(%rbx), %r15
-	movq	%r15, 152(%rsi)
-	movq	200(%rbx), %rax
-	movq	%rax, 160(%rsi)
-	movq	208(%rbx), %r9
-	movq	%r9, 168(%rsi)
-	movq	216(%rbx), %r10
-	movq	%r10, 176(%rsi)
-	movq	224(%rbx), %r12
-	movq	%r12, 184(%rsi)
-	movq	232(%rbx), %r13
-	movq	%r13, 192(%rsi)
-	movq	240(%rbx), %r14
-	movq	%r14, 200(%rsi)
-	movq	248(%rbx), %r15
-	movq	%r15, 208(%rsi)
-	movq	256(%rbx), %rax
-	movq	%rax, 216(%rsi)
-	movq	264(%rbx), %r9
-	movq	%r9, 224(%rsi)
-	movq	272(%rbx), %r10
-	movq	%r10, 232(%rsi)
-	movq	280(%rbx), %r12
-	movq	%r12, 240(%rsi)
-	movq	288(%rbx), %r13
-	movq	%r13, 248(%rsi)
-	movq	296(%rbx), %r14
-	movq	%r14, 256(%rsi)
-	movq	304(%rbx), %r15
-	movq	%r15, 264(%rsi)
-	movq	312(%rbx), %rax
-	movq	%rax, 272(%rsi)
-	movq	320(%rbx), %r9
-	movq	%r9, 280(%rsi)
-	movq	328(%rbx), %r10
-	movq	%r10, 288(%rsi)
-	movq	336(%rbx), %r12
-	movq	%r12, 296(%rsi)
-	movq	344(%rbx), %r13
-	movq	%r13, 304(%rsi)
+	movq	120(%rbx), %r15
+	movq	%r15, 80(%rsi)
+	movq	128(%rbx), %rdi
+	movq	%rdi, 88(%rsi)
+	movq	136(%rbx), %r9
+	movq	%r9, 96(%rsi)
+	movq	144(%rbx), %r10
+	movq	%r10, 104(%rsi)
+	movq	152(%rbx), %r12
+	movq	%r12, 112(%rsi)
+	movq	160(%rbx), %r15
+	movq	%r15, 120(%rsi)
+	movq	168(%rbx), %rdi
+	movq	%rdi, 128(%rsi)
+	movq	176(%rbx), %r9
+	movq	%r9, 136(%rsi)
+	movq	184(%rbx), %r10
+	movq	%r10, 144(%rsi)
+	movq	192(%rbx), %r12
+	movq	%r12, 152(%rsi)
+	movq	200(%rbx), %r15
+	movq	%r15, 160(%rsi)
+	movq	208(%rbx), %rdi
+	movq	%rdi, 168(%rsi)
+	movq	216(%rbx), %r9
+	movq	%r9, 176(%rsi)
+	movq	224(%rbx), %r10
+	movq	%r10, 184(%rsi)
+	movq	232(%rbx), %r12
+	movq	%r12, 192(%rsi)
+	movq	240(%rbx), %r15
+	movq	%r15, 200(%rsi)
+	movq	248(%rbx), %rdi
+	movq	%rdi, 208(%rsi)
+	movq	256(%rbx), %r9
+	movq	%r9, 216(%rsi)
+	movq	264(%rbx), %r10
+	movq	%r10, 224(%rsi)
+	movq	272(%rbx), %r12
+	movq	%r12, 232(%rsi)
+	movq	280(%rbx), %r15
+	movq	%r15, 240(%rsi)
+	movq	288(%rbx), %rdi
+	movq	%rdi, 248(%rsi)
+	movq	296(%rbx), %r9
+	movq	%r9, 256(%rsi)
+	movq	304(%rbx), %r10
+	movq	%r10, 264(%rsi)
+	movq	312(%rbx), %r12
+	movq	%r12, 272(%rsi)
+	movq	320(%rbx), %r15
+	movq	%r15, 280(%rsi)
+	movq	328(%rbx), %rdi
+	movq	%rdi, 288(%rsi)
+	movq	336(%rbx), %r9
+	movq	%r9, 296(%rsi)
+	movq	344(%rbx), %r10
+	movq	%r10, 304(%rsi)
 	movq	%rcx, 312(%rsi)
 	movq	%rdx, 320(%rsi)
-	movq	%rdi, 328(%rsi)
-	movq	352(%rbx), %r14
+	movq	%r13, 328(%rsi)
 	movq	%r14, 336(%rsi)
-	movq	%rsi, %rdi
-	addq	$352, %rsi
+	movq	352(%rbx), %r12
+	movq	%r12, 344(%rsi)
+	movl	%eax, 352(%rsi)
+	movq	%rsi, %r14
+	addq	$368, %rsi
 	movq	$131081, -8(%rsi)
-	movq	%rdi, (%rsi)
-	movabsq	$doit__r.2496, %r15
-	movq	%r15, 8(%rsi)
+	movq	%r14, (%rsi)
+	movabsq	$doit__r.2496, %r13
+	movq	%r13, 8(%rsi)
 	movq	%rsi, %r12
 	addq	$24, %rsi
 	movq	%r8, %r13
@@ -71808,14 +71819,14 @@ letJoinK.2494:
 	movq	%r14, %rsi
 	movq	%r15, %r11
 	movq	$393259, -8(%rsi)
-	movabsq	$letJoinK.2497, %rcx
-	movq	%rcx, (%rsi)
-	movq	8(%rbx), %rdx
-	movq	%rdx, 8(%rsi)
-	movq	16(%rbx), %rdi
-	movq	%rdi, 16(%rsi)
-	movq	48(%rbx), %r9
-	movq	%r9, 24(%rsi)
+	movabsq	$letJoinK.2497, %r15
+	movq	%r15, (%rsi)
+	movq	8(%rbx), %rcx
+	movq	%rcx, 8(%rsi)
+	movq	16(%rbx), %rdx
+	movq	%rdx, 16(%rsi)
+	movq	48(%rbx), %rdi
+	movq	%rdi, 24(%rsi)
 	movq	%r12, 32(%rsi)
 	movq	%rax, 40(%rsi)
 	movq	%rsi, %r9
@@ -71886,7 +71897,7 @@ case.24A4:
 	movq	280(%rcx), %r10
 	movq	%r10, 144(%rsi)
 	movq	%r9, 152(%rsi)
-	movq	336(%rcx), %r12
+	movq	344(%rcx), %r12
 	movq	%r12, 160(%rsi)
 	movq	%rsi, %r9
 	addq	$176, %rsi
@@ -71992,7 +72003,7 @@ case.24AB:
 	movl	$100, (%rsi)
 	movq	%rsi, %r13
 	addq	$16, %rsi
-	movq	$1769475, -8(%rsi)
+	movq	$1900737, -8(%rsi)
 	movq	(%rcx), %rbx
 	movq	%rbx, (%rsi)
 	movq	24(%rcx), %rdi
@@ -72045,33 +72056,37 @@ case.24AB:
 	movq	%r10, 192(%rsi)
 	movq	304(%rcx), %r14
 	movq	%r14, 200(%rsi)
-	movq	328(%rcx), %r15
+	movq	320(%rcx), %r15
 	movq	%r15, 208(%rsi)
+	movq	336(%rcx), %rdx
+	movq	%rdx, 216(%rsi)
+	movl	352(%rcx), %ebx
+	movl	%ebx, 224(%rsi)
 	movq	%rsi, %rdx
-	addq	$224, %rsi
+	addq	$240, %rsi
 	movq	$131081, -8(%rsi)
 	movq	%rdx, (%rsi)
-	movabsq	$lp__r.24AC, %rbx
-	movq	%rbx, 8(%rsi)
-	movq	%rsi, %rdx
+	movabsq	$lp__r.24AC, %r14
+	movq	%r14, 8(%rsi)
+	movq	%rsi, %r10
 	addq	$24, %rsi
 	movq	$131073, -8(%rsi)
 	movq	$1, (%rsi)
-	movabsq	$anon.207, %rdi
-	movq	%rdi, 8(%rsi)
+	movabsq	$anon.207, %r15
+	movq	%r15, 8(%rsi)
 	movq	%rsi, %r9
 	addq	$24, %rsi
-	movq	24(%rcx), %r10
-	movq	(%r10), %rdi
+	movq	24(%rcx), %rdx
+	movq	(%rdx), %rdi
 	movq	$393241, -8(%rsi)
-	movabsq	$letJoinK.24AD, %r14
-	movq	%r14, (%rsi)
-	movq	320(%rcx), %r15
-	movq	%r15, 8(%rsi)
+	movabsq	$letJoinK.24AD, %rbx
+	movq	%rbx, (%rsi)
+	movq	328(%rcx), %r14
+	movq	%r14, 8(%rsi)
 	movq	%rax, 16(%rsi)
 	movq	%r12, 24(%rsi)
 	movq	%r13, 32(%rsi)
-	movq	%rdx, 40(%rsi)
+	movq	%r10, 40(%rsi)
 	movq	%rsi, %r10
 	addq	$56, %rsi
 	cmpq	$1, %rdi
@@ -72179,7 +72194,7 @@ else.24B6:
 	movq	%r14, 8(%rsi)
 	movq	%rsi, %r14
 	addq	$24, %rsi
-	movq	$2162879, -8(%rsi)
+	movq	$2293955, -8(%rsi)
 	movabsq	$letJoinK.24B9, %rdx
 	movq	%rdx, (%rsi)
 	movq	8(%rcx), %rdx
@@ -72230,17 +72245,21 @@ else.24B6:
 	movq	%rdx, 184(%rsi)
 	movq	208(%rcx), %rdx
 	movq	%rdx, 192(%rsi)
-	movq	%r14, 200(%rsi)
-	movq	%r10, 208(%rsi)
-	movq	%r12, 216(%rsi)
-	movq	%rax, 224(%rsi)
-	movq	%r9, 232(%rsi)
-	movq	%rbx, 240(%rsi)
-	movq	%rdi, 248(%rsi)
+	movq	216(%rcx), %rdx
+	movq	%rdx, 200(%rsi)
+	movq	%r14, 208(%rsi)
+	movq	%r10, 216(%rsi)
+	movq	%r12, 224(%rsi)
+	movq	%rax, 232(%rsi)
+	movq	%r9, 240(%rsi)
+	movq	%rbx, 248(%rsi)
+	movq	%rdi, 256(%rsi)
 	movq	8(%r13), %rbx
-	movq	%rbx, 256(%rsi)
+	movq	%rbx, 264(%rsi)
+	movl	224(%rcx), %edi
+	movl	%edi, 272(%rsi)
 	movq	%rsi, %r10
-	addq	$272, %rsi
+	addq	$288, %rsi
 	movq	(%r15), %rdi
 	movq	(%r13), %r8
 	movq	200(%rcx), %r13
@@ -72260,9 +72279,9 @@ add.1BF6:
 retGC24BF:
 	movq	24(%rdi), %rax
 	movq	(%rdi), %rcx
-	/* %f51572.d := mem.d[%rdi.64 +.64 16] */
+	/* %f51588.d := mem.d[%rdi.64 +.64 16] */
 	movsd	 16(%rdi), %xmm5
-	/* %f51571.d := mem.d[%rdi.64 +.64 8] */
+	/* %f51587.d := mem.d[%rdi.64 +.64 8] */
 	movsd	 8(%rdi), %xmm4
 gcTest24C0:
 	movq	%r11, %rbx
@@ -73309,7 +73328,7 @@ letJoinK.1528:
 	/* live= GP={%rax} FP={%xmm1} spilled=  */
 retGC253D:
 	movq	(%rdi), %rax
-	/* %f52366.d := mem.d[%rdi.64 +.64 8] */
+	/* %f52382.d := mem.d[%rdi.64 +.64 8] */
 	movsd	 8(%rdi), %xmm2
 gcTest253E:
 	movq	%r11, %rdx
@@ -73457,7 +73476,7 @@ case.2550:
 	addq	$24, %rsi
 	movq	(%rdi), %rdi
 	movq	%r14, %r8
-	movq	216(%rbx), %r10
+	movq	224(%rbx), %r10
 	jmp	t.2551
 L_true2559:
 	movq	%r10, %r9
@@ -73530,7 +73549,7 @@ case.2552:
 	addq	$24, %rsi
 	movq	(%rdi), %rdi
 	movq	%r15, %r8
-	movq	216(%rbx), %r10
+	movq	224(%rbx), %r10
 	jmp	t.2553
 S_case2561:
 case.254D:
@@ -73544,10 +73563,10 @@ L_true2562:
 	movq	%rdi, %rbx
 then.255F:
 	movq	8(%rax), %rdi
-	movq	(%rdi), %r10
-	cmpq	$3, %r10
+	movq	(%rdi), %rax
+	cmpq	$3, %rax
 	je	S_case2560
-	cmpq	$1, %r10
+	cmpq	$1, %rax
 	je	S_case2561
 S_case2560:
 case.254F:
@@ -73557,52 +73576,59 @@ case.254F:
 	movq	%rsi, %r12
 	addq	$16, %rsi
 letJoinK.254E:
+	xorl	%r14d, %r14d
 	movq	$196609, -8(%rsi)
 	movq	$1, (%rsi)
-	movl	$0, 8(%rsi)
+	movl	%r14d, 8(%rsi)
 	movl	(%r12), %r15d
 	movl	%r15d, 16(%rsi)
-	movq	%rsi, %r14
+	movq	%rsi, %r15
 	addq	$32, %rsi
 	movq	$393219, -8(%rsi)
 	movq	56(%rbx), %rdx
 	movq	%rdx, (%rsi)
 	movq	176(%rbx), %r9
 	movq	%r9, 8(%rsi)
-	movq	240(%rbx), %r10
+	movq	248(%rbx), %r10
 	movq	%r10, 16(%rsi)
-	movq	248(%rbx), %r13
-	movq	%r13, 24(%rsi)
+	movq	256(%rbx), %rax
+	movq	%rax, 24(%rsi)
 	movq	%rcx, 32(%rsi)
 	movq	%rdi, 40(%rsi)
 	movq	%rsi, %rax
 	addq	$56, %rsi
 	movq	$131081, -8(%rsi)
 	movq	%rax, (%rsi)
-	movabsq	$doSegment.AC3, %r15
-	movq	%r15, 8(%rsi)
+	movabsq	$doSegment.AC3, %rcx
+	movq	%rcx, 8(%rsi)
 	movq	%rsi, %r13
 	addq	$24, %rsi
-	movq	$589941, -8(%rsi)
-	movabsq	$letJoinK.255B, %rax
-	movq	%rax, (%rsi)
-	movq	184(%rbx), %rcx
-	movq	%rcx, 8(%rsi)
-	movq	192(%rbx), %rdx
-	movq	%rdx, 16(%rsi)
-	movq	200(%rbx), %rdi
-	movq	%rdi, 24(%rsi)
-	movq	208(%rbx), %r9
-	movq	%r9, 32(%rsi)
-	movq	216(%rbx), %r10
-	movq	%r10, 40(%rsi)
-	movq	224(%rbx), %r15
-	movq	%r15, 48(%rsi)
-	movq	232(%rbx), %rax
-	movq	%rax, 56(%rsi)
-	movq	%r14, 64(%rsi)
+	movq	$852133, -8(%rsi)
+	movabsq	$letJoinK.255B, %rdx
+	movq	%rdx, (%rsi)
+	movq	184(%rbx), %rdi
+	movq	%rdi, 8(%rsi)
+	movq	192(%rbx), %r9
+	movq	%r9, 16(%rsi)
+	movq	200(%rbx), %r10
+	movq	%r10, 24(%rsi)
+	movq	208(%rbx), %rax
+	movq	%rax, 32(%rsi)
+	movq	216(%rbx), %rcx
+	movq	%rcx, 40(%rsi)
+	movq	224(%rbx), %rdx
+	movq	%rdx, 48(%rsi)
+	movq	232(%rbx), %rdi
+	movq	%rdi, 56(%rsi)
+	movq	240(%rbx), %r9
+	movq	%r9, 64(%rsi)
+	movq	%r12, 72(%rsi)
+	movq	%r15, 80(%rsi)
+	movl	272(%rbx), %r10d
+	movl	%r10d, 88(%rsi)
+	movl	%r14d, 96(%rsi)
 	movq	%rsi, %r10
-	addq	$80, %rsi
+	addq	$112, %rsi
 	cmpl	$0, (%r12)
 	jge	L2563
 L_true255C:
@@ -73644,7 +73670,7 @@ then.255A:
 	movq	%r14, 8(%rsi)
 	movq	%rsi, %rax
 	addq	$24, %rsi
-	movq	216(%rbx), %rdi
+	movq	224(%rbx), %rdi
 	movq	(%rdi), %r14
 	jmp	*%r14
 L2563:
@@ -73667,7 +73693,7 @@ else.2554:
 	movq	128(%rbx), %rcx
 	movq	(%rcx), %rdi
 	movq	%r13, %r8
-	movq	216(%rbx), %r12
+	movq	224(%rbx), %r12
 	jmp	tabulateSequential_uncurried.8D0
 	/* live= GP={%rcx %rdi} spilled=  */
 retGC254A:
@@ -73688,26 +73714,26 @@ doGC254C:
 	jmp	ASM_InvokeGC
 L2564:
 letJoinKCheck.2549:
-	movq	256(%rdi), %rax
+	movq	264(%rdi), %rax
 	cmpq	$3, (%rax)
 	je	L_true2562
 else.255D:
 	/* Liveout:  GP={%rax %rdi}  */
 	movq	$131081, -8(%rsi)
-	movabsq	$str255E, %rdx
-	movq	%rdx, (%rsi)
+	movabsq	$str255E, %r13
+	movq	%r13, (%rsi)
 	movl	$38, 8(%rsi)
-	movq	%rsi, %rcx
+	movq	%rsi, %r12
 	addq	$24, %rsi
 	movq	$131075, -8(%rsi)
-	movabsq	$tag69, %rbx
-	movq	%rbx, (%rsi)
-	movq	%rcx, 8(%rsi)
+	movabsq	$tag69, %r14
+	movq	%r14, (%rsi)
+	movq	%r12, 8(%rsi)
 	movq	%rsi, %rax
 	addq	$24, %rsi
-	movq	216(%rdi), %rdi
-	movq	(%rdi), %r9
-	jmp	*%r9
+	movq	224(%rdi), %rdi
+	movq	(%rdi), %r15
+	jmp	*%r15
 	.text
 doSegment.AC3:
 	movq	%r8, %rax
@@ -73823,59 +73849,127 @@ else.256E:
 	jmp	*%r13
 	.text
 letJoinK.255B:
-	movq	%r8, %rax
+	movq	%r8, %r14
 	jmp	gcTest2576
-	/* live= GP={%rax %rcx} spilled=  */
+	/* live= GP={%r14 %r13} spilled=  */
 retGC2575:
-	movq	8(%rdi), %rax
+	movq	8(%rdi), %r14
 	movq	(%rdi), %rdi
 gcTest2576:
-	movq	%r11, %rbx
-	movq	448(%rbx), %rdx
-	subq	%rsi, %rdx
+	movq	%r11, %r15
+	movq	448(%r15), %rax
+	subq	%rsi, %rax
 	jle	doGC2577
-	movq	%rdi, %rcx
+	movq	%rdi, %r13
 letJoinKCheck.2574:
 	/* Liveout:  GP={%r13 %r12 %r10 %r9 %r8 %rdi}  */
 	movq	$131075, -8(%rsi)
-	movq	%rax, (%rsi)
-	movq	64(%rcx), %rdi
-	movq	%rdi, 8(%rsi)
-	movq	%rsi, %r10
+	movq	%r14, (%rsi)
+	movq	80(%r13), %rcx
+	movq	%rcx, 8(%rsi)
+	movq	%rsi, %rax
+	movq	%rax, -56(%rbp)
 	addq	$24, %rsi
-	movq	$131073, -8(%rsi)
-	movq	$1, (%rsi)
-	movabsq	$anon.2578, %r9
-	movq	%r9, 8(%rsi)
+	movq	%r11, %rbx
+	movq	%rsi, 144(%rbx)
+	movq	%r8, %r12
+	movq	%r11, %r14
+	movq	16(%r13), %rdx
+	movl	(%rdx), %r15d
+	subl	88(%r13), %r15d
+	movslq	%r15d, %rdi
+	call	M_IntToString
+	movq	%rax, %rdi
+	movq	%r12, %r8
+	movq	%r14, %r11
+	movq	144(%rbx), %rsi
+	movq	$131081, -8(%rsi)
+	movabsq	$str170, %rax
+	movq	%rax, (%rsi)
+	movl	$1, 8(%rsi)
 	movq	%rsi, %rbx
 	addq	$24, %rsi
+	movq	%r11, %r14
+	movq	%rsi, 144(%r14)
+	movq	%r8, %r15
+	movq	%r11, %r12
+	movq	%rbx, %rsi
+	call	M_StringConcat2
+	movq	%r15, %r8
+	movq	%r12, %r11
+	movq	144(%r14), %rsi
+	movq	%r8, %r12
+	movq	%rsi, %r14
+	movq	%r11, %r15
+	movq	(%rax), %rdi
+	call	M_Print
+	movq	%r12, %r8
+	movq	%r14, %rsi
+	movq	%r15, %r11
+	movq	%r11, %r12
+	movq	%rsi, 144(%r12)
+	movq	%r8, %r14
+	movq	%r11, %r15
+	movq	72(%r13), %rax
+	movl	(%rax), %ecx
+	subl	96(%r13), %ecx
+	movslq	%ecx, %rdi
+	call	M_IntToString
+	movq	%rax, %rdi
+	movq	%r14, %r8
+	movq	%r15, %r11
+	movq	144(%r12), %rsi
+	movq	%r11, %r14
+	movq	%rsi, 144(%r14)
+	movq	%r8, %r15
+	movq	%r11, %r12
+	movq	%rbx, %rsi
+	call	M_StringConcat2
+	movq	%r15, %r8
+	movq	%r12, %r11
+	movq	144(%r14), %rsi
+	movq	%r8, %rbx
+	movq	%rsi, %r12
+	movq	%r11, %r14
+	movq	(%rax), %rdi
+	call	M_Print
+	movq	%rbx, %r8
+	movq	%r12, %rsi
+	movq	%r14, %r11
+	movq	$131073, -8(%rsi)
+	movq	$1, (%rsi)
+	movabsq	$anon.2578, %r15
+	movq	%r15, 8(%rsi)
+	movq	%rsi, %r14
+	addq	$24, %rsi
 	movq	$458791, -8(%rsi)
-	movabsq	$letJoinK.2579, %r12
-	movq	%r12, (%rsi)
-	movq	8(%rcx), %r13
-	movq	%r13, 8(%rsi)
-	movq	24(%rcx), %r14
-	movq	%r14, 16(%rsi)
-	movq	32(%rcx), %r15
-	movq	%r15, 24(%rsi)
-	movq	40(%rcx), %rax
-	movq	%rax, 32(%rsi)
-	movq	48(%rcx), %rdx
-	movq	%rdx, 40(%rsi)
-	movq	56(%rcx), %rdi
-	movq	%rdi, 48(%rsi)
+	movabsq	$letJoinK.2579, %rax
+	movq	%rax, (%rsi)
+	movq	8(%r13), %rcx
+	movq	%rcx, 8(%rsi)
+	movq	32(%r13), %rdx
+	movq	%rdx, 16(%rsi)
+	movq	40(%r13), %rbx
+	movq	%rbx, 24(%rsi)
+	movq	48(%r13), %rdi
+	movq	%rdi, 32(%rsi)
+	movq	56(%r13), %r9
+	movq	%r9, 40(%rsi)
+	movq	64(%r13), %r10
+	movq	%r10, 48(%rsi)
 	movq	%rsi, %r12
 	addq	$64, %rsi
-	movq	8(%rcx), %r9
-	movq	(%r9), %rdi
-	movq	%rbx, %r8
-	movq	16(%rcx), %r9
-	movq	40(%rcx), %r13
+	movq	8(%r13), %r15
+	movq	(%r15), %rdi
+	movq	%r14, %r8
+	movq	24(%r13), %r9
+	movq	-56(%rbp), %r10
+	movq	48(%r13), %r13
 	jmp	mapDDD.1F92
 doGC2577:
 	movq	$131075, -8(%rsi)
 	movq	%rdi, (%rsi)
-	movq	%rax, 8(%rsi)
+	movq	%r14, 8(%rsi)
 	movq	%rsi, %rdi
 	addq	$24, %rsi
 	movabsq	$retGC2575, %r8
@@ -73894,9 +73988,9 @@ retGC257B:
 	movq	32(%rdi), %r9
 	movq	24(%rdi), %rax
 	movq	(%rdi), %rcx
-	/* %f52770.d := mem.d[%rdi.64 +.64 16] */
+	/* %f52856.d := mem.d[%rdi.64 +.64 16] */
 	movsd	 16(%rdi), %xmm5
-	/* %f52769.d := mem.d[%rdi.64 +.64 8] */
+	/* %f52855.d := mem.d[%rdi.64 +.64 8] */
 	movsd	 8(%rdi), %xmm4
 gcTest257C:
 	movq	%r11, %rbx
@@ -73990,9 +74084,9 @@ retGC2585:
 	movq	32(%rdi), %r9
 	movq	24(%rdi), %rax
 	movq	(%rdi), %rcx
-	/* %f52823.d := mem.d[%rdi.64 +.64 16] */
+	/* %f52909.d := mem.d[%rdi.64 +.64 16] */
 	movsd	 16(%rdi), %xmm5
-	/* %f52822.d := mem.d[%rdi.64 +.64 8] */
+	/* %f52908.d := mem.d[%rdi.64 +.64 8] */
 	movsd	 8(%rdi), %xmm4
 gcTest2586:
 	movq	%r11, %rbx

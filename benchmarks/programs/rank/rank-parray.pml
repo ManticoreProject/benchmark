@@ -11,8 +11,11 @@ structure Rank =
 
     fun add (x, y) = x + y
 
-    fun rank s = 
-	[| PArray.reduce add 0 [| if a < b then 1 else 0 | b in  s |] | a in s |]
+    fun rank s = let
+        fun inner a = [| if a < b then 1 else 0 | b in  s |]
+        in
+	  [| PArray.reduce add 0 (inner a) | a in s |]
+        end
 
   end
 

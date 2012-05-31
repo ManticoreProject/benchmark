@@ -39,11 +39,13 @@ type graph = (vertex_id * edge_list) parray
  *  e.g.,
  *    filterByFlag ([1,2,3,4], [false,false,true,true]) ==> [3,4]
  *)
+(*
 fun filterByFlag (xs : (vertex_id * edge_list) parray, flags) = let
   val pairs = [| (x, flag) | x in xs, flag in flags |]
   in
     [| x | (x, _) in [| (x, flag) | (x, flag) in pairs where flag = itrue |] |]
   end
+*)
 
 (*** MIS algorithm ***)
 
@@ -54,7 +56,9 @@ fun isEarlier (pi : vertex_idx parray)
 	      (x : vertex_idx) (n : vertex_idx) : ibool = 
   if pi!n < pi!x then itrue else ifalse
 
+(*
 val x = filterByFlag ([|(1,PArray.empty())|],[|ifalse,itrue,ifalse|])
+*)
 
 (* For a particular graph G, takes a total ordering on the vertices
  * of G, pi, and a vertex v in G and the edge list of v, edges, 
