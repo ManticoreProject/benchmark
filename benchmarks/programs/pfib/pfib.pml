@@ -1,10 +1,32 @@
-fun fib n =
-  if (n<=0) then 0
-  else if (n=1) then 1
-  else fib(n-1)+fib(n-2)
+fun add (m, n) = m + n;
 
-val it = [| fib (n div 10) | n in [| 1 to 100 |] |]
+fun pfib (i) = (case i
+       of 0 => (0)
+	| 1 => (1)
+	| n => add (| pfib(i-1), pfib(i-2) |)
+      (* end case *));
 
-val _ = Print.printLn ("Computed " ^ Int.toString (PArray.length it) ^ " values.")
+structure Main =
+  struct
 
-val _ = Print.printLn "done."
+    val dfltN = 40
+
+    fun getSizeArg args =
+	(case args
+	  of arg1 :: arg2 :: args =>
+	     if String.same (arg1, "-size") then Int.fromString arg2
+	     else getSizeArg (arg2 :: args)
+	   | _ => NONE
+	(* end case *))
+	
+    fun main (_, args) =
+	let
+	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
+	    fun doit () = pfib n
+	    val result = RunPar.run doit
+	in
+	    result
+	end
+  end
+
+val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
