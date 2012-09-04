@@ -142,7 +142,7 @@ structure BlackScholes (*: sig
         (* BUGBUG FIXME:
          * i and j are reversed due to a bug in mkTab2D!
          *)
-        [| [| List.nth (Array.sub(l, i), j) | i in items |] |
+        [| [| List.nth (Array.sub(l, j), i) | i in items |] |
          j in [| 0 to len-1 |] |]
     end
 
@@ -287,9 +287,55 @@ structure Main =
   struct
 
     fun main (_, args) = let
-        val file = if List.length args > 0 then List.hd args
-                   else (print "Requires a file name argument\n"; raise Fail "Missing argument")
-        val options = BlackScholes.readData file
+        val dfltN = 20000000
+
+        fun getSizeArg args =
+	    (case args
+	      of arg1 :: arg2 :: args =>
+	         if String.same (arg1, "-size") then (Int.fromString arg2)
+	         else getSizeArg (arg2 :: args)
+	       | _ => NONE
+	    (* end case *))
+
+        fun getFileArg args =
+	    (case args
+	      of arg1 :: arg2 :: args =>
+	         if String.same (arg1, "-file") then SOME arg2
+	         else getFileArg (arg2 :: args)
+	       | _ => NONE
+	    (* end case *))
+
+        val file = getFileArg args
+        val size = getSizeArg args
+
+        val dummy_option =  [|
+	    42.0, 40.0, 0.1000, 0.0, 0.2, 0.50, 1.0, 0.00, 4.759423036851750055
+          |]
+
+        fun genOption i =
+            dummy_option
+
+        (* Unfortunately, 20M random options take > 1 min to generate.*)
+                (*
+            [| Rand.randDouble (10.0, 200.0),
+             Rand.randDouble (10.0, 200.0),
+             Rand.randDouble (10.0, 200.0),
+             Rand.randDouble (10.0, 200.0),
+             Rand.randDouble (10.0, 200.0),
+             Rand.randDouble (10.0, 200.0),
+             1.0,
+             Rand.randDouble (10.0, 200.0), 
+             Rand.randDouble (10.0, 200.0) |] *)
+
+        val N : int = (case size of SOME n => n | NONE => dfltN)
+            
+        fun genOptions () = (
+            case file
+             of SOME f  => (BlackScholes.readData f)
+              | NONE => ([| genOption i | i in [| 0 to N |] |]))
+
+            
+        val options = genOptions()
 	fun doit () = [| BlackScholes.price p | p in options |]
     in
 	    (* TextIO.outputLine logfile (hd args); 
