@@ -477,7 +477,7 @@ structure IdRaytracer =
 structure Main =
   struct
 
-    val dfltN = 512
+    val dfltN = 1024
 
     fun getSizeArg args =
 	(case args
