@@ -54,9 +54,9 @@ structure Main =
 					 of NONE => (400, weights, values)
 					  | SOME n => let
 						val weights = Vector.fromList
-								 (List.tabulate (n, fn _ => Rand.inRangeInt (10, 150)))
+								 (List.tabulate (n, fn i => i )) (*Rand.inRangeInt (10, 150))) *)
 						val values = Vector.fromList
-								 (List.tabulate (n, fn _ => Rand.inRangeInt (10, 200)))
+								 (List.tabulate (n, fn i => i )) (*Rand.inRangeInt (10, 200))) *)
 					    in
 						(n*20, weights, values)
 					    end)
