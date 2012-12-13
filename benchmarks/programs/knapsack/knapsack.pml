@@ -11,19 +11,19 @@ val weights = Vector.fromList ([9, 13, 153, 50, 15, 68, 27, 39, 23, 52, 11, 32, 
 val values = Vector.fromList ([150, 35, 200, 160, 60, 45, 60, 40, 30, 10, 70, 30, 15, 10, 40, 70, 75, 80, 20, 12, 50, 10])
 
 
-fun knap (i, avail) =
+fun knap (i, avail, weights, values) =
     if (avail = 0) orelse (i < 0)
     then 0
     else (if Vector.sub(weights, i) < avail
 	  then let
-		  val (a, b) = (| knap (i-1, avail),
-				knap (i-1, avail-Vector.sub(weights, i)) + Vector.sub(values, i) |)
+		  val (a, b) = (| knap (i-1, avail, weights, values),
+				knap (i-1, avail-Vector.sub(weights, i), weights, values) + Vector.sub(values, i) |)
 	      in
 		  if a > b
 		  then a
 		  else b
 	      end
-	  else knap (i-1, avail))
+	  else knap (i-1, avail, weights, values))
 
 structure Main =
   struct
@@ -40,8 +40,17 @@ structure Main =
 	
     fun main (_, args) =
 	let
-	    val n = (case getSizeArg args of NONE => dfltN | SOME n => n)
-	    fun doit () = knap (Vector.length weights - 1, n)
+	    val (n, weights, values) = (case getSizeArg args
+					 of NONE => (dfltN, weights, values)
+					  | SOME n => let
+						val weights = Vector.fromList
+								 (List.tabulate (n, fn _ => Rand.inRangeInt (10, 150)))
+						val values = Vector.fromList
+								 (List.tabulate (n, fn _ => Rand.inRangeInt (10, 200)))
+					    in
+						(n*20, weights, values)
+					    end)
+	    fun doit () = knap (Vector.length weights - 1, n, weights, values)
 	    val result = RunPar.run doit
 	in
 	    print (Int.toString result);
