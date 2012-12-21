@@ -40,17 +40,17 @@ fun knap (i, avail, weights, values, memo) =
 structure Main =
   struct
 
-    fun getSizeArg args =
+    fun getArg (name, args) = 
 	(case args
 	  of arg1 :: arg2 :: args =>
-	     if String.same (arg1, "-size") then Int.fromString arg2
-	     else getSizeArg (arg2 :: args)
+	     if String.same (arg1, name) then Int.fromString arg2
+	     else getArg (name, arg2 :: args)
 	   | _ => NONE
 	(* end case *))
-	
+
     fun main (_, args) =
 	let
-	    val (n, weights, values) = (case getSizeArg args
+	    val (n, weights, values) = (case getArg ("-size", args)
 					 of NONE => (400, weights, values)
 					  | SOME n => let
 						val weights = Vector.fromList
@@ -60,8 +60,14 @@ structure Main =
 					    in
 						(n*20, weights, values)
 					    end)
+	    val elementsPerNode = (case getArg ("-elem", args)
+				    of NONE => (1024*32)
+				     | SOME v => v)
+	    val bucketsPerElement = (case getArg ("-buckets", args)
+				      of NONE => 10
+				       | SOME v => v)
 	    fun doit () = knap (Vector.length weights - 1, n, weights, values,
-				PartitionedFixedMemoTable.mkTable ())
+				PartitionedFixedMemoTable.mkTable (elementsPerNode, bucketsPerElement))
 	    val result = RunPar.run doit
 	in
 	    print (Int.toString result);
