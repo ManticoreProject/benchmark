@@ -70,8 +70,9 @@ structure Main =
 				PartitionedFixedMemoTable.mkTable (elementsPerNode, bucketsPerElement))
 	    val result = RunPar.run doit
 	in
-	    print (Int.toString result);
-	    print "\n"
+            result
+(*	    print (Int.toString result);
+	    print "\n" *)
 	end
   end
 
