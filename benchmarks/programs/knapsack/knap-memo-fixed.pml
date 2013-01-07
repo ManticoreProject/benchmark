@@ -61,10 +61,10 @@ structure Main =
 						(n*20, weights, values)
 					    end)
 	    val elementsPerNode = (case getArg ("-elem", args)
-				    of NONE => (1024*32)
+				    of NONE => 50000
 				     | SOME v => v)
 	    val bucketsPerElement = (case getArg ("-buckets", args)
-				      of NONE => 10
+				      of NONE => 64
 				       | SOME v => v)
 	    fun doit () = knap (Vector.length weights - 1, n, weights, values,
 				PartitionedFixedMemoTable.mkTable (elementsPerNode, bucketsPerElement))

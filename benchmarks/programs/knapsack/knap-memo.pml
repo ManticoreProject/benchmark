@@ -64,8 +64,9 @@ structure Main =
 				MemoTable.mkTable (Vector.length weights * (n+1)))
 	    val result = RunPar.run doit
 	in
-	    print (Int.toString result);
-	    print "\n"
+(*	    print (Int.toString result);
+	    print "\n" *)
+            ()
 	end
   end
 
