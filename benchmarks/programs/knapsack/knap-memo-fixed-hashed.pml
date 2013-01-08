@@ -19,12 +19,12 @@ fun knap (i, avail, weights, values, memo) =
 		  fun lookup (a, b) = let
 		      val index = a + Vector.length values * b
 		  in
-		      case PartitionedFixedMemoTable.find (memo, index)
+		      case PartitionedFixedHashedMemoTable.find (memo, index)
 		       of SOME a => a
 			| NONE => let
 			      val res = knap (a, b, weights, values, memo)
 			  in
-			      PartitionedFixedMemoTable.insert (memo, index, res);
+			      PartitionedFixedHashedMemoTable.insert (memo, index, res);
 			      res
 			  end
 		  end
@@ -67,7 +67,7 @@ structure Main =
 				      of NONE => 64
 				       | SOME v => v)
 	    fun doit () = knap (Vector.length weights - 1, n, weights, values,
-				PartitionedFixedMemoTable.mkTable (elementsPerNode, bucketsPerElement))
+				PartitionedFixedHashedMemoTable.mkTable (elementsPerNode, bucketsPerElement))
 	    val result = RunPar.run doit
 	in
             result
