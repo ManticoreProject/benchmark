@@ -65,7 +65,7 @@ structure Main =
 	    val result = RunPar.run doit
 	in
 (*	    print (Int.toString result);
-	    print "\n" *)
+	    print "\n"; *)
             ()
 	end
   end
