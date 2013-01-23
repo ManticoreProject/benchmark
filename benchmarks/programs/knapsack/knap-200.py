@@ -125,7 +125,4 @@ def knapsack01_dp(items, limit):
  
  
 bagged = knapsack01_dp(items, 4000)
-print("Bagged the following items\n  " +
-      '\n  '.join(sorted(item for item,_,_ in bagged)))
 val, wt = totalvalue(bagged)
-print("for a total value of %i and a total weight of %i" % (val, -wt))
