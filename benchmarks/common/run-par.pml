@@ -25,8 +25,33 @@ structure RunPar (* sig
       ans
     end
 
+  fun mkRunWithIters optToStr (f, iters) = let
+      fun loop (i, acc) =
+          if i = 0
+          then (case optToStr
+                 of SOME tos => Print.printLn (tos (acc div iters))
+                  | NONE => ())
+          else (let
+                   val b = Time.now ()
+#ifndef SEQUENTIAL
+                   val ans = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), f)
+#else
+                   val ans = f ()
+#endif
+                   val e = Time.now ()
+               in
+                   loop (i-1, acc+e-b)
+               end)
+      (* Do one "warm-up" execution, before timing. *)
+      val _ = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), f)
+  in
+      loop (iters, 0)
+  end
+
   val run = mkRun (SOME Time.toString)
 	    
+  val runWithIters = mkRunWithIters (SOME Time.toString) 
+
   val runMicrosec = mkRun (SOME Time.toStringMicrosec)
 
   fun runSilent f = let
