@@ -12,18 +12,17 @@ type 'a seq = 'a S.rope
 
 type scalar = double
 
-fun compute (points) = let
-            fun ack(m,n) = if m=0 then
-		   n+1
-	       else if m>0 andalso n=0 then
-		   ack(m-1,1)
-	       else if m>0 andalso n>0 then
-		   ack(m-1,ack(m,n-1))
-	       else
-		   raise Fail "undefined"
-            val _ = ack (3,3)
+fun compute2d (points) = let
+    (* Don't bother with the square root *)
+    fun dist ((x1,y1), (x2,y2)) = let
+        val d1 = x1-x2
+        val d2 = y1-y2
+    in
+        d1*d1+d2*d2
+    end
+
 in
-    points
+    [| dist (p1, p2) | p1 in points, p2 in points |]
 end
 
 end
@@ -34,24 +33,33 @@ structure Main = struct
          of NONE => (
              print "ERROR: must supply a file name in the geometry file format.\n";
              raise Fail "ERROR: must supply a file name in the geometry file format.")
-          | SOME f => (let
-	    val f = TextIO.openIn f
-(*	    val SOME nParticles = Int.fromString (Option.valOf (TextIO.inputLine f))
-	    fun rd d = Option.valOf (Double.fromString d)
-	    fun lp acc =
-		(case TextIO.inputLine f
-		  of NONE => List.rev acc
-		   | SOME line => 
-		     let
-			 val xp::yp::mass::xv::yv::nil = List.map rd (String.tokenize " " line)
-		     in
-			 lp(particle(mass, (xp, yp), (xv, yv)) :: acc)
-		     end) *)
-	in
-(*	    lp nil *)
-            
-            [| (1,2), (3, 4) |]
-	end)
+          | SOME f => (
+              let
+	          val f = TextIO.openIn f
+                  val sequenceStyle = Option.valOf (TextIO.inputLine f)
+              in
+                  if String.same(sequenceStyle, "pbbs_sequencePoint2d\n")
+                  then (
+                      let
+	                  fun rd d = Option.valOf (Double.fromString d)
+	                  fun lp acc =
+		              (case TextIO.inputLine f
+		                of NONE => List.rev acc
+		                 | SOME line => 
+		                   let
+			               val xp::yp::nil = List.map rd (String.tokenize " " line)
+		                   in
+			               lp((xp, yp) :: acc)
+		                   end)
+                          val listOfPoints = lp nil
+                          fun fromList l = PArray.fromRope(Rope.fromList l)
+	              in
+                          fromList listOfPoints
+                      end)
+                  else (
+                      print (String.concat["We do not yet support file format: ", sequenceStyle]);
+                      raise Fail "We do not yet support pbbs_sequencePoint3d")
+	      end)
 	
     fun getFileArg args =
 	(case args
@@ -67,7 +75,7 @@ structure Main = struct
             val nIters = 30
 
 	    fun doit () =
-                NearestNeighbor.compute points
+                NearestNeighbor.compute2d points
 		
 	in
 	    RunPar.runWithIters (doit, nIters)
