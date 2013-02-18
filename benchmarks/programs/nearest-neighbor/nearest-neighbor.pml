@@ -7,12 +7,23 @@
 
 structure NearestNeighbor = struct
 
-structure S = Rope
-type 'a seq = 'a S.rope
+fun quicksort (xs) = 
+    if PArray.length xs <= 1 then
+	xs
+    else
+	let
+            fun filter pred pa =
+                PArray.fromRope(Rope.filter pred (PArray.toRope pa))
+	    val p = PArray.sub (xs, PArray.length xs div 2)
+	    val (lt, eq, gt) = (| filter (fn x => x < p) xs, 
+				filter (fn x => x = p) xs,
+				filter (fn x => x > p) xs |)
+	    val (l, u) = (| quicksort lt, quicksort gt |)
+	in
+            PArray.concat (l, PArray.concat (eq, u))
+	end
 
-type scalar = double
-
-fun compute2d (points) = let
+fun compute2d (points, k) = let
     (* Don't bother with the square root *)
     fun dist ((x1,y1), (x2,y2)) = let
         val d1 = x1-x2
@@ -20,9 +31,10 @@ fun compute2d (points) = let
     in
         d1*d1+d2*d2
     end
-
+    val allDistances = [| [| dist (p1, p2) | p1 in points |] | p2 in points |]
+    val sortedDistances = [| quicksort points | points in allDistances |]
 in
-    [| dist (p1, p2) | p1 in points, p2 in points |]
+    [| [| PArray.sub (pa, i) | i in [|0 to k-1|] |] | pa in sortedDistances |]
 end
 
 end
@@ -63,19 +75,30 @@ structure Main = struct
 	
     fun getFileArg args =
 	(case args
-	  of arg1 :: args =>
-             SOME arg1
-	   | _ => NONE)
+	  of arg1 :: arg2 :: args =>
+	     if String.same (arg1, "-file") then SOME arg2
+	     else getFileArg (arg2 :: args)
+	   | _ => NONE
+	(* end case *))
+
+    fun getKArg args =
+	(case args
+	  of arg1 :: arg2 :: args =>
+	     if String.same (arg1, "-k") then Option.valOf (Int.fromString arg2)
+	     else getKArg (arg2 :: args)
+	   | _ => 1
+	(* end case *))
 
     fun main (_, args) =
 	let
             val file = getFileArg args
+            val k = getKArg args
             val points = readFromFile file
 
             val nIters = 30
 
 	    fun doit () =
-                NearestNeighbor.compute2d points
+                NearestNeighbor.compute2d (points, k)
 		
 	in
 	    RunPar.runWithIters (doit, nIters)
