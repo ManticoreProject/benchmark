@@ -23,7 +23,7 @@ fun quicksort (xs) =
             PArray.concat (l, PArray.concat (eq, u))
 	end
 
-fun compute2d (points, k) = let
+fun compute2dNaive (points, k) = let
     (* Don't bother with the square root *)
     fun dist ((x1,y1), (x2,y2)) = let
         val d1 = x1-x2
@@ -37,6 +37,24 @@ in
     [| [| PArray.sub (pa, i) | i in [|0 to k-1|] |] | pa in sortedDistances |]
 end
 
+fun compute2d (points:(double*double) PArray.parray, k) = let
+    (* Don't bother with the square root *)
+    fun dist ((x1:double,y1), (x2,y2)) = let
+        val d1 = x1-x2
+        val d2 = y1-y2
+    in
+        d1*d1+d2*d2
+    end
+    val rpoints : (double*double) Rope.rope = PArray.toRope points
+    val _ = Rope.foreach (fn (i, p2) => 
+			     Rope.foreach (fn (i, p1) => (dist (p1, p2); ())) rpoints)
+	    rpoints
+(*    val allDistances = [| [| dist (p1, p2) | p1 in points |] | p2 in points |] *)
+(*    val sortedDistances = [| quicksort points | points in allDistances |] *)
+in
+(*    [| [| PArray.sub (pa, i) | i in [|0 to k-1|] |] | pa in sortedDistances |] *)
+    points
+end
 end
 
 structure Main = struct
