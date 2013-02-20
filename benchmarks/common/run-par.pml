@@ -43,7 +43,11 @@ structure RunPar (* sig
                    loop (i-1, acc+e-b)
                end)
       (* Do one "warm-up" execution, before timing. *)
+#ifndef SEQUENTIAL
       val _ = ImplicitThread.runOnWorkGroup (WorkStealing.workGroup (), f)
+#else
+      val _ = f ()
+#endif
   in
       loop (iters, 0)
   end
