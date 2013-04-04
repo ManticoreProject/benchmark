@@ -31,62 +31,68 @@ structure TicketLock = struct
 
   typedef ticket_lock = 
                 ![
-	           int,      (* current value *)
-	           int       (* ticket counter *)
+	           long,      (* current value *)
+	           long       (* ticket counter *)
 	         ];
 
   (* create an ivar. this ivar is not seeded with any value. *)
   define @create (_ : unit / exh : exh) : ticket_lock =
-      let l : ticket_lock = alloc (0, 0)
+      let l : ticket_lock = alloc (0:long, 0:long)
       let l : ticket_lock = promote(l)
       return(l)
     ;
 
-  define @lock (l : ticket_lock / exh : exh) : ml_int =
-      let ticket : int = I32FetchAndAdd (&1(l), 1)
-      let p : ml_int = alloc(ticket)
-      fun spinLp () : ml_int =
-          if I32Eq(&0(l), ticket)
+  define @lock (l : ticket_lock / exh : exh) : ml_long =
+      let ticket : long = I64FetchAndAdd (&1(l), 1:long)
+      let p : ml_long = alloc(ticket)
+      fun spinLp (t : long) : ml_long =
+          if I64Eq(&0(l), ticket)
 	  then
               return (p)
           else
-	      do Pause()					
-	      apply spinLp ()
-      apply spinLp()
+              do SchedulerAction.@sleep (t)
+              let t : long = I64Mul(t,2:long)
+	      apply spinLp (t)
+      apply spinLp(100000:long)
     ;
     
-  define @unlock (l : ticket_lock, t : ml_int / exh : exh) : unit =
-       let t : int = #0(t)
-       let t : int = I32Add(t,1)
+  define @unlock (l : ticket_lock, t : ml_long / exh : exh) : unit =
+       let t : long = #0(t)
+       let t : long = I64Add(t,1:long)
        do #0(l) := t
        return (enum(0):PrimTypes.unit)
     ;
-  define @unlock-w (arg : [ticket_lock, ml_int] / exh : exh) : unit =
+  define @unlock-w (arg : [ticket_lock, ml_long] / exh : exh) : unit =
     @unlock (#0(arg), #1(arg) / exh)
   ;
   )                                                        
 
   type ticket_lock = _prim(ticket_lock)
   val create : unit -> ticket_lock = _prim(@create)
-  val lock : ticket_lock -> int = _prim(@lock)
-  val unlock : ticket_lock * int -> unit = _prim(@unlock-w)
+  val lock : ticket_lock -> long = _prim(@lock)
+  val unlock : ticket_lock * long -> unit = _prim(@unlock-w)
 end
 
 structure TransactionalTransfer = struct
 
   val accounts = Array.tabulate (Global.numAccounts, fn i => 1000)
   val transfers = Array.tabulate (10001, fn i => Rand.inRangeInt(0, Global.numAccounts))
+  val lock = TicketLock.create ()
 
   fun transfer (index) = let
       val index = index mod Global.numAccounts
       val v = 100
       val i = Array.sub (transfers, index)
       val j = Array.sub (transfers, (index+1))
+      val _ = print ("About to lock\n")
+      val ticket = TicketLock.lock (lock)
+      val _ = print (String.concat["Ticket number: ", Long.toString ticket, "\n"])
       val i' = Array.sub (accounts, i)
       val j' = Array.sub (accounts, j)
   in
       Array.update (accounts, i, i'-v);
-      Array.update (accounts, j, j'-v)
+      Array.update (accounts, j, j'-v);
+      TicketLock.unlock (lock, ticket)
   end
 end
 
@@ -160,7 +166,8 @@ structure Main =
 
 	    fun doit () = case whichState
                            of 0 => doTransfersUnprotected (0, n)
-                            | 2 => doTransfersTransactional (0, n)
+                            | 1 => doTransfersSerial (0, n)
+                            | 3 => doTransfersTransactional (0, n)
                             | _ => raise Fail "Invalid state type."
 	in
 	    RunPar.run doit
