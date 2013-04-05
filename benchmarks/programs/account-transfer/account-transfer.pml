@@ -35,7 +35,6 @@ structure TicketLock = struct
 	           long       (* ticket counter *)
 	         ];
 
-  (* create an ivar. this ivar is not seeded with any value. *)
   define @create (_ : unit / exh : exh) : ticket_lock =
       let l : ticket_lock = alloc (0:long, 0:long)
       let l : ticket_lock = promote(l)
