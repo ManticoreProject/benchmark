@@ -70,15 +70,16 @@ structure TicketLock = struct
 
   define @lock_with_ticket (l : ticket_lock, ticket : ml_long  / exh : exh) : unit =
       let ticket : long = #0(ticket)
-      fun spinLp (t : long) : unit =
-          if I64Eq(#0(l), ticket)
+      fun spinLp () : unit =
+          let difference : long = I64Sub(ticket,#0(l))
+          if I64Eq(difference, 0:long)
 	  then
               return (enum(0):PrimTypes.unit)
           else
+              let t : long = I64Mul(difference, 100000:long)
               do SchedulerAction.@sleep (t)
-              let t : long = I64Mul(t,2:long)
-	      apply spinLp (t)
-      apply spinLp(1000000:long)
+	      apply spinLp ()
+      apply spinLp()
     ;
   define @lock_with_ticket-w (arg : [ticket_lock, ml_long] / exh : exh) : unit =
     @lock_with_ticket (#0(arg), #1(arg) / exh)
