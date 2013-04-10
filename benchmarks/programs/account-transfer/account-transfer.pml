@@ -8,7 +8,7 @@ structure Global = struct
   val numAccounts = 10000
 end
 
-structure UnprotectedTransfer = struct
+structure Transfer = struct
 
   val accounts = Array.tabulate (Global.numAccounts, fn i => 1000)
   val transfers = Array.tabulate (10001, fn i => Rand.inRangeInt(0, Global.numAccounts))
@@ -22,28 +22,7 @@ structure UnprotectedTransfer = struct
       val j' = Array.sub (accounts, j)
   in
       Array.update (accounts, i, i'-v);
-      Array.update (accounts, j, j'-v)
-  end
-end
-
-structure TransactionalTransfer = struct
-
-  val accounts = Array.tabulate (Global.numAccounts, fn i => 1000)
-  val transfers = Array.tabulate (10001, fn i => Rand.inRangeInt(0, Global.numAccounts))
-  val lock = TicketLock.create ()
-
-  fun transfer (index) = let
-      val index = index mod Global.numAccounts
-      val v = 100
-      val i = Array.sub (transfers, index)
-      val j = Array.sub (transfers, (index+1))
-      val ticket = TicketLock.lock (lock)
-      val i' = Array.sub (accounts, i)
-      val j' = Array.sub (accounts, j)
-  in
-      Array.update (accounts, i, i'-v);
-      Array.update (accounts, j, j'-v);
-      TicketLock.unlock (lock, ticket)
+      Array.update (accounts, j, j'+v)
   end
 end
 
@@ -84,7 +63,7 @@ structure Main =
 
             fun doTransfersUnprotected (start, n) =
                 if (n = 1)
-                then (UnprotectedTransfer.transfer (start))
+                then (Transfer.transfer (start))
                 else let
                         val half = n div 2
                         val _ = (| doTransfersUnprotected (start, half),
@@ -93,31 +72,71 @@ structure Main =
                         ()
                     end
 
-            fun doTransfersSerial (start, n) =
+            fun doTransfersSequential (start, n) =
                 if (n = 1)
-                then (UnprotectedTransfer.transfer (start))
+                then (Transfer.transfer (start))
                 else let
                         val half = n div 2
-                        val _ = ( doTransfersSerial (start, half),
-                                 doTransfersSerial (start + half, half) )
+                        val _ = ( doTransfersSequential (start, half),
+                                 doTransfersSequential (start + half, half) )
                     in
                         ()
                     end
                            
-            fun doTransfersTransactional (start, n) =
+            fun doTransfersSerial (start, n) =
                 if (n = 1)
-                then (TransactionalTransfer.transfer (start))
+                then (Transfer.transfer (start))
                 else let
                         val half = n div 2
-                        val _ = (| doTransfersTransactional (start, half),
-                                 doTransfersTransactional (start + half, half) |)
+                        val lock = TicketLock.create ()
+                        fun f1() = let
+                            val ticket = 0
+                            val _ = TicketLock.lockWithTicket(lock, ticket)
+                        in
+                            doTransfersSerial (start, half);
+                            TicketLock.unlock (lock, ticket)
+                        end
+                        fun f2() = let
+                            val ticket = 1
+                            val _ = TicketLock.lockWithTicket(lock, ticket)
+                        in
+                            doTransfersSerial (start + half, half);
+                            TicketLock.unlock (lock, ticket)
+                        end
+                        val _ = (| f1(),
+                                 f2() |)
+                    in
+                        ()
+                    end
+
+            fun doTransfersTransactional (start, n) =
+                if (n = 1)
+                then (Transfer.transfer (start))
+                else let
+                        val half = n div 2
+                        val lock = TicketLock.create ()
+                        fun f1() = let
+                            val ticket = TicketLock.lock(lock)
+                        in
+                            doTransfersTransactional (start, half);
+                            TicketLock.unlock (lock, ticket)
+                        end
+                        fun f2() = let
+                            val ticket = TicketLock.lock(lock)
+                        in
+                            doTransfersTransactional (start + half, half);
+                            TicketLock.unlock (lock, ticket)
+                        end
+                        val _ = (| f1(),
+                                 f2() |)
                     in
                         ()
                     end
 
 	    fun doit () = case whichState
                            of 0 => doTransfersUnprotected (0, n)
-                            | 1 => doTransfersSerial (0, n)
+                            | 1 => doTransfersSequential (0, n)
+                            | 2 => doTransfersSerial (0, n)
                             | 3 => doTransfersTransactional (0, n)
                             | _ => raise Fail "Invalid state type."
 	in
