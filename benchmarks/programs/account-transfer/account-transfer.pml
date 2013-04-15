@@ -26,6 +26,43 @@ structure Transfer = struct
   end
 end
 
+structure TransferTransactional = struct
+
+  val accounts = Array.tabulate (Global.numAccounts, fn i => 1000)
+  val transfers = Array.tabulate (10001, fn i => Rand.inRangeInt(0, Global.numAccounts))
+  val arrayTransactionSize = 100
+  val locks = Array.tabulate (Global.numAccounts div arrayTransactionSize + 1, fn _ => TicketLock.create())
+
+  fun transfer (index) = let
+      val index = index mod Global.numAccounts
+      val v = 100
+      val i = Array.sub (transfers, index)
+      val j = Array.sub (transfers, (index+1))
+      val iLockIndex = i div arrayTransactionSize
+      val jLockIndex = j div arrayTransactionSize
+      val iLock = Array.sub (locks, iLockIndex)
+      val jLock = Array.sub (locks, jLockIndex)
+      val i' = Array.sub (accounts, i)
+      val j' = Array.sub (accounts, j)
+      val (ticket1, ticket2) = (case Int.compare (iLockIndex, jLockIndex)
+                                 of LESS => (TicketLock.lock iLock, TicketLock.lock jLock)
+                                  | EQUAL => (TicketLock.lock iLock, 0)
+                                  | GREATER => (TicketLock.lock jLock, TicketLock.lock iLock))
+      fun unlock () = (case Int.compare (iLockIndex, jLockIndex)
+                        of LESS => (TicketLock.unlock (iLock, ticket1); TicketLock.unlock (jLock, ticket2))
+                         | EQUAL => (TicketLock.unlock (iLock, ticket1))
+                         | GREATER => (TicketLock.unlock (jLock, ticket1); TicketLock.unlock (iLock, ticket2)))
+  in
+      if ((Array.sub (accounts, i) = i') andalso
+          (Array.sub (accounts, j) = j'))
+      then (Array.update (accounts, i, i'-v);
+            Array.update (accounts, j, j'+v);
+            unlock())
+      else (unlock();
+            transfer(index))
+  end
+end
+
 structure Main =
   struct
 
@@ -111,24 +148,11 @@ structure Main =
 
             fun doTransfersTransactional (start, n) =
                 if (n = 1)
-                then (Transfer.transfer (start))
+                then (TransferTransactional.transfer (start))
                 else let
                         val half = n div 2
-                        val lock = TicketLock.create ()
-                        fun f1() = let
-                            val ticket = TicketLock.lock(lock)
-                        in
-                            doTransfersTransactional (start, half);
-                            TicketLock.unlock (lock, ticket)
-                        end
-                        fun f2() = let
-                            val ticket = TicketLock.lock(lock)
-                        in
-                            doTransfersTransactional (start + half, half);
-                            TicketLock.unlock (lock, ticket)
-                        end
-                        val _ = (| f1(),
-                                 f2() |)
+                        val _ = (| doTransfersTransactional (start, half),
+                                 doTransfersTransactional (start + half, half) |)
                     in
                         ()
                     end
