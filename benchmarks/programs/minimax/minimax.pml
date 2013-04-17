@@ -203,6 +203,48 @@ structure Minimax = struct
                                DynamicMemoTable.insert (memoTable, boardToIndex (p,b), final);
 		               Rose ((b, final), trees)
 	                   end))
+
+  (* Parallel, unprotected transposition table with timeout *)
+  val lock = TicketLock.create()
+  val best = Ref.new 0
+  fun updateBest (score, board) = let
+      val orig = Ref.get best
+  in
+      if score > orig
+      then (let
+                val ticket = TicketLock.lock (lock)
+            in
+                if (Ref.get(best) = orig)
+                then (Ref.set (best, score);
+                      TicketLock.unlock (lock, ticket))
+                else (TicketLock.unlock (lock, ticket);
+                      updateBest (score, board))
+           end)
+      else ()
+  end
+      
+  fun getBest () =
+      mkLeaf (empty, Ref.get best)
+
+  val startTime = Time.now()
+  fun minimaxTimeout (p : player, depth, timeout) (b:board) : game_tree = let
+      val elapsed = Time.now() - startTime
+  in
+      if (timeout > 0 andalso elapsed > timeout)
+      then (mkLeaf (b, score b))
+      else (if (depth=0 orelse gameOver(b)) then (
+                updateBest (score b, b);
+	        mkLeaf (b, score b))
+	    else (let 
+                      val trees = parMap (minimaxTimeout (other p, depth-1, timeout), (successors (b, p)))
+	              val scores = map (compose (snd, top)) trees
+                      val final = (case p
+                                    of X => listmax scores
+                                     | Y => listmin scores)
+	          in
+		      Rose ((b, final), trees)
+	          end))
+  end
 end
 
 structure Main =
@@ -224,9 +266,19 @@ structure Main =
 	let
             val depth = getArg ("-depth", args, 4)
             val style = getArg ("-memoized", args, 0)
-            val function = if (style = 0)
-                           then T.minimax (T.X, depth)
-                           else T.minimaxMemo (T.X, depth)
+            val timeout = Int.toLong (getArg ("-timeout", args, 0))
+            fun miniParallel (player, depth, timeout) board = let
+                val x = [| T.minimaxTimeout (T.X, i, timeout) board | i in [| 1 to depth |] |]
+            in
+                PArray.sub (x, 0)
+                (* T.getBest() *)
+            end
+                
+            val function = (case style
+                             of 0 => T.minimax (T.X, depth)
+                              | 1 => T.minimaxMemo (T.X, depth)
+                              | 2 => miniParallel (T.X, depth, timeout)
+                              | _ => (raise Fail "Invalid style. 0 non-memo; 1 memo; 2 parallel table search.\n"))
 	    fun doit () = (function T.empty; ())
 	in
 	    RunPar.run doit
