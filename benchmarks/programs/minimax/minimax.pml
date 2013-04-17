@@ -20,6 +20,12 @@ structure Minimax = struct
 	   in
 	       xs1' @ xs2'
 	   end)
+  fun parMap (f, xs) = let
+      val parr = PArray.fromRope (Rope.fromList xs)
+  in
+      Rope.toList (PArray.toRope ([| f x | x in parr |]))
+  end
+      
 
   datatype player = X | O
 
@@ -119,6 +125,9 @@ structure Minimax = struct
   (* This coarse heuristic function suffices b/c we can build the *whole* tree. *)
   fun score b = if isWinFor b X then 1 else if isWinFor b O then ~1 else 0
 
+  (* Compute the number of occupied squares on a board *)
+  fun boardDepth b = List.foldr (fn (p,b) => case p of SOME _ => b+1 | _ => b) 0 b
+
   datatype 'a rose_tree (* general tree *)
     = Rose of 'a * ('a rose_tree list)
 
@@ -207,10 +216,13 @@ structure Minimax = struct
   (* Parallel, unprotected transposition table with timeout *)
   val lock = TicketLock.create()
   val best = Ref.new 0
+  val states = Ref.new 0
   fun updateBest (score, board) = let
       val orig = Ref.get best
+      (* val depth = boardDepth board *)
+      val _ = Ref.set(states, (Ref.get states) + 1)
   in
-      if score > orig
+      if score >= orig 
       then (let
                 val ticket = TicketLock.lock (lock)
             in
@@ -223,8 +235,9 @@ structure Minimax = struct
       else ()
   end
       
-  fun getBest () =
-      mkLeaf (empty, Ref.get best)
+  fun getBest () =(
+      print (Int.toString (Ref.get states));
+      mkLeaf (empty, Ref.get best))
 
   val startTime = Time.now()
   fun minimaxTimeout (p : player, depth, timeout) (b:board) : game_tree = let
@@ -235,7 +248,9 @@ structure Minimax = struct
       else (if (depth=0 orelse gameOver(b)) then (
                 updateBest (score b, b);
 	        mkLeaf (b, score b))
-	    else (let 
+	    else (case DynamicMemoTable.find (memoTable, boardToIndex (p,b))
+               of SOME x => Rose ((b, x), [])
+                | NONE => (let 
                       val trees = parMap (minimaxTimeout (other p, depth-1, timeout), (successors (b, p)))
 	              val scores = map (compose (snd, top)) trees
                       val final = (case p
@@ -243,7 +258,7 @@ structure Minimax = struct
                                      | Y => listmin scores)
 	          in
 		      Rose ((b, final), trees)
-	          end))
+	          end)))
   end
 end
 
@@ -270,8 +285,7 @@ structure Main =
             fun miniParallel (player, depth, timeout) board = let
                 val x = [| T.minimaxTimeout (T.X, i, timeout) board | i in [| 1 to depth |] |]
             in
-                PArray.sub (x, 0)
-                (* T.getBest() *)
+                T.getBest()
             end
                 
             val function = (case style
@@ -281,7 +295,9 @@ structure Main =
                               | _ => (raise Fail "Invalid style. 0 non-memo; 1 memo; 2 parallel table search.\n"))
 	    fun doit () = (function T.empty; ())
 	in
-	    RunPar.run doit
+            case style
+             of 2 => RunPar.runSilent doit
+              | _ => RunPar.run doit
 	end
   end
 
