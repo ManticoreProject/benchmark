@@ -30,10 +30,8 @@ structure TransferTransactional = struct
 
   val accounts = Array.tabulate (Global.numAccounts, fn i => 1000)
   val transfers = Array.tabulate (10001, fn i => Rand.inRangeInt(0, Global.numAccounts))
-  val arrayTransactionSize = 100
-  val locks = Array.tabulate (Global.numAccounts div arrayTransactionSize + 1, fn _ => TicketLock.create())
 
-  fun transfer (index) = let
+  fun transfer (index, arrayTransactionSize, locks) = let
       val index = index mod Global.numAccounts
       val v = 100
       val i = Array.sub (transfers, index)
@@ -59,7 +57,7 @@ structure TransferTransactional = struct
             Array.update (accounts, j, j'+v);
             unlock())
       else (unlock();
-            transfer(index))
+            transfer(index, arrayTransactionSize, locks))
   end
 end
 
@@ -71,6 +69,14 @@ structure Main =
 	  of arg1 :: arg2 :: args =>
 	     if String.same (arg1, "-size") then Int.fromString arg2
 	     else getSizeArg (arg2 :: args)
+	   | _ => NONE
+	(* end case *))
+
+    fun getLockingArg args =
+	(case args
+	  of arg1 :: arg2 :: args =>
+	     if String.same (arg1, "-locking") then Int.fromString arg2
+	     else getLockingArg (arg2 :: args)
 	   | _ => NONE
 	(* end case *))
 
@@ -93,6 +99,12 @@ structure Main =
             val n = (case getSizeArg args
                       of NONE => 1000000
                        | SOME n => n)
+
+            val locking = (case getLockingArg args
+                            of NONE => 1
+                             | SOME n => n)
+
+            val locks = Array.tabulate (Global.numAccounts div locking + 1, fn _ => TicketLock.create())
 
             val whichState = (case getStateArg args
                                of NONE => 0
@@ -148,7 +160,7 @@ structure Main =
 
             fun doTransfersTransactional (start, n) =
                 if (n = 1)
-                then (TransferTransactional.transfer (start))
+                then (TransferTransactional.transfer (start, locking, locks))
                 else let
                         val half = n div 2
                         val _ = (| doTransfersTransactional (start, half),
