@@ -15,8 +15,9 @@ structure STMBench7 = struct
 
   fun buildGraph () = let
       fun allocateComposite i = let
-          fun createLocal i = LOCAL (Array.tabulate (numAtomics, fn _ => 0),
-                                     Array.tabulate (numConnections, fn _ => NONE))
+          fun createLocal i = LOCAL (Array.tabulate (numAtomics, fn _ => i),
+                                     Array.tabulate (numConnections, fn _ => SOME(Rand.inRangeInt (0, numAtomics-1),
+                                                                                  Rand.inRangeInt (0, numAtomics-1))))
       in
           COMP (Array.tabulate (branchFactor, createLocal))
       end
@@ -25,7 +26,47 @@ structure STMBench7 = struct
       GRAPH composites
   end
 
-  fun doTraversals g = ()
+  val maxReadComponents = 3
+  fun doReadTraversal (GRAPH comps) = let
+      val numToRead = Rand.inRangeInt (0, maxReadComponents-1)
+      fun readComponents i =
+          if i = 0
+          then ()
+          else (Array.sub (comps, Rand.inRangeInt (0, branchFactor-1));
+                readComponents (i-1))
+  in
+      readComponents numToRead
+  end
+
+  fun doWriteTraversal (GRAPH comps) = let
+      val numToWrite = Rand.inRangeInt (0, 3)
+      fun writeComponent (COMP locals) = let
+          val LOCAL(comps, cons) = Array.sub (locals, Rand.inRangeInt (0, branchFactor-1))
+      in
+          Array.update (cons, Rand.inRangeInt (0, numConnections-1),
+                        SOME(Rand.inRangeInt (0, numAtomics-1), Rand.inRangeInt (0, numAtomics-1)))
+      end
+      fun writeComponents i =
+          if i = 0
+          then ()
+          else (writeComponent (Array.sub (comps, Rand.inRangeInt (0, branchFactor-1)));
+                writeComponents (i-1))
+  in
+      writeComponents numToWrite
+  end
+                                      
+                      
+      
+
+  (* From the paper: balanced is 60% reads; 40% writes *)
+  fun doTraversal (g, i) =
+      if i mod 10<4
+      then doReadTraversal g
+      else doWriteTraversal g
+
+      
+  fun doTraversals (g, n) =
+     [| doTraversal (g, i) | i in [| 1 to n |] |]
       
 
 end
@@ -45,10 +86,10 @@ structure Main =
 
     fun main (_, args) =
 	let
-(*             val depth = getArg ("-depth", args, 4) *)
+            val size = getArg ("-size", args, 100000) 
             val g = STMBench7.buildGraph ()
             fun doit () =
-                STMBench7.doTraversals g
+                STMBench7.doTraversals (g, size)
 	in
             RunPar.run doit
 	end
