@@ -20,7 +20,7 @@ fun switch(x, Chan k) = callcc (fn k' => throw k(x, Chan k'))
 (*put value x in channel c*)
 fun put(x, c) = #2(switch(x, c))
 (*Get a value from the channel c*)
-fun get c = switch(0, c)
+fun get c = switch(0, c) (*This 0 ends up getting ignored on a get*)
 
 (*Functions for composing transducers, sinks, and sources*)
 fun sourceToSink(source, sink) = 
@@ -84,14 +84,16 @@ fun printVal u = let val (x, u') = get u
                  in (print ("Answer = " ^ Int.toString(x) ^ "\n"); printVal u')
                  end
 
+(*
 fun sourceToSink(source, sink) = 
     callcc (fn k => source(#2(callcc (fn u => throw k (sink (Chan u))))))
+    *)
 
 (*Compose the transducers*)
 fun listProcessor l = sourceToSink(sourceToTransducer(sourceToTransducer(procList l, add_five), mul_ten), printVal)
 fun inputProcessor () = sourceToSink(sourceToTransducer(sourceToTransducer(procInput, add_five), mul_ten), printVal)
 
-fun simple () = sourceToSink(procInput, printVal)
+fun simple () = sourceToSink2(procInput, printVal)
 
 
 
