@@ -14,16 +14,18 @@ structure DenseMatrixMultiply =
     structure R = Rope
 
     fun add (x, y) = x + y
-    fun mul (x : double, y) = x * y
 
     fun denseMatrixMultiply (m, n) =
 	let
-	    fun vvm (b, a) =
-		R.reduce add 0.0 (RopePair.map (mul, b, a))
+(*	    fun vvm (b, a) =
+                PArray.reduce add 0.0 [| bi * ai | bi in b, ai in a |] *)
+(*		R.reduce add 0.0 (R.tabulate (R.length b, fn i => R.sub (b, i) * R.sub (a, i))) *)
 	    fun mvm (n, a) =
-		R.map (fn ni => vvm (ni, a)) n
+                [|  PArray.reduce add 0.0 [| bi * ai | bi in ni, ai in a |] | ni in n |]
+(*		R.tabulate (R.length n, fn i => vvm (R.sub (n, i), a)) *)
 	in
-	    R.map (fn mi => mvm (n, mi)) m
+            [| mvm (n, mi) | mi in m |]
+(**	    R.tabulate (R.length m, fn i => mvm (n, R.sub (m, i))) *)
 	end
 
   end
@@ -42,7 +44,9 @@ structure Main =
 	(* end case *))
 
     fun randomMatrix n =
-	Rope.tabulate (n, fn _ => Rope.tabulate (n, fn _ => Rand.randDouble (0.0, 1000.0)))
+        [| [| Rand.randDouble (0.0, 1000.0) | i in [| 0 to n |] |] | j in  [| 0 to n |] |]
+
+(*	Rope.tabulate (n, fn _ => Rope.tabulate (n, fn _ => Rand.randDouble (0.0, 1000.0))) *)
 	
     fun main (_, args) =
 	let
