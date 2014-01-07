@@ -1,0 +1,11 @@
+Library
+	signature STRING_PRINTF
+	structure StringPrintf
+is
+	$/basis.cm
+	$/smlnj-lib.cm
+
+	string-printf.sig
+
+        (* Inline the simple stuff *)
+	string-printf.sml  (lambdasplit:infinity)
