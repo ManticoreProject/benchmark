@@ -17,6 +17,8 @@ fun eval (initial : state, final : state -> bool, transition) input =
     final (Vector.foldl transition initial input)
 
 exception WrongGuess of state
+
+
 fun specEval (initial, final : int -> bool, transition) input = 
     let val guessed = IVar.newIVar()
         val result = IVar.newIVar()
