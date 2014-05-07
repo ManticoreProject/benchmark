@@ -67,8 +67,8 @@ struct
                      in tryColors 0
                      end
              val res = color' 0 nil
-             val _ = if res then print "***********************Exhaustive KColor = true\n"
-                            else print "***********************Exhaustive KColor = false\n"
+          (*   val _ = if res then print "***********************Exhaustive KColor = true\n"
+                            else print "***********************Exhaustive KColor = false\n"*)
         in res
         end
 

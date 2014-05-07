@@ -98,23 +98,19 @@ fun makePipeline d f =
     then pmap f input
     else pmap f (makePipeline (d-1) f)
 
-val f = if seq
-        then fn _ => makePipeline depth fSeq
-        else fn _ => makePipeline depth (color k)
-
-(*
-val f = if seq
-        then fn _ => pmap fSeq (pmap' fSeq input)
-        else fn _ => pmap (color k) (pmap' (color k) input) *)
+val f = fn _ => makePipeline depth (color k)
 
 val l = RunPar.run (fn _ => let val l = List.map (fn x => IVar.getIVar x) (f())
                                 val _ = BlockOnIVar.block() in l end)
 
 val _ = printList' l
 
+val seq = fn _ => makePipeline depth fSeq
 
+val l' = RunPar.run (fn _ => let val l = List.map (fn x => IVar.getIVar x) (seq())
+                                val _ = BlockOnIVar.block() in l end)
 
-
+val _ = printList' l'
 
 
 

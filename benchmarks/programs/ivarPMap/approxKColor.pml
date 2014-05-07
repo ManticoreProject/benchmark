@@ -53,7 +53,7 @@ struct
                         of SOME node => lp(removeNode(g, node), k)  (*remove it from the graph*)
                          | NONE => false  (*no such node exists*)
             val res = lp(gList, n)
-            val _ = if res then print "ApproxKColor = true\n" else print "ApproxKColor = false\n"
+           (* val _ = if res then print "ApproxKColor = true\n" else print "ApproxKColor = false\n"*)
         in res
         end
 
