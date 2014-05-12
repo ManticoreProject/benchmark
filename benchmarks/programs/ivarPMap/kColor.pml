@@ -54,26 +54,44 @@ struct
         in () end
     (*------*)
 
+    fun printColoring c = 
+        case c
+            of (n, c')::xs => (print (Int.toString n ^ " -> " ^ Int.toString c' ^ "\n"); printColoring xs)
+             | nil => print "\n"
+
     fun color(g:graph, n:int) = 
         let fun color' i used = 
                 if i = Vector.length g
-                then true
+                then (used, true)
                 else let fun tryColors j = 
                             if j = n
-                            then false
-                            else if check((i,j)::used, g) andalso color' (i+1) ((i,j)::used)
-                                 then true 
+                            then (used, false)
+                            else if check((i,j)::used, g) 
+                                 then case color' (i+1) ((i, j)::used)
+                                        of (coloring, v) => if v
+                                                            then (coloring, true)
+                                                            else tryColors(j+1)
                                  else tryColors(j+1)
                      in tryColors 0
-                     end
-             val res = color' 0 nil
-          (*   val _ = if res then print "***********************Exhaustive KColor = true\n"
-                            else print "***********************Exhaustive KColor = false\n"*)
-        in res
+                     end 
+             val (coloring, res) = color' 0 nil
+        in (g, coloring, res)
         end
 
-   val g = Vector.fromList([[1, 2], [0], [1]])
 
 end 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
