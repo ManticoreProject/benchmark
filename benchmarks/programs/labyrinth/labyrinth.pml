@@ -6,16 +6,9 @@
  * A concurrent implementation of Lee's routing algorithm using STM
  *)
 
-structure S = IntRBSet
-structure WhichSTM = FullAbortSTM
 structure V = Vector 
 
-type 'a vector = 'a V.vector
-
-(*0 for open space, nonzero for taken*)
-type maze = int WhichSTM.tvar vector vector
-
-fun mkMaze n m init = V.tabulate(n, fn i => V.tabulate(m, fn j => WhichSTM.new (init(i, j))))
+type 'a tvar = 'a PartialSTM.tvar
 
 fun getArg f args = 
     case args 
@@ -25,6 +18,29 @@ fun getArg f args =
          |_ => NONE
 
 val args = CommandLine.arguments ()
+
+val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
+
+val (get,put,atomic,new,printStats) = 
+    if String.same(whichSTM, "bounded")
+    then (BoundedHybridPartialSTMLowMem.get,BoundedHybridPartialSTMLowMem.put,      
+          BoundedHybridPartialSTMLowMem.atomic,BoundedHybridPartialSTMLowMem.new,
+          BoundedHybridPartialSTMLowMem.printStats)
+    else if String.same(whichSTM, "full")
+         then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
+         else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
+
+val atomic : (unit -> 'a) -> 'a = atomic
+val new : 'a -> 'a tvar = new
+val get : 'a tvar -> 'a = get
+val put : 'a tvar * 'a -> unit = put
+
+type 'a vector = 'a V.vector
+
+(*0 for open space, nonzero for taken*)
+type maze = int WhichSTM.tvar vector vector
+
+fun mkMaze n m init = V.tabulate(n, fn i => V.tabulate(m, fn j => new (init(i, j))))
 
 val routes = case getArg "-routes" args
         of SOME n => (case Int.fromString n of SOME n => n | NONE => 10)
@@ -65,13 +81,13 @@ fun sub i j = V.sub(V.sub(maze, i), j)
 fun markPts pts = 
     case pts
         of(n, (i,j),(i',j'))::pts =>
-            let val _ = WhichSTM.put(sub i j, n)
-                val _ = WhichSTM.put(sub i' j', n)
+            let val _ = put(sub i j, n)
+                val _ = put(sub i' j', n)
             in markPts pts end
          |nil => ()
 
-val _ = WhichSTM.atomic(fn () => markPts pts)
-val pts = WhichSTM.new pts
+val _ = atomic(fn () => markPts pts)
+val pts = new pts
 
 
 fun toInd(i,j) = i * width + j
@@ -82,9 +98,13 @@ fun comp((p,_,_,_),(p',_,_,_)) = if p < p' then LESS else if p > p' then GREATER
 val insert = RBMultiset.insert comp
 val removeMin = RBMultiset.removeMin
 
+fun intComp(a,b) = if a < b then LESS else if a > b then GREATER else EQUAL
+val member = RBMultiset.member intComp
+val insert' = RBMultiset.insert intComp
+
 fun valid i j i' j' seen x = 
     if i >= 0 andalso j >= 0 andalso i < height andalso j < width
-    then if (WhichSTM.get (sub i j) = 0 orelse WhichSTM.get (sub i j) = x) andalso not(S.member (toInd(i,j)) seen)
+    then if (get (sub i j) = 0 orelse get (sub i j) = x) andalso not(member (toInd(i,j)) seen)
          then true
          else false
     else false
@@ -94,7 +114,7 @@ fun pntToStr (i, j) = "(" ^ Int.toString i ^ ", " ^ Int.toString j ^ ")"
 fun addNeighbor(i, j, pq, (i',j'), seen, x, h, path) = 
     if valid i j i' j' seen x 
     then let val cost = h(i, j) + dist i j i' j'
-         in (insert (cost, i, j, path) pq, S.insert (toInd(i,j)) seen) end
+         in (insert (cost, i, j, path) pq, insert' (toInd(i,j)) seen) end
     else (pq, seen)
 
 fun addNeighbors((i,j), pq, dest, seen, x, h, path) = 
@@ -108,7 +128,7 @@ fun same (i,j) (i',j') = i = i' andalso j = j'
 
 fun writePath(p, n) = 
     case p
-        of (i,j)::p' => (WhichSTM.put(sub i j, n); writePath(p', n))
+        of (i,j)::p' => (put(sub i j, n); writePath(p', n))
          | nil => ()
 
 datatype res = NoPath | FoundPath 
@@ -135,28 +155,33 @@ fun printMaze() =
         then ()
         else if j = width
              then (print "\n"; lp(i+1,0))
-             else (print (Int.toString(WhichSTM.get(sub i j)) ^ ", "); lp(i,j+1))
+             else let val n : int = get (sub i j)
+                  in if n >= 10
+                     then (print (Int.toString n ^ ", "); lp(i,j+1))
+                     else (print ("0" ^ Int.toString n ^ ", "); lp(i,j+1))
+                  end
     in lp(0,0) end
 
-
-
 fun pop() = 
-    WhichSTM.atomic(fn () => 
-        let val l = WhichSTM.get pts
+    atomic(fn () => 
+        let val l = get pts
         in case l
-            of x::xs => (WhichSTM.put(pts, xs); SOME x)
+            of x::xs => (put(pts, xs); SOME x)
              | nil => NONE
         end
     )
+    
+val noPathCount = new 0
+fun bump() = atomic(fn () => put(noPathCount, get noPathCount + 1))
 
 fun threadLoop() = 
     case pop()
         of NONE => ()
          | SOME(x, src, dest) => 
-            case WhichSTM.atomic(fn () => route src dest S.empty RBMultiset.empty [src] x 
+            case atomic(fn () => route src dest RBMultiset.empty RBMultiset.empty [src] x 
                     (fn (i, j) => let val (i',j') = src in dist i' j' i j end) )
                 of FoundPath => threadLoop()
-                 | NoPath =>  threadLoop()
+                 | NoPath =>  (bump(); threadLoop())
 
 fun start i =
     if i = 0
@@ -180,12 +205,11 @@ val _ = print "Done making grid\n"
 val startTime = Time.now()
 val _ = join(start THREADS)
 val endTime = Time.now()
-val _ = WhichSTM.printStats()
+val _ = printStats()
 val _ = print ("Total was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
 
-val _ = printMaze()
-
-
+(*val _ = atomic printMaze*)
+val _ = print ("Could not find " ^ Int.toString (WhichSTM.atomic(fn () => WhichSTM.get noPathCount)) ^ " paths\n")
 
 
 
