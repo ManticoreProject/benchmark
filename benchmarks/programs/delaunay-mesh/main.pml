@@ -22,7 +22,7 @@ fun process wq mesh =
                      in () end
              | NONE => ()
     in lp() end
-    
+
 (* 
 void
 process ()
@@ -103,7 +103,7 @@ process ()
 
 (* =============================================================================
  * initializeWork
- * meshPtr contains all triangles, we keep adding triangles into workHeapPtr 
+ * meshPtr contains all triangles, we keep adding triangles into wq 
  * until no bad triangles are left and returns the number of bad triangles found
  * =============================================================================
  *)

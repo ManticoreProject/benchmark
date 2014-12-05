@@ -6,10 +6,10 @@ structure Mesh =
     structure E = Element
     structure G = Globals
 
-    type mesh = E.element STM.tvar option STM.tvar *    (*root element (used for checking correctness)*)
-                E.element STM.tvar Q.queue *            (*bad queue (triangles)*)
+    type mesh = E.element option STM.tvar *    (*root element (used for checking correctness)*)
+                E.element Q.queue *            (*bad queue (triangles)*)
                 int STM.tvar *                       (*size*)
-                E.element STM.tvar S.rbSet STM.tvar     (*set of edges*)
+                E.edge S.rbSet STM.tvar     (*set of edges for the boundary*)
 
 
     fun mesh_alloc() = (STM.new NONE, Q.newQueue(), STM.new 0, STM.new S.empty)
@@ -179,7 +179,7 @@ structure Mesh =
             val line1 = valOf (TextIO.inputLine stream)
             val line2 = valOf (TextIO.inputLine stream)
             val edgeMap = M.empty
-            val mesh = (STM.new NONE, Q.newQueue(), STM.new 0, STM.new S.empty)
+            val mesh : mesh = (STM.new NONE, Q.newQueue(), STM.new 0, STM.new S.empty)
             val numEntry = 
                 case String.tokenize " " line2
                     of a::b::c => toInt a

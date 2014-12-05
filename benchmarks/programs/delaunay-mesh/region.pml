@@ -3,32 +3,65 @@ struct
 
     structure E = Element
     structure Q = Queue
+    structure M = RBMap
     
     type region = E.element Q.queue *   (*expand queue*)
-                  E.element list *      (*before list*)
-                  E.element list *      (*border list*)
-                  E.element list        (*bad vector list*)
+                  E.element list *      (*before list (unique)*)
+                  E.element list *      (*border list (unique)*)
+                  E.element list        (*bad triangle list*)
 
-    fun newRegion() = (Q.newQueue(), nil, nil, nil)
+    fun newRegion() : region = (Q.newQueue(), nil, nil, nil)
+
+    (*insert into a unique ordered list*)
+	fun lInsert e l = 
+		case l
+			of hd::tl => 
+				(case E.element_compare e hd
+					of LESS => hd::lInsert e tl
+                     | GREATER => e::hd::tl
+                     | EQUAL => hd::tl)
+             | nil => [e]
+
+    (*membership for a unique ordered list*)
+    fun lMember e l = 
+        case l 
+            of hd::tl =>
+                (case E.element_compare e hd
+                    of EQUAL => true
+                     | LESS => lMember e tl
+                     | GREATER => false)
+             | nil => false
 
     (* =============================================================================
      * TMgrowRegion
-     * -- Return NONE if success, else encroached boundary
+     * -- Return NONE if success, else encroached boundary and the new region
      * -- this should be called within a transaction
      * =============================================================================
      *)
-    fun growRegion centerElem (expQ,beforeL,borderL,badL) mesh edgeMap = 
+    fun growRegion (centerElem:E.element) (expQ,beforeL,borderL,badL) (mesh:Mesh.mesh) edgeMap = 
         let val isBoundary = 
                 case STM.get centerElem
                     of E.Tri _ => false
                      | _ => true
             val centerCoord = E.element_getNewPoint centerElem
-            val _ = Q.enqueue expQ centerCoord
-            fun lp () = 
+            val _ = Q.enqueue expQ centerElem
+            fun lp (expQ,beforeL,borderL,badL) = 
                 case Q.dequeue expQ
-                    of SOME currentElement => ()
-                     | NONE => ()
-        in () end
+                    of SOME currentElement => 
+                        let val beforeL = lInsert currentElement beforeL
+                            val neighbors = E.getNeighbors currentElement
+                            fun lp2(expQ,beforeL,borderL,badL,ns) = 
+                                case ns
+                                    of neighborElement::ns => 
+                                        if lMember neighborElement beforeL
+                                        then lp2(expQ,beforeL,borderL,badL,ns)
+                                        else if E.element_isInCircumCircle neighborElement centerCoord
+                                             then NONE 
+                                             else NONE
+                                     | nil => SOME(expQ,beforeL,borderL,badL)
+                        in lp2(expQ,beforeL,borderL,badL,neighbors) end
+                     | NONE => NONE
+        in lp(expQ,beforeL,borderL,badL) end
 
 (*
     element_t*
@@ -102,7 +135,7 @@ struct
         return NULL;
     }*)
 
-    fun refine region elem mesh = ()
+    fun refine (region:region) (elem:E.element) (mesh:Mesh.mesh) = growRegion elem region mesh M.empty
 
 
 end 
