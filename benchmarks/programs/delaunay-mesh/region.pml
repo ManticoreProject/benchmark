@@ -7,28 +7,28 @@ struct
     
     type region = E.element Q.queue *   (*expand queue*)
                   E.element list *      (*before list (unique)*)
-                  E.element list *      (*border list (unique)*)
+                  E.edge list *         (*border list (unique)*)
                   E.element list        (*bad triangle list*)
 
     fun newRegion() : region = (Q.newQueue(), nil, nil, nil)
 
     (*insert into a unique ordered list*)
-	fun lInsert e l = 
+	fun lInsert comp e l = 
 		case l
 			of hd::tl => 
-				(case E.element_compare e hd
-					of LESS => hd::lInsert e tl
+				(case comp(e, hd)
+					of LESS => hd::lInsert comp e tl
                      | GREATER => e::hd::tl
                      | EQUAL => hd::tl)
              | nil => [e]
 
     (*membership for a unique ordered list*)
-    fun lMember e l = 
+    fun lMember comp e l = 
         case l 
             of hd::tl =>
-                (case E.element_compare e hd
+                (case comp(e, hd)
                     of EQUAL => true
-                     | LESS => lMember e tl
+                     | LESS => lMember comp e tl
                      | GREATER => false)
              | nil => false
 
@@ -40,102 +40,138 @@ struct
      *)
     fun growRegion (centerElem:E.element) (expQ,beforeL,borderL,badL) (mesh:Mesh.mesh) edgeMap = 
         let val isBoundary = 
-                case STM.get centerElem
+                (case STM.get centerElem
                     of E.Tri _ => false
-                     | _ => true
+                     | _ => true)
+            val expQ = Q.newQueue()
+            val beforeL = nil
+            val borderL = nil
             val centerCoord = E.element_getNewPoint centerElem
+          (*  val _ = print ("Refining around element: " ^ E.elementToString centerElem ^ ", centerCoord is" ^ E.coordToString centerCoord ^ "\n")  *)
             val _ = Q.enqueue expQ centerElem
-            fun lp (expQ,beforeL,borderL,badL) = 
+            fun lp (beforeL,borderL,edgeMap) = 
                 case Q.dequeue expQ
                     of SOME currentElement => 
-                        let val beforeL = lInsert currentElement beforeL
+                        let val beforeL = lInsert E.element_compare currentElement beforeL
                             val neighbors = E.getNeighbors currentElement
-                            fun lp2(expQ,beforeL,borderL,badL,ns) = 
+                            fun lp2(borderL,edgeMap,ns) = 
                                 case ns
                                     of neighborElement::ns => 
-                                        if lMember neighborElement beforeL
-                                        then lp2(expQ,beforeL,borderL,badL,ns)
-                                        else if E.element_isInCircumCircle neighborElement centerCoord
-                                             then NONE 
-                                             else NONE
-                                     | nil => SOME(expQ,beforeL,borderL,badL)
-                        in lp2(expQ,beforeL,borderL,badL,neighbors) end
-                     | NONE => NONE
-        in lp(expQ,beforeL,borderL,badL) end
-
-(*
-    element_t*
-    TMgrowRegion (TM_ARGDECL
-                  element_t* centerElementPtr,   //element being retriangulated
-                  region_t* regionPtr,          
-                  mesh_t* meshPtr,
-                  MAP_T* edgeMapPtr)
-    {
-        bool_t isBoundary = FALSE;
-
-        if (element_getNumEdge(centerElementPtr) == 1) {
-            isBoundary = TRUE;
-        }
-
-        list_t* beforeListPtr = regionPtr->beforeListPtr;
-        list_t* borderListPtr = regionPtr->borderListPtr;
-        queue_t* expandQueuePtr = regionPtr->expandQueuePtr;
-
-        PLIST_CLEAR(beforeListPtr);
-        PLIST_CLEAR(borderListPtr);
-        PQUEUE_CLEAR(expandQueuePtr);
-
-        coordinate_t centerCoordinate = element_getNewPoint(centerElementPtr);
-        coordinate_t* centerCoordinatePtr = &centerCoordinate;
-
-        PQUEUE_PUSH(expandQueuePtr, (void* )centerElementPtr);
-        while (!PQUEUE_ISEMPTY(expandQueuePtr)) {
-
-            element_t* currentElementPtr = (element_t* )PQUEUE_POP(expandQueuePtr);
-
-            PLIST_INSERT(beforeListPtr, (void* )currentElementPtr); /* no duplicates */
-            list_t* neighborListPtr = element_getNeighborListPtr(currentElementPtr);
-
-            list_iter_t it;
-            TMLIST_ITER_RESET(&it, neighborListPtr);
-            while (TMLIST_ITER_HASNEXT(&it, neighborListPtr)) {
-                element_t* neighborElementPtr =
-                    (element_t* )TMLIST_ITER_NEXT(&it, neighborListPtr);
-                TMELEMENT_ISGARBAGE(neighborElementPtr); /* so we can detect conflicts */
-                if (!list_find(beforeListPtr, (void* )neighborElementPtr)) {
-                    if (element_isInCircumCircle(neighborElementPtr, centerCoordinatePtr)) {
-                        /* This is part of the region */
-                        if (!isBoundary && (element_getNumEdge(neighborElementPtr) == 1)) {
-                            /* Encroached on mesh boundary so split it and restart */
-                            return neighborElementPtr;
-                        } else {
-                            /* Continue breadth-first search */
-                            bool_t isSuccess;
-                            isSuccess = PQUEUE_PUSH(expandQueuePtr,
-                                                    (void* )neighborElementPtr);
-                            assert(isSuccess);
-                        }
-                    } else {
-                        /* This element borders region; save info for retriangulation */
-                        edge_t* borderEdgePtr =
-                            element_getCommonEdge(neighborElementPtr, currentElementPtr);
-                        if (!borderEdgePtr) {
-                            TM_RESTART();
-                        }
-                        PLIST_INSERT(borderListPtr,
-                                     (void* )borderEdgePtr); /* no duplicates */
-                        if (!MAP_CONTAINS(edgeMapPtr, borderEdgePtr)) {
-                            PMAP_INSERT(edgeMapPtr, borderEdgePtr, neighborElementPtr);
-                        }
-                    }
-                } /* not visited before */
-            } /* for each neighbor */
-        } /* breadth-first search */
-
-        return NULL;
-    }*)
-
-    fun refine (region:region) (elem:E.element) (mesh:Mesh.mesh) = growRegion elem region mesh M.empty
-
+                                        if lMember E.element_compare neighborElement beforeL  (*already processed this one*)
+                                        then lp2(borderL,edgeMap,ns)
+                                        else if E.element_isInCircumCircle neighborElement centerCoord  (*this is part of the region*)
+                                             then if not isBoundary andalso E.element_isSeg neighborElement
+                                                  then (borderL,edgeMap, SOME neighborElement)
+                                                  else (Q.enqueue expQ neighborElement; lp2(borderL,edgeMap,ns))
+                                             else (case E.element_getCommonEdge neighborElement currentElement (*this element borders region; save info for retriangulation*)
+                                                    of NONE => STM.abort()
+                                                     | SOME(borderEdge:E.edge) => 
+                                                        let val borderL = lInsert E.compareEdge borderEdge borderL
+                                                        in lp2(borderL,M.insert E.compareEdge borderEdge neighborElement edgeMap,ns)
+                                                        end)
+                                     | nil => (borderL,edgeMap, NONE)
+                        val (borderL,edgeMap,res) = lp2(borderL,edgeMap,neighbors)     
+                        in (case res
+                            of SOME _ => (expQ,beforeL,borderL,badL,edgeMap,res)
+                             | NONE => lp (beforeL,borderL,edgeMap))
+                        end
+                     | NONE => (expQ,beforeL,borderL,badL,edgeMap,NONE)
+        in lp(beforeL,borderL,edgeMap) end
+        
+    (* =============================================================================
+     * TMretriangulate
+     * -- Returns net amount of elements added to mesh
+     * =============================================================================
+     *)
+    fun retriangulate element (expQ,beforeL,borderL,badL) mesh edgeMap = 
+        let fun removeTris tris = 
+                case tris
+                    of tri::tris => (Mesh.mesh_remove mesh tri; removeTris tris)
+                     | nil => ()
+            val centerCoordinate = E.element_getNewPoint element
+            val _ = removeTris beforeL
+            val _ = if E.element_isSeg element
+                    then let val (c1,c2) = case E.getEdges element of e::nil => e | _ => raise Fail "wrong num edges\n"
+                             val cMid = centerCoordinate
+                             val s1 = E.mkSeg cMid c1
+                             val s2 = E.mkSeg cMid c2
+                             val _ = Mesh.mesh_removeBoundary mesh (c1,c2)
+                             val (e1,e2) = case (E.getEdges s1, E.getEdges s2)
+                                              of (e1::nil,e2::nil) => (e1,e2)
+                                               | _ => raise Fail "wrong number of edges\n"
+                             val _ = Mesh.mesh_insertBoundary mesh e1
+                             val _ = Mesh.mesh_insertBoundary mesh e2
+                         in () end                  
+                    else ()
+            fun addTris(borderL, edgeMap, badL) = 
+                case borderL
+                    of (c1,c2)::borderL => 
+                        let val afterElement = E.mkTri centerCoordinate c1 c2
+                         (*   val _ = print ("Retriangulating around element: " ^ E.elementToString element ^ "\n")  *)
+                            val edgeMap = Mesh.mesh_insert mesh afterElement edgeMap 
+                        in if E.element_isBad afterElement
+                           then addTris(borderL, edgeMap, afterElement::badL)
+                           else addTris(borderL, edgeMap, badL) end
+                     | nil => (edgeMap, badL)
+        in addTris(borderL, edgeMap, badL) end
+        
+    (* =============================================================================
+     * TMregion_refine
+     * -- Returns net number of elements added to mesh
+     * =============================================================================
+     *)
+    fun refine (region:region) (elem:E.element) (mesh:Mesh.mesh) = 
+        let val (expQ,beforeL,borderL,badL,edgeMap,res) = growRegion elem region mesh M.empty
+        in case res
+            of SOME encroachElement =>
+                let val _ = E.element_setIsReferenced encroachElement true
+                    val (expQ,beforeL,borderL,badL,edgeMap) = refine (expQ,beforeL,borderL,badL) encroachElement mesh
+                in if E.isGarbage elem
+                   then (expQ,beforeL,borderL,badL,edgeMap)
+                   else refine (expQ,beforeL,borderL,badL) elem mesh (*try again*)
+                end
+             | NONE => 
+                let val (edgeMap, badL) = retriangulate elem (expQ,beforeL,borderL,badL) mesh edgeMap
+                in (expQ,beforeL,borderL,badL,edgeMap) 
+                end
+        end
 
 end 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

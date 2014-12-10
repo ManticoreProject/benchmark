@@ -24,7 +24,7 @@ struct
     val filePrefix = case getArg "-file" args
                         of SOME f => f | NONE => "data/dots.2"
 
-    
+    val threads = getIntFlg "-threads" 4
 
 
 

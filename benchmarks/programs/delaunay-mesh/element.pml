@@ -39,9 +39,9 @@ structure Element =
                              | _ => c::x::xs)
              | nil => [c]
 
-    fun sortCs cs sorted = 
+    fun sortCs(cs, sorted) = 
         case cs
-            of c::cs => sortCs cs (insert c sorted)
+            of c::cs => sortCs(cs, insert c sorted)
              | nil => sorted
 
     fun calculateCircumCircle c1 c2 c3 = 
@@ -54,7 +54,7 @@ structure Element =
             val cyDelta = y3 - y1
             val bDistance2 = (bxDelta * bxDelta) + (byDelta * byDelta)
             val cDistance2 = (cxDelta * cxDelta) + (cyDelta * cyDelta)
-            val xNumerator = (byDelta * cxDelta) + (cyDelta * bDistance2)
+            val xNumerator = (byDelta * cDistance2) - (cyDelta * bDistance2)
             val yNumerator = (bxDelta * cDistance2) - (cxDelta * bDistance2)
             val denominator = 2.0 * ((bxDelta * cyDelta) - (cxDelta * byDelta))
             val rx = x1 - (xNumerator / denominator)
@@ -76,7 +76,7 @@ structure Element =
      * =============================================================================
      *)
 
-    fun element_compare e1 e2 = STM.atomic(fn () => 
+    fun element_compare(e1, e2) = STM.atomic(fn () => 
         case (STM.get e1, STM.get e2)
             of (Seg _, Tri _) => LESS
              | (Tri _, Seg _) => GREATER
@@ -107,6 +107,19 @@ structure Element =
 	
 
 	fun coordToString(c1,c2) = "(" ^ Double.toString c1 ^ ", " ^ Double.toString c2 ^ ")"
+
+    fun edgeToString(c1,c2) = coordToString c1 ^ ", " ^ coordToString c2
+
+    fun elementToString e = STM.atomic(fn () => 
+        case STM.get e
+            of Tri((c1,c2,c3),_,_,_,_,_,_,_,_,_,_,_) =>
+                coordToString c1 ^ ", " ^ coordToString c2 ^ ", " ^ coordToString c3
+             | Seg((c1,c2),_,_,_,_,_,_,_,_) =>
+                coordToString c1 ^ ", " ^ coordToString c2)
+
+    fun coordsToString c1 c2 c3 = coordToString c1 ^ ", " ^ coordToString c2 ^ ", " ^ coordToString c3
+
+
          
     fun checkAngles c1 c2 c3 e1 e2 e3 = 
         let val constraint = G.global_angleConstraint
@@ -116,13 +129,12 @@ structure Element =
             val alist = [a1,a2,a3] 
             val minAngle = List.foldl (fn (x,y) => if x < y then x else y) a1 (List.tl alist)
             val is = minAngle < constraint
-            fun getEncroached alist es = 
+            fun getEncroached(alist, es) = 
                 case (alist, es)
-                    of (a::alist,e::es) => if a > 90.0 then SOME e else getEncroached alist es
+                    of (a::alist,e::es) => if a > 90.0 then SOME e else getEncroached(alist, es)
                      | (nil,nil) => NONE
                      | _ => raise Fail "Impossible:checkAngles:getEncroached"
-            val ee = getEncroached alist [e2,e3,e1]
-            val _ = if is then print (coordToString c1 ^ ", " ^ coordToString c2 ^ ", " ^ coordToString c3 ^ ", is bad\n") else ()  
+            val ee = getEncroached(alist, [e1,e2,e3](*[e2,e3,e1]*))
         in (minAngle,ee,is) end
 
     fun mkSeg c1 c2 = 
@@ -134,7 +146,7 @@ structure Element =
         in ptr end
 
     fun mkTri c1 c2 c3 = 
-        let val (c1,c2,c3) = case sortCs [c1,c2,c3] nil
+        let val (c1,c2,c3) = case sortCs([c1,c2,c3], nil)
                                 of c1'::c2'::c3'::nil => (c1',c2',c3')
                                  | _ => raise Fail "incorrect number of coordinates\n"
             val (e1,mx1,my1,r1) = mkEdge c1 c2
@@ -261,20 +273,20 @@ structure Element =
     fun element_getNewPoint e = STM.atomic(fn () =>
         case STM.get e
             of Tri(_,_,_,_,(e1,e2,e3),(m1,m2,m3),_,SOME ee,_,_,_,_) => 
-                (case (compareEdge(ee,e1),compareEdge(ee,e2)) 
-                    of (EQUAL,_) => m1
-                     | (_, EQUAL) => m2
-                     | _ => m3)
-             | Tri(_,cc,_,_,_,_,_,NONE,_,_,_,_) => cc
+                (case (compareEdge(ee,e1),compareEdge(ee,e2),compareEdge(ee,e3)) 
+                    of (EQUAL,_,_) => m1
+                     | (_, EQUAL,_) => m2
+                     | (_,_,EQUAL) => m3
+                     | _ => raise Fail "error\n")
+             | Tri(_,cc,_,_,_,_,_,NONE,_,_,_,_) => cc 
              | Seg(_,cc,_,_,_,_,_,_,_) => cc)
-
     (* =============================================================================
      * element_isInCircumCircle
      * =============================================================================
      *)
     fun element_isInCircumCircle e c = STM.atomic(fn () =>
         let val (cc,cr) = case STM.get e
-                            of Tri(_,cc,cr,_,_,_,_,_,_,_,_,_) => (cc,cr)
+                            of Tri((c1,c2,c3),cc,cr,_,_,_,_,_,_,_,_,_) => (cc,cr) 
                              | Seg(_,cc,cr,_,_,_,_,_,_) => (cc,cr)
             val distance = C.coordDist c cc
         in distance <= cr end)
@@ -299,13 +311,38 @@ structure Element =
         in getCommon(aEdges, bEdges)
         end             
 
-(*
-val c = (1.0,1.0)
-val s = mkSeg c c
-val _ = element_isInCircumCircle s c
-val _ = element_getNewPoint s
-val _ = element_getCommonEdge s s
-*)
+    fun element_isSeg e = STM.atomic(fn () =>
+        case STM.get e
+            of Tri _ => false
+             | Seg _ => true)
+
+    (* =============================================================================
+     * element_checkAngles
+     *
+     * Return FALSE if minimum angle constraint not met
+     * =============================================================================
+     *)
+    fun element_checkAngles e = STM.atomic(fn () =>
+        case STM.get e
+            of Tri((c1,c2,c3),_,_,_,_,_,_,_,_,_,_,_) => 
+                let val a1 = C.coordAngle c1 c2 c3
+                    val a2 = C.coordAngle c3 c1 c2
+                    val a3 = C.coordAngle c2 c3 c1
+                    val ac = G.global_angleConstraint
+                in a1 >= ac andalso a2 >= ac andalso a3 >= ac end
+             | Seg _ => true)
+
+    fun printAngles e = STM.atomic(fn () =>
+        case STM.get e
+            of Tri((c1,c2,c3),_,_,_,_,_,_,_,_,_,_,_) => 
+                let val a1 = C.coordAngle c1 c2 c3
+                    val a2 = C.coordAngle c3 c1 c2
+                    val a3 = C.coordAngle c2 c3 c1
+                    val _ = print ("Coordinates are: " ^ elementToString e ^ "\n")
+                    val _ = print ("Angles are " ^ List.foldr (fn (x,s) => Double.toString x ^ ", " ^ s) "" [a1,a2,a3] ^ "\n")
+                in ()end
+             | Seg _ => ())
+
              
 end
 

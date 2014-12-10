@@ -8,9 +8,8 @@ structure Mesh =
 
     type mesh = E.element option STM.tvar *    (*root element (used for checking correctness)*)
                 E.element Q.queue *            (*bad queue (triangles)*)
-                int STM.tvar *                       (*size*)
-                E.edge S.rbSet STM.tvar     (*set of edges for the boundary*)
-
+                int STM.tvar *                 (*size*)
+                E.edge S.rbSet STM.tvar        (*set of edges for the boundary*)
 
     fun mesh_alloc() = (STM.new NONE, Q.newQueue(), STM.new 0, STM.new S.empty)
 
@@ -41,7 +40,7 @@ structure Mesh =
                         if mapMember e edgeMap
                         then let val neighbor = Option.valOf(mapLookup e edgeMap)
                                  val _ = E.element_addNeighbor(elem, neighbor)
-                                 val _ = E.element_addNeighbor(neighbor, elem) 
+                                 val _ = E.element_addNeighbor(neighbor, elem)
                              in addNeighbors(es', edgeMap) end
                         else addNeighbors(es', mapInsert e elem edgeMap)
                     | nil => edgeMap
@@ -51,33 +50,33 @@ structure Mesh =
             							  else E.element_setEncroached elem NONE
             				 | NONE => ()
         in addNeighbors(E.getEdges elem, edgeMap) end
-        
+
 
     (* =============================================================================
      * mesh_remove
      * =============================================================================
      *)
 
-    fun mesh_remove (rootElem,q,size,edgeSet) elem = 
+    fun mesh_remove (rootElem,q,size,edgeSet) elem = STM.atomic(fn () => 
         let val _ = STM.atomic(fn() =>
                         case STM.get rootElem
-                            of SOME elem' => (case E.element_compare elem elem' 
+                            of SOME elem' => (case E.element_compare(elem, elem') 
                                                 of EQUAL => STM.put(rootElem, NONE)
                                                  | _ => ())
                              |_ => ())
-            fun dropFromList ns n = 
+            fun dropFromList(ns,n) = 
                 case ns
                     of n'::ns => 
-                        (case E.element_compare n n' of EQUAL => ns | _ => n'::dropFromList ns n)
+                        (case E.element_compare(n, n') of EQUAL => ns | _ => n'::dropFromList(ns, n))
                      | nil => nil  
             fun dropNeighbor n = 
                 let val neighbors = E.getNeighbors n
-                    val neighbors' = dropFromList neighbors elem
+                    val neighbors' = dropFromList(neighbors, elem)
                 in E.setNeighbors n neighbors' end
             val neighbors = E.getNeighbors elem
             val _ = List.map dropNeighbor neighbors
             val _ = E.setIsGarbage elem true
-        in () end
+        in () end)
 
     (* =============================================================================
      * TMmesh_insertBoundary
@@ -97,7 +96,7 @@ structure Mesh =
 
     fun mesh_removeBoundary (_,_,_,s) boundary = STM.atomic(fn () =>
         let val set = STM.get s
-            val set = S.remove E.compareEdge boundary s
+            val set = S.delete E.compareEdge boundary set
         in STM.put(s, set) end)
 
     (* =============================================================================
@@ -148,12 +147,12 @@ structure Mesh =
      * Refer to http://www.cs.cmu.edu/~quake/triangle.html for file formats.
      * =============================================================================
      *)
-
     val valOf = Option.valOf
 
     fun toInt x = valOf (Int.fromString x)
     fun toDouble x = valOf (Double.fromString x)
-    val sub = Vector.sub 
+    val sub = Rope.sub 
+    
     fun mesh_read() = 
         let val f = G.filePrefix
             (*Read .node file*)
@@ -164,14 +163,14 @@ structure Mesh =
             val (numEntry, numDimensions) = 
                 case line1
                     of a::b::c => (valOf (Int.fromString a), valOf (Int.fromString b))
-                     | _ => raise Fail "format error"
+                     | _ => raise Fail "format error\n"
             fun getCoord _ = 
                 let val l = valOf (TextIO.inputLine stream)
                     val (id,x,y) = case String.tokenize " " l
                                         of id::x::y::z => (toInt id, toDouble x, toDouble y)
-                                         | _ => raise Fail "format error"
+                                         | _ => raise Fail "format error\n"
                 in (x, y) end
-            val coordinates = Vector.tabulate(numEntry, getCoord)
+            val coordinates = Rope.tabulate(numEntry, getCoord)
             val _ = TextIO.closeIn stream
             val _ = print "Done reading .node file\n"
             (*Read .poly file, which contains boundary segments*)
@@ -189,7 +188,7 @@ structure Mesh =
                     val (id,a,b) = case String.tokenize " " l
                                     of id::a::b::c => (toInt id, toInt a, toInt b)
                                      | _ => raise Fail "format error"
-                    val (c1,c2) = (Vector.sub(coordinates, a-1), Vector.sub(coordinates, b-1))
+                    val (c1,c2) = (sub(coordinates, a-1), sub(coordinates, b-1))
                 in createSeg mesh c1 c2 edgeMap end
             val edgeMap = List.foldl mkSeg edgeMap (List.tabulate(numEntry, fn _ => ()))
             val _ = TextIO.closeIn stream
@@ -209,7 +208,7 @@ structure Mesh =
                                          | _ => raise Fail "format error\n"
                     val (c1,c2,c3) = (sub(coordinates, a-1), sub(coordinates, b-1), sub(coordinates,c-1))
                 in createTri mesh c1 c2 c3 edgeMap end
-            val edgeMap = List.foldl mkTri edgeMap (List.tabulate(numEntry, fn _ => ()))
+            val edgeMap = List.foldl mkTri edgeMap (List.tabulate(numEntry, fn i => ()))
             val _ = TextIO.closeIn stream               
             val _ = print ("Read " ^ Int.toString numEntry ^ " triangles\n"   )   
         in (total + numEntry, mesh) end

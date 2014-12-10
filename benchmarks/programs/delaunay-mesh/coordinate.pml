@@ -16,12 +16,10 @@ struct
                        then GREATER
                        else EQUAL
 
-    fun sqr x = x * x
-
     fun coordDist (ax,ay) (bx,b_y) = 
         let val dx = ax - bx
             val dy = ay - b_y
-        in Double.sqrt(sqr dx + sqr dy)
+        in Double.sqrt((dx * dx) + (dy * dy))
         end
 
     (* =============================================================================

@@ -5,101 +5,77 @@ structure E = Element
 structure M = Mesh
 structure Q = Queue
 structure R = Region
+structure G = Globals
+structure S = RBSet
+
+fun insert x l = x::l
+fun member compare x l = 
+    case l
+        of y::l =>
+            (case compare(x,y)
+                of EQUAL => true
+                 | _ => member compare x l)
+         | nil => false
+
+
+
+(* =============================================================================
+ * mesh_check
+ * =============================================================================
+ *)
+fun mesh_check (root,_,_,_) =
+    let val q = Q.newQueue()
+        val _ = case STM.atomic(fn () => STM.get root)
+                    of SOME e => Q.enqueue q e
+                     | NONE => print "Mesh is incorrect: no root\n"
+        fun addNeighbors(ns : E.element list, visited : E.element S.rbSet) = 
+            case ns
+                of neighborElement::ns => 
+                    if S.member2(E.element_compare, neighborElement, visited)
+                    then addNeighbors(ns, visited) 
+                    else (Q.enqueue q neighborElement; addNeighbors(ns, visited)) 
+                 | nil => ()
+        fun lp(visited, i) = 
+            case Q.dequeue q
+                of SOME currentElement => 
+                    if S.member2(E.element_compare, currentElement, visited)
+                    then lp(visited, i)
+                    else let val visited = S.insert E.element_compare currentElement visited
+                             val _ = if E.element_checkAngles currentElement
+                                     then ()
+                                     else raise Fail ("Mesh is incorrect!, " ^ Int.toString i ^ " triangles were correct\n")
+                             val neighbors = E.getNeighbors currentElement
+                             val _ = addNeighbors(neighbors, visited)
+                         in lp(visited, i+1) end 
+                 | NONE => i
+    in print("Mesh is correct!  " ^ Int.toString(lp(S.empty, 0)) ^ " total triangles in mesh\n") handle Fail s => print s end
 
 (* =============================================================================
  * process
  * =============================================================================
  *)
- 
+
+fun transferBad(badL, wq) = 
+    case badL
+        of bad::badL => 
+            let val _ = Q.enqueue wq bad
+                (*val _ = print ("Adding bad triangle: " ^ E.elementToString bad ^ "\n")  *)
+            in transferBad(badL, wq) end
+         | nil => ()
+
 fun process wq mesh = 
-    let fun lp() = 
+    let fun lp () =
         case Q.dequeue wq
             of SOME elem => 
-                if E.isGarbage elem
-                then lp()
-                else let val reg = R.newRegion()
-                         val _ = STM.atomic(fn () => R.refine reg elem mesh)
-                     in () end
+                let val badL = STM.atomic(fn () => 
+                        if E.isGarbage elem
+                        then nil
+                        else let val (_,_,_,badL,_) = R.refine (R.newRegion()) elem mesh
+                             in badL end)
+                    val _ = transferBad(badL,wq)
+                in lp() end
              | NONE => ()
-    in lp() end
-
-(* 
-void
-process ()
-{
-    TM_THREAD_ENTER();
-
-    heap_t* workHeapPtr = global_workHeapPtr;
-    mesh_t* meshPtr = global_meshPtr;
-    region_t* regionPtr;
-    long totalNumAdded = 0;
-    long numProcess = 0;
-
-    regionPtr = PREGION_ALLOC();
-    assert(regionPtr);
-
-    while (1) {
-
-        element_t* elementPtr = NULL;
-
-        TM_BEGIN();
-        elementPtr = TMHEAP_REMOVE(workHeapPtr);  //get element from the work queue
-        TM_END();
-        if (elementPtr == NULL) {
-            break;
-        }
-
-        bool_t isGarbage = 0;
-        TM_BEGIN();
-        isGarbage = TMELEMENT_ISGARBAGE(elementPtr); //tm read isGarbage field
-        TM_END();
-        if (isGarbage) {
-            /*
-             * Handle delayed deallocation
-             */
-            PELEMENT_FREE(elementPtr);
-            continue;
-        }
-
-        long numAdded = 0;
-
-        TM_BEGIN();
-        PREGION_CLEARBAD(regionPtr); //clear the bad vector ptr
-        numAdded = TMREGION_REFINE(regionPtr, elementPtr, meshPtr);
-        TM_END();
-
-        TM_BEGIN();
-        TMELEMENT_SETISREFERENCED(elementPtr, FALSE);
-        isGarbage = TMELEMENT_ISGARBAGE(elementPtr);
-        TM_END();
-        if (isGarbage) {
-            /*
-             * Handle delayed deallocation
-             */
-            PELEMENT_FREE(elementPtr);
-        }
-
-        totalNumAdded += numAdded;
-
-        TM_BEGIN();
-        TMREGION_TRANSFERBAD(regionPtr, workHeapPtr);
-        TM_END();
-
-        numProcess++;
-
-    }
-
-    TM_BEGIN();
-    TM_SHARED_WRITE(global_totalNumAdded,
-                    TM_SHARED_READ(global_totalNumAdded) + totalNumAdded);
-    TM_SHARED_WRITE(global_numProcess,
-                    TM_SHARED_READ(global_numProcess) + numProcess);
-    TM_END();
-
-    PREGION_FREE(regionPtr);
-
-    TM_THREAD_EXIT();
-}*)
+    in lp () end
 
 (* =============================================================================
  * initializeWork
@@ -113,7 +89,7 @@ fun initializeWork wq mesh =
         of SOME e => (Q.enqueue wq e; E.element_setIsReferenced e true; 1 + initializeWork wq mesh)
          | NONE => 0
 
-val (n, mesh) = M.mesh_read()
+val (n, mesh) = M.mesh_read() handle Fail s => (print s; raise Fail s)
 val workQ = Q.newQueue()
 
 val (_,bad,_,_) = mesh
@@ -125,8 +101,41 @@ val _ = print (Int.toString n ^ " total triangles\n")
 
 val _ = print ("angle constraint is " ^ Double.toString (Globals.global_angleConstraint) ^ "\n")
 
+val _ = print ("Using " ^ STM.whichSTM ^ " STM\n")
+
+fun startThreads i = 
+    if i = 0
+    then nil
+    else let val ch = PrimChan.new()
+             val _ = Threads.spawnOn(i-1, fn _ => (process workQ mesh; PrimChan.send(ch, i)))
+         in ch::startThreads (i-1) end 
+
+fun join cs = 
+    case cs
+        of c::cs => (PrimChan.recv c; join cs)
+         | nil => ()
+
+
 val numBad = initializeWork workQ mesh
-val _ = process workQ mesh
+
+val startTime = Time.now()
+val _ = join (startThreads G.threads)
+val endTime = Time.now()
+val _ = print ("Total time was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
+val _ = print "Checking mesh\n"
+val _ = mesh_check mesh
+val _ = STM.printStats()
+
+
+
+
+
+
+
+
+
+
+
 
 
 

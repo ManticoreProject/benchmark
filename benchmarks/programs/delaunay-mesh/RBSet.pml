@@ -99,6 +99,16 @@ struct
                      | EQUAL => true)
              | _ => raise Fail "member"
 
+    fun member2(comp,x,t) = 
+        case t
+            of E => false
+             | T(_,l,y,r) => 
+                (case comp(x, y)
+                    of GREATER => member2(comp, x, r)
+                     | LESS => member2(comp, x, l)
+                     | EQUAL => true)
+             | _ => raise Fail "member"
+             
     fun insert comp x s = 
         let fun ins t =
                 case t
@@ -165,6 +175,11 @@ struct
             of SOME(v,t) => SOME(v,blacken t)
              | NONE => NONE
        end
+
+    fun size s = 
+        case s
+            of T(_,l,_,r) => 1 + size l + size r
+             | _ => 0
 
 end
 

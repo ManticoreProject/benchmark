@@ -162,6 +162,11 @@ struct
             of E => true
              | _ => false
 
+    fun size m = 
+        case m
+            of T(_,l,_,_,r) => 1 + size l + size r
+             | _ => 0
+
 
 fun intComp(x,y) = if x < y then LESS else if x > y then GREATER else EQUAL
 
