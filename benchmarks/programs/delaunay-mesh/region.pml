@@ -47,7 +47,7 @@ struct
             val beforeL = nil
             val borderL = nil
             val centerCoord = E.element_getNewPoint centerElem
-          (*  val _ = print ("Refining around element: " ^ E.elementToString centerElem ^ ", centerCoord is" ^ E.coordToString centerCoord ^ "\n")  *)
+            (*val _ = print ("Refining around element: " ^ E.elementToString centerElem ^ ", centerCoord is" ^ E.coordToString centerCoord ^ "\n")   *)
             val _ = Q.enqueue expQ centerElem
             fun lp (beforeL,borderL,edgeMap) = 
                 case Q.dequeue expQ

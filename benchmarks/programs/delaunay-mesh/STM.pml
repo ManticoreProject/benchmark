@@ -15,13 +15,15 @@ struct
 
     val (get,put,atomic,new,printStats,abort,unsafeGet) = 
         if String.same(whichSTM, "bounded")
-        then (BoundedHybridPartialSTMLowMem.get,BoundedHybridPartialSTMLowMem.put,      
-              BoundedHybridPartialSTMLowMem.atomic,BoundedHybridPartialSTMLowMem.new,
-              BoundedHybridPartialSTMLowMem.printStats,BoundedHybridPartialSTMLowMem.abort,
-              BoundedHybridPartialSTMLowMem.unsafeGet)
+        then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
+              BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
+              BoundedHybridPartialSTM.printStats,BoundedHybridPartialSTM.abort,
+              BoundedHybridPartialSTM.unsafeGet)
         else if String.same(whichSTM, "full")
              then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats,FullAbortSTM.abort,FullAbortSTM.unsafeGet)
-             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats,PartialSTM.abort,PartialSTM.unsafeGet)
+             else if String.same(whichSTM, "dlstm")
+                  then (DLSTM.get,DLSTM.put,DLSTM.atomic,DLSTM.new,DLSTM.printStats,DLSTM.abort,DLSTM.unsafeGet)
+                  else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats,PartialSTM.abort,PartialSTM.unsafeGet)
 
     (*won't typecheck without these nonsense bindings*)
     val get : 'a tvar -> 'a = get

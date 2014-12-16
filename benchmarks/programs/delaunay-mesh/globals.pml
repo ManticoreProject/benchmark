@@ -25,7 +25,4 @@ struct
                         of SOME f => f | NONE => "data/dots.2"
 
     val threads = getIntFlg "-threads" 4
-
-
-
 end

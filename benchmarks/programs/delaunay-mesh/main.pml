@@ -67,7 +67,7 @@ fun process wq mesh =
     let fun lp () =
         case Q.dequeue wq
             of SOME elem => 
-                let val badL = STM.atomic(fn () => 
+                let val badL = STM.atomic(fn () =>
                         if E.isGarbage elem
                         then nil
                         else let val (_,_,_,badL,_) = R.refine (R.newRegion()) elem mesh
@@ -118,12 +118,18 @@ fun join cs =
 
 val numBad = initializeWork workQ mesh
 
+val _ = print "starting refinement\n"
+
 val startTime = Time.now()
 val _ = join (startThreads G.threads)
 val endTime = Time.now()
 val _ = print ("Total time was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
+
+(*
 val _ = print "Checking mesh\n"
 val _ = mesh_check mesh
+*)
+
 val _ = STM.printStats()
 
 
