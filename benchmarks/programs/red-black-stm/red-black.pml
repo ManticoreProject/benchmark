@@ -7,7 +7,7 @@
         -http://matt.might.net/articles/red-black-delete/
         -https://github.com/sweirich/dth/tree/master/examples/red-black
  *)
- 
+			
 structure RBTree = 
 struct
     type 'a tvar = 'a PartialSTM.tvar
@@ -25,26 +25,31 @@ struct
 
     val (get,put,atomic,new,printStats) = 
         if String.same(whichSTM, "bounded")
-        then (BoundedHybridPartialSTMLowMem.get,BoundedHybridPartialSTMLowMem.put,      
-              BoundedHybridPartialSTMLowMem.atomic,BoundedHybridPartialSTMLowMem.new,
-              BoundedHybridPartialSTMLowMem.printStats)
+        then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
+              BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
+              BoundedHybridPartialSTM.printStats)
         else if String.same(whichSTM, "full")
              then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
+             else if String.same(whichSTM, "dlstm")
+                  then (DLSTM.get,DLSTM.put,DLSTM.atomic,DLSTM.new,DLSTM.printStats)
+                  else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
 
+    val get : 'a tvar -> 'a = get
+    val put : 'a tvar * 'a -> unit = put
     val atomic : (unit -> 'a) -> 'a = atomic
+    val new : 'a -> 'a tvar = new
 
     datatype color = Red | Black | DBlack | NBlack  (*double black and negative black used for deletion*)
-    datatype tree = L        (*leaf*)
+    datatype 'a tree = L        (*leaf*)
                   | DBL      (*double black *)
-                  | T of color * tree tvar * int * tree tvar
+                  | T of color * 'a tree tvar * 'a * 'a tree tvar
 
     fun newTree() = new L
-
+			
     fun redden t = 
-        case get t
-            of T(Red, a, x, b) => ()
-             | T(Black, a, x, b) => put(t, T(Red, a, x, b))
+	case get t 
+	 of T(Red,a,x,b) => ()
+	  | T(Black, a, x, b) => put(t, T(Red, a, x, b))
 
     fun blacken' t = 
         case get t
@@ -244,7 +249,7 @@ struct
                      | _ => raise Fail "Impossible: remove"
             fun lp t = 
                 case get t
-                    of L => (raise NotFound 1)
+                    of L => ()
                      | T(c,l,v,r) => 
                         (case compare(x, v)
                             of GREATER => (lp r; bubble t)
@@ -260,7 +265,7 @@ struct
         end
 
     (*Verify red-black tree properties*)
-    fun chkOrder t = 
+    fun chkOrder comp t = 
         let fun lp(t, lower, upper) = 
                 case get t
                     of L => true
@@ -269,9 +274,12 @@ struct
                             val b2 = lp(r, SOME v, upper)
                         in case (lower, upper)
                             of (NONE, NONE) => true
-                             | (NONE, SOME u) => v < u
-                             | (SOME l, NONE) => v >= l
-                             | (SOME l, SOME u) => v >= l andalso v < u
+                             | (NONE, SOME u) => (case comp(v, u) of LESS => true | _ => false)
+                             | (SOME l, NONE) => (case comp(v, l) of LESS => false | _ => true)
+                             | (SOME l, SOME u) => (case (comp(v,l), comp(v,u)) 
+                                                        of (EQUAL, LESS) => true
+                                                         | (GREATER, LESS) => true
+                                                         | _ => false)
                         end
                      | DBL => raise Fail "found double black leaf in chkOrder\n"
         in if lp(t, NONE, NONE) 
@@ -299,4 +307,10 @@ struct
                      | _ => raise Fail "Impossible: chkPlackPaths\n"
        in lp(t, Any, 0); print "Red-Black property holds\n" end              
 
+    fun depth t = 
+        let fun lp t =  
+            case get t
+                of T(c,l,v,r) => 1 + Int.max(lp l, lp r)
+                 | _ => 0
+        in atomic(fn () => lp t) end
 end

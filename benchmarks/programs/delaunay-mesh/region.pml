@@ -107,7 +107,7 @@ struct
                 case borderL
                     of (c1,c2)::borderL => 
                         let val afterElement = E.mkTri centerCoordinate c1 c2
-                         (*   val _ = print ("Retriangulating around element: " ^ E.elementToString element ^ "\n")  *)
+                            (*val _ = print ("Making new triangle: " ^ E.elementToString afterElement ^ "\n")  *)
                             val edgeMap = Mesh.mesh_insert mesh afterElement edgeMap 
                         in if E.element_isBad afterElement
                            then addTris(borderL, edgeMap, afterElement::badL)

@@ -23,12 +23,14 @@ struct
 
     val (get,put,atomic,new,printStats) = 
         if String.same(whichSTM, "bounded")
-        then (BoundedHybridPartialSTMLowMem.get,BoundedHybridPartialSTMLowMem.put,      
-              BoundedHybridPartialSTMLowMem.atomic,BoundedHybridPartialSTMLowMem.new,
-              BoundedHybridPartialSTMLowMem.printStats)
+        then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
+              BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
+              BoundedHybridPartialSTM.printStats)
         else if String.same(whichSTM, "full")
              then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
+             else if String.same(whichSTM, "dlstm")
+                  then (DLSTM.get,DLSTM.put,DLSTM.atomic,DLSTM.new,DLSTM.printStats)
+                  else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
 
     datatype List = Node of int * List tvar
                   | Null

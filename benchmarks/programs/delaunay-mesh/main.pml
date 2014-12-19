@@ -59,12 +59,14 @@ fun transferBad(badL, wq) =
     case badL
         of bad::badL => 
             let val _ = Q.enqueue wq bad
-                (*val _ = print ("Adding bad triangle: " ^ E.elementToString bad ^ "\n")  *)
+              (*  val _ = print ("Adding bad triangle: " ^ E.elementToString bad ^ "\n")   *)
             in transferBad(badL, wq) end
          | nil => ()
 
 fun process wq mesh = 
-    let fun lp () =
+    let fun lp i =
+        if i = 0 then ()
+        else 
         case Q.dequeue wq
             of SOME elem => 
                 let val badL = STM.atomic(fn () =>
@@ -73,9 +75,9 @@ fun process wq mesh =
                         else let val (_,_,_,badL,_) = R.refine (R.newRegion()) elem mesh
                              in badL end)
                     val _ = transferBad(badL,wq)
-                in lp() end
+                in lp (i-1) end
              | NONE => ()
-    in lp () end
+    in lp 2 end
 
 (* =============================================================================
  * initializeWork

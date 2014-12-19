@@ -14,9 +14,9 @@ type 'a tvar = 'a PartialSTM.tvar
 
 val (get,put,atomic,new,printStats) = 
     if String.same(whichSTM, "bounded")
-    then (BoundedHybridPartialSTMLowMem.get,BoundedHybridPartialSTMLowMem.put,      
-          BoundedHybridPartialSTMLowMem.atomic,BoundedHybridPartialSTMLowMem.new,
-          BoundedHybridPartialSTMLowMem.printStats)
+    then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
+          BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
+          BoundedHybridPartialSTM.printStats)
     else if String.same(whichSTM, "full")
          then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
          else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
@@ -72,15 +72,14 @@ fun initialize n =
              val _ = OrderedLinkedList.add l randNum
          in initialize (n-1) end
 
-val _ = print ("Running with " ^ Int.toString THREADS ^ " threads\n")
+(*val _ = print ("Running with " ^ Int.toString THREADS ^ " threads\n") *)
 
 val _ = initialize INITSIZE
 val startTime = Time.now()
 val _ = join(start l THREADS)
 val endTime = Time.now()
-val _ = printStats()
 val _ = print ("Total was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
-
+val _ = printStats()
 
 
 
