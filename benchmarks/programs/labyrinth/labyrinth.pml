@@ -3,10 +3,12 @@
  * COPYRIGHT (c) 2014 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
  *
- * A concurrent implementation of Lee's routing algorithm using STM
+ * A 3D concurrent implementation of Lee's routing algorithm using STM
  *)
 
+structure S = IntRBSet
 structure V = Vector 
+structure Q = RBQueue
 
 type 'a tvar = 'a PartialSTM.tvar
 
@@ -23,33 +25,34 @@ val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
 
 val (get,put,atomic,new,printStats) = 
     if String.same(whichSTM, "bounded")
-    then (BoundedHybridPartialSTMLowMem.get,BoundedHybridPartialSTMLowMem.put,      
-          BoundedHybridPartialSTMLowMem.atomic,BoundedHybridPartialSTMLowMem.new,
-          BoundedHybridPartialSTMLowMem.printStats)
+    then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
+          BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
+          BoundedHybridPartialSTM.printStats)
     else if String.same(whichSTM, "full")
          then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-         else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
+         else if String.same(whichSTM, "dlstm")
+              then (DLSTM.get,DLSTM.put,DLSTM.atomic,DLSTM.new,DLSTM.printStats)
+              else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
 
 val atomic : (unit -> 'a) -> 'a = atomic
 val new : 'a -> 'a tvar = new
 val get : 'a tvar -> 'a = get
 val put : 'a tvar * 'a -> unit = put
 
+
 type 'a vector = 'a V.vector
 
 (*0 for open space, nonzero for taken*)
-type maze = int WhichSTM.tvar vector vector
+type maze = int tvar vector vector
 
-fun mkMaze n m init = V.tabulate(n, fn i => V.tabulate(m, fn j => new (init(i, j))))
+fun mkMaze m n o = V.tabulate(m, fn _ => V.tabulate(n, fn _ => V.tabulate(o, fn _ => new 0)))
 
 val routes = case getArg "-routes" args
         of SOME n => (case Int.fromString n of SOME n => n | NONE => 10)
          | NONE => 10
 
-val _ = print("Creating " ^ Int.toString routes ^ " routes\n")
-
 fun readData pts = 
-    let val stream = TextIO.openIn("data/data.txt")
+    let val stream = TextIO.openIn("data/3ddata.txt")
         fun nextInt () = case TextIO.inputLine stream
                            of SOME s => Int.fromString s
                             | NONE => NONE
@@ -59,76 +62,76 @@ fun readData pts =
             then nil
             else let val SOME x1 = nextInt()
                      val SOME y1 = nextInt()
+                     val SOME z1 = nextInt()
                      val SOME x2 = nextInt()
                      val SOME y2 = nextInt()
-                 in (pts,(x1,y1),(x2,y2))::lp (pts-1) end
+                     val SOME z2 = nextInt()
+                 in (pts,(x1,y1,z1),(x2,y2,z2))::lp (pts-1) end
     in (n, lp pts) end
 
-val (width, pts) = readData routes
+val (width, pts) = readData routes handle e => (print "EXN\n"; raise e)
         
 val width = case getArg "-size" args
         of SOME n => (case Int.fromString n of SOME n => n | NONE => width)
          | NONE => width
 val height = width
+val depth = width
 
-val _ = print ("Grid size is " ^ Int.toString width ^ " X " ^ Int.toString height ^ "\n")
+fun pntToStr (i, j, k) = "(" ^ Int.toString i ^ ", " ^ Int.toString j ^ ", " ^ Int.toString k ^ ")"
 
-val maze = mkMaze height width (fn(i,j) => 0)
+val maze = mkMaze height width depth
 
-fun sub i j = V.sub(V.sub(maze, i), j)
+fun sub i j k = V.sub(V.sub(V.sub(maze, i), j), k)
 
-(*mark src and destination pts so paths do not include them*)
+    
+(*mark src and destination pts so paths do not run over them*)
 fun markPts pts = 
     case pts
-        of(n, (i,j),(i',j'))::pts =>
-            let val _ = put(sub i j, n)
-                val _ = put(sub i' j', n)
+        of(n, (i,j,k),(i',j',k'))::pts =>
+            let val _ = put(sub i j k, n)
+                val _ = put(sub i' j' k', n)
             in markPts pts end
          |nil => ()
-
+         
 val _ = atomic(fn () => markPts pts)
 val pts = new pts
 
 
-fun toInd(i,j) = i * width + j
+fun toInd(i,j,k) = k + depth * j + depth * width * i
 
-fun dist x1 y1 x2 y2 = (x1-x2) * (x1 - x2) + (y1-y2) * (y1-y2)
+fun dist x1 y1 z1 x2 y2 z2 = (x1-x2) * (x1 - x2) + (y1-y2) * (y1-y2) + (z1-z2) * (z1-z2)
 
-fun comp((p,_,_,_),(p',_,_,_)) = if p < p' then LESS else if p > p' then GREATER else EQUAL
+fun comp((p,_,_,_,_),(p',_,_,_,_)) = if p < p' then LESS else if p > p' then GREATER else EQUAL
 val insert = RBMultiset.insert comp
 val removeMin = RBMultiset.removeMin
 
-fun intComp(a,b) = if a < b then LESS else if a > b then GREATER else EQUAL
-val member = RBMultiset.member intComp
-val insert' = RBMultiset.insert intComp
-
-fun valid i j i' j' seen x = 
-    if i >= 0 andalso j >= 0 andalso i < height andalso j < width
-    then if (get (sub i j) = 0 orelse get (sub i j) = x) andalso not(member (toInd(i,j)) seen)
+fun valid i j k i' j' k' seen x = 
+    if i >= 0 andalso j >= 0 andalso i < height andalso j < width andalso k >= 0 andalso k < depth
+    then if (get (sub i j k) = 0 orelse get (sub i j k) = x) andalso not(S.member (toInd(i,j,k)) seen)
          then true
          else false
     else false
 
-fun pntToStr (i, j) = "(" ^ Int.toString i ^ ", " ^ Int.toString j ^ ")"
 
-fun addNeighbor(i, j, pq, (i',j'), seen, x, h, path) = 
-    if valid i j i' j' seen x 
-    then let val cost = h(i, j) + dist i j i' j'
-         in (insert (cost, i, j, path) pq, insert' (toInd(i,j)) seen) end
-    else (pq, seen)
+fun addNeighbor(i, j, k, q, (i',j',k'), seen, x, path) = 
+    if valid i j k i' j' k' seen x 
+    then (Q.enqueue (i, j, k, path) q, S.insert (toInd(i,j,k)) seen)
+    else (q, seen)
 
-fun addNeighbors((i,j), pq, dest, seen, x, h, path) = 
-    let val (pq,seen) = addNeighbor(i-1, j, pq, dest, seen, x, h, path)
-        val (pq,seen) = addNeighbor(i+1, j, pq, dest, seen, x, h, path)
-        val (pq,seen) = addNeighbor(i, j-1, pq, dest, seen, x, h, path)
-        val (pq,seen) = addNeighbor(i, j+1, pq, dest, seen, x, h, path)
-    in (pq,seen) end
+fun addNeighbors((i,j,k), q, dest, seen, x, path) = 
+    let val (q,seen) = addNeighbor(i-1, j, k, q, dest, seen, x, path)
+        val (q,seen) = addNeighbor(i+1, j, k, q, dest, seen, x, path)
+        val (q,seen) = addNeighbor(i, j-1, k, q, dest, seen, x, path)
+        val (q,seen) = addNeighbor(i, j+1, k, q, dest, seen, x, path)
+        val (q,seen) = addNeighbor(i, j, k-1, q, dest, seen, x, path)
+        val (q,seen) = addNeighbor(i, j, k+1, q, dest, seen, x, path)
+    in (q,seen) end
 
-fun same (i,j) (i',j') = i = i' andalso j = j'
+fun same (i,j,k) (i',j',k') = i = i' andalso j = j' andalso k = k'
 
 fun writePath(p, n) = 
     case p
-        of (i,j)::p' => (put(sub i j, n); writePath(p', n))
+        of (i,j,k)::p' => (put(sub i j k, n); writePath(p', n))
          | nil => ()
 
 datatype res = NoPath | FoundPath 
@@ -138,29 +141,15 @@ datatype res = NoPath | FoundPath
 **path - the current path being explored
 **x - the route number
 **h - a function that computes the cost from the src to the current node*)
-fun route src dest seen pq path x h = 
+fun route src dest seen q path x = 
     if same src dest
     then (writePath(path, x); FoundPath)
-    else let val (pq,seen) = addNeighbors(src, pq, dest, seen, x, h, path)
-         val (i, j) = src
-         in case removeMin pq
-                of SOME ((c,i',j',p), pq) =>
-                    route (i',j') dest seen pq ((i',j')::p) x h
+    else let val (q,seen) = addNeighbors(src, q, dest, seen, x, path)
+         in case Q.dequeue q
+                of SOME ((i',j',k',p), q) =>
+                    route (i',j',k') dest seen q ((i',j',k')::p) x
                  | NONE => NoPath
          end
-
-fun printMaze() = 
-    let fun lp(i, j) = 
-        if i = height
-        then ()
-        else if j = width
-             then (print "\n"; lp(i+1,0))
-             else let val n : int = get (sub i j)
-                  in if n >= 10
-                     then (print (Int.toString n ^ ", "); lp(i,j+1))
-                     else (print ("0" ^ Int.toString n ^ ", "); lp(i,j+1))
-                  end
-    in lp(0,0) end
 
 fun pop() = 
     atomic(fn () => 
@@ -170,16 +159,15 @@ fun pop() =
              | nil => NONE
         end
     )
-    
+
 val noPathCount = new 0
-fun bump() = atomic(fn () => put(noPathCount, get noPathCount + 1))
+fun bump() = put(noPathCount, get noPathCount + 1)
 
 fun threadLoop() = 
     case pop()
         of NONE => ()
          | SOME(x, src, dest) => 
-            case atomic(fn () => route src dest RBMultiset.empty RBMultiset.empty [src] x 
-                    (fn (i, j) => let val (i',j') = src in dist i' j' i j end) )
+            case atomic(fn () => route src dest S.empty RBQueue.empty [src] x)
                 of FoundPath => threadLoop()
                  | NoPath =>  (bump(); threadLoop())
 
@@ -200,16 +188,15 @@ val THREADS = case getArg "-threads" args
         of SOME n => (case Int.fromString n of SOME n => n | NONE => 4)
          | NONE => 4
 
-val _ = print "Done making grid\n"
 
 val startTime = Time.now()
 val _ = join(start THREADS)
 val endTime = Time.now()
-val _ = printStats()
 val _ = print ("Total was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
+val _ = printStats()
+(*val _ = print ("Could not find " ^ Int.toString (atomic(fn () => get noPathCount)) ^ " paths\n")*)
 
-(*val _ = atomic printMaze*)
-val _ = print ("Could not find " ^ Int.toString (WhichSTM.atomic(fn () => WhichSTM.get noPathCount)) ^ " paths\n")
+
 
 
 
