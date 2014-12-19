@@ -1,22 +1,10 @@
-function [] = mkData(n, d, dimensions)
+function [] = mkData(n, dimensions, numPoints)
 if dimensions == 2
     fd = fopen('data.txt', 'w+');
     fprintf(fd, '%d\n', n);
 
-    inds = reshape(1:n*n, n, n);
-    data = zeros(10000,4);
-    for i = 1:10000
-        %{
-        x = randi(n,1);
-        y = randi(n,1);
-
-        neighbors = inds(max(1,x-d):min(size(inds,1),x+d), ...
-                         max(1,y-d):min(size(inds,2),y+d));
-
-        neighbor = neighbors(randi(numel(neighbors), 1));
-        [nx, ny] = ind2sub(size(inds), neighbor); 
-        data(i,:) = [x,y,nx,ny]; 
-        %}
+    data = zeros(numPoints,4);
+    for i = 1:numPoints
         data(i,:) = randi(n,4,1);
     end
     
@@ -32,23 +20,12 @@ if dimensions == 2
     
     
 else
-    fd = fopen('data.txt', 'w+');
+    fd = fopen('3ddata.txt', 'w+');
     fprintf(fd, '%d\n', n);
 
-    inds = reshape(1:n*n*n, n, n, n);
-    data = zeros(10000,6);
-    for i = 1:10000
-        x = randi(n,1);
-        y = randi(n,1);
-        z = randi(n,1);
-        
-        neighbors = inds(max(1,x-d):min(size(inds,1),x+d), ...
-                         max(1,y-d):min(size(inds,2),y+d), ...
-                         max(1,z-d):min(size(inds,3),y+d));
-
-        neighbor = neighbors(randi(numel(neighbors), 1));
-        [nx, ny, nz] = ind2sub(size(inds), neighbor);
-        data(i,:) = [x,y,z,nx,ny,nz];
+    data = zeros(numPoints,6);
+    for i = 1:numPoints
+        data(i,:) = randi(n,6,1);
     end
     
     dist = @(x)(sqrt((x(1) - x(4))^2 + (x(2)-x(5))^2 + (x(3) - x(6))^2)) ;
