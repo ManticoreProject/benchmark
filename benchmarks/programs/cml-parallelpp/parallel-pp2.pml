@@ -12,10 +12,10 @@ structure ParallelPingPong (*: sig
 
   end*) = struct
 
+    val nprocs = 8 (* number of communicating pairs *)
+
     val vps = VProcExtras.vprocs()
     val nVps = List.length vps
-
-    val nprocs = nVps (* number of communicating pairs *)
 
     fun spawnOn (f, id) = VProcExtras.spawnOn f (List.nth(vps, id))
 
@@ -66,5 +66,5 @@ structure Main = struct
 
   end
 
-val _ = Main.timeit 100000
+val _ = Main.timeit 1000000
 
