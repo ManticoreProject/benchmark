@@ -39,10 +39,7 @@ fun initializeManager() =
         val _ = List.map mkManger [M.unsafeAddCar, M.unsafeAddRoom, M.unsafeAddFlight, addCustomer]
     in manager end
 
-val startTime = Time.now()
 val manager = initializeManager()
-val endTime = Time.now()
-val _ = print ("Total time to set up manager was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
 
 fun start i =
     if i = 0
