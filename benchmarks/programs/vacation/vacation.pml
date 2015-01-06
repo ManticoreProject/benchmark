@@ -39,7 +39,6 @@ fun initializeManager() =
         val _ = List.map mkManger [M.unsafeAddCar, M.unsafeAddRoom, M.unsafeAddFlight, addCustomer]
     in manager end
 
-
 val startTime = Time.now()
 val manager = initializeManager()
 val endTime = Time.now()
