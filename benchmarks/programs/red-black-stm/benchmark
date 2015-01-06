@@ -9,15 +9,6 @@ do
     cat currentTime.txt >> times.txt
 done
 
-echo "------------------------Partial Abort----------------------------"
-for i in {1..10}
-do
-    echo "Iteration $i"
-    ./a.out -stm dlstm -iters 500000 > currentTime.txt
-    cat currentTime.txt
-    cat currentTime.txt >> times.txt
-done
-
 echo "------------------------Full Abort----------------------------"
 for i in {1..10}
 do

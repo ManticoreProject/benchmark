@@ -30,9 +30,7 @@ struct
               BoundedHybridPartialSTM.printStats)
         else if String.same(whichSTM, "full")
              then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-             else if String.same(whichSTM, "dlstm")
-                  then (DLSTM.get,DLSTM.put,DLSTM.atomic,DLSTM.new,DLSTM.printStats)
-                  else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
+             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
 
     val get : 'a tvar -> 'a = get
     val put : 'a tvar * 'a -> unit = put
