@@ -64,7 +64,6 @@ fun join chs =
         of ch::chs' => (PrimChan.recv ch; join chs')
          | nil => ()
 
-
 val _ = print "Done initializing manager\n"
 val startTime = Time.now()
 val _ = join (start G.numClient)

@@ -18,7 +18,7 @@ struct
         case info
             of (rt,ri:int,p)::info => 
                 if sameResType rt resType andalso ri = resId
-                then NONE
+                then NONE  (*already reserved this*)
                 else addInfo(resType, resId, price, info, (rt,ri,p)::newInfo)
              | nil => SOME((resType, resId, price)::newInfo)
 

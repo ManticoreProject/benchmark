@@ -16,23 +16,28 @@ struct
     fun unsafeAddRes(manager,id,num,price) = 
         case BT.unsafeRemove intComp id manager
             of SOME res => 
-                if R.numUsed res > 0 andalso price < 0
-                then BT.unsafeInsert intComp id res manager
-                else let val res = R.addToTotal(res, num)
-                         val _ = BT.unsafeInsert intComp id (R.updatePrice(res, price)) manager
-                     in () end
+                (case R.addToTotal(res, num)
+                    of SOME res => 
+                        if R.numTotal res = 0
+                        then ()  (*don't put it back*)
+                        else BT.unsafeInsert intComp id (R.updatePrice(res, price)) manager
+                     | NONE => BT.unsafeInsert intComp id res manager)
             | NONE => BT.unsafeInsert intComp id (R.mkReservation(id, num, price)) manager
     
     fun addReservation(manager, id, num, price) = 
         case BT.remove intComp id manager
             of SOME res => 
-                if R.numUsed res > 0 andalso price < 0
-                then BT.insert intComp id res manager
-                else let val res = R.addToTotal(res, num)
-                         val _ = BT.insert intComp id (R.updatePrice(res, price)) manager
-                     in () end
-            | NONE => BT.insert intComp id (R.mkReservation(id, num, price)) manager
-    
+                (case R.addToTotal(res, num)
+                    of SOME res => 
+                        if R.numTotal res = 0
+                        then ()  (*don't put it back*)
+                        else BT.insert intComp id (R.updatePrice(res, price)) manager
+                     | NONE => BT.insert intComp id res manager)
+            | NONE => 
+                if num < 1 orelse price < 0
+                then ()
+                else BT.insert intComp id (R.mkReservation(id, num, price)) manager
+
     
     fun addCar((manager,_,_,_), id, num, price) = addReservation(manager, id, num, price)
     fun addRoom((_,manager,_,_), id, num, price) = addReservation(manager, id, num, price)
@@ -81,7 +86,6 @@ struct
     (* =============================================================================
      * reserve
      * -- Customer is not allowed to reserve same (type, id) multiple times
-     * -- Returns TRUE on success, else FALSE
      * =============================================================================
      *)
     fun reserve(resTable, customerTable, customerId, resId, resType) = 
@@ -107,7 +111,7 @@ struct
                                 let val _ = BT.insert intComp customerId customer customerTable 
                                     val _ = BT.insert intComp resId reservation resTable
                                 in () end
-                        
+    
      
     fun reserveCar((carTable,_,_,customerTable), customerId, carId) = 
         reserve(carTable, customerTable, customerId, carId, R.Car)
@@ -153,7 +157,7 @@ struct
                                 in case typ
                                     of R.Car => (drop carTable; lp rest)
                                      | R.Room => (drop roomTable; lp rest)
-                                     | R.Flight => (drop roomTable; lp rest)
+                                     | R.Flight => (drop flightTable; lp rest)
                                 end
                              | nil => ()
                 in lp customerInfo end  

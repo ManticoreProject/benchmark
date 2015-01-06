@@ -20,10 +20,7 @@ struct
              | NONE => dflt
              
     val global_angleConstraint = getDoubleFlg "-angle" 20.0
-
-    val filePrefix = case getArg "-file" args
-                        of SOME f => f | NONE => "data/dots.2"
-
+    
     val numRelation = getIntFlg "-r" 65536
 
     val numClient = getIntFlg "-c" 4
