@@ -8,14 +8,6 @@ do
     cat currentTime.txt >> times.txt
 done
 
-echo "------------------------Partial Abort----------------------------"
-for i in {1..10}
-do
-    ./a.out -stm dlstm -routes 200 > currentTime.txt
-    cat currentTime.txt
-    cat currentTime.txt >> times.txt
-done
-
 echo "------------------------Full Abort----------------------------"
 for i in {1..10}
 do

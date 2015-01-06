@@ -30,9 +30,7 @@ val (get,put,atomic,new,printStats) =
           BoundedHybridPartialSTM.printStats)
     else if String.same(whichSTM, "full")
          then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-         else if String.same(whichSTM, "dlstm")
-              then (DLSTM.get,DLSTM.put,DLSTM.atomic,DLSTM.new,DLSTM.printStats)
-              else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
+         else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
 
 val atomic : (unit -> 'a) -> 'a = atomic
 val new : 'a -> 'a tvar = new
@@ -48,8 +46,8 @@ type maze = int tvar vector vector
 fun mkMaze m n o = V.tabulate(m, fn _ => V.tabulate(n, fn _ => V.tabulate(o, fn _ => new 0)))
 
 val routes = case getArg "-routes" args
-        of SOME n => (case Int.fromString n of SOME n => n | NONE => 10)
-         | NONE => 10
+        of SOME n => (case Int.fromString n of SOME n => n | NONE => 150)
+         | NONE => 150
 
 fun readData pts = 
     let val stream = TextIO.openIn("data/3ddata.txt")
