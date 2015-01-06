@@ -64,9 +64,7 @@ fun transferBad(badL, wq) =
          | nil => ()
 
 fun process wq mesh = 
-    let fun lp i =
-        if i = 0 then ()
-        else 
+    let fun lp() =
         case Q.dequeue wq
             of SOME elem => 
                 let val badL = STM.atomic(fn () =>
@@ -75,9 +73,9 @@ fun process wq mesh =
                         else let val (_,_,_,badL,_) = R.refine (R.newRegion()) elem mesh
                              in badL end)
                     val _ = transferBad(badL,wq)
-                in lp (i-1) end
+                in lp() end
              | NONE => ()
-    in lp 2 end
+    in lp() end
 
 (* =============================================================================
  * initializeWork
