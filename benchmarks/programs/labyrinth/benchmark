@@ -1,0 +1,27 @@
+echo "" > times.txt
+
+echo "------------------------Partial Abort----------------------------"
+for i in {1..10}
+do
+    ./a.out -routes 200 > currentTime.txt
+    cat currentTime.txt
+    cat currentTime.txt >> times.txt
+done
+
+echo "------------------------Partial Abort----------------------------"
+for i in {1..10}
+do
+    ./a.out -stm dlstm -routes 200 > currentTime.txt
+    cat currentTime.txt
+    cat currentTime.txt >> times.txt
+done
+
+echo "------------------------Full Abort----------------------------"
+for i in {1..10}
+do
+    ./a.out -routes 200 -stm full > currentTime.txt
+    cat currentTime.txt
+    cat currentTime.txt >> times.txt
+done
+
+grep -o '[0-9]\+\.[0-9]\+\|[0-9]\+' times.txt > stripped.txt
