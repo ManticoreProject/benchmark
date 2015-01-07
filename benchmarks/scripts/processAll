@@ -27,8 +27,9 @@ do
     str=$(cat out2)
     str=$(echo $str)
     IFS=' ' read -a array <<< $str
-
+    echo "" >> $tfile 
     echo "\\begin{figure}[H]" >> $tfile
+    echo "\\centering" >> $tfile
     echo "\\begin{tabular}{| c | c | c |}" >> $tfile
     echo "\\hline" >> $tfile
     echo "&Partial Abort  & Full Abort \\\\\\hline" >> $tfile
@@ -37,7 +38,7 @@ do
     echo "Partial Aborts & ${array[3]} & - \\\\\\hline" >> $tfile
     echo "Full Aborts & ${array[4]} & ${array[6]} \\\\\\hline" >> $tfile
     echo "Total Aborts & ${array[5]} & ${array[6]} \\\\\\hline" >> $tfile
-    echo "Speedup & ${array[2]} & - \\\\\\hline" >> $tfile
+    echo "Speedup & ${array[2]}\\% & - \\\\\\hline" >> $tfile
 
     echo "\\end{tabular}" >> $tfile
     echo "\\caption{${titles[$i]}}" >> $tfile
