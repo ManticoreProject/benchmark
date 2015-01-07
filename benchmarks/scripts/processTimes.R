@@ -6,9 +6,11 @@ if(length(args) == 1){
     stop("Usage: Rscript processTimes.R <filename>")
 }
 
-
-partial = data[1:40,]
-full = data[-(1:40),]
+size = dim(data)
+n = size[1]
+split = n * (2/3)
+partial = data[1:split,]
+full = data[-(1:split),]
 
 pTimes = partial[c(TRUE,FALSE,FALSE,FALSE)]
 partialAborts = partial[c(FALSE,TRUE,TRUE,TRUE)]
