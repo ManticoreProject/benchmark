@@ -1,5 +1,5 @@
 echo "" > times.txt
-
+trap "exit" INT
 echo "------------------------Partial Abort----------------------------"
 for i in {1..10}
 do
