@@ -4,8 +4,12 @@
 echo "\\documentclass[12pt]{article}" > times.tex
 echo "\\begin{document}" >> times.tex
 
-for f in delaunay-mesh delaunay-mesh linked-list-stm	 red-black-stm vacation
+titles=("Delaunay Mesh Refinement" "Labyrinth" "Ordered Linked List" "Red Black Tree" "Vacation")
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation")
+i=0
+for f in "${files[@]}"
 do
+    echo "Processing $f"
     cd ../programs/$f
     if [ ! -f stripped.txt ]; then
        echo "file doesn't exist for $f"
@@ -13,7 +17,7 @@ do
        continue
     fi
 
-    echo "Processing $f"
+    
 
     tfile="../../scripts/times.tex"
     
@@ -36,9 +40,11 @@ do
     echo "Speedup & ${array[2]} & - \\\\\\hline" >> $tfile
 
     echo "\\end{tabular}" >> $tfile
+    echo "\\caption{${titles[$i]}}" >> $tfile
     echo "\\end{figure}" >> $tfile
 
     cd ../../scripts
+    i=$((i+1))
 done
 
 
