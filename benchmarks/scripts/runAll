@@ -1,0 +1,14 @@
+
+trap "exit" INT
+
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation")
+
+for f in "${files[@]}"
+do
+    echo "Processing $f"
+    cd ../programs/$f
+    ./benchmark
+    cd ../../scripts
+done
+
+ 
