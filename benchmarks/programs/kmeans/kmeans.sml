@@ -82,9 +82,11 @@ fun main argv =
 			end
     in
 		(case length argv of 
-			 4 => (procArgs (CommandLine.arguments()))
+			 4 => (procArgs argv)
 		  |   _ => raise BadArgs)
     end
+
+val _ = main ("inputs/color100"::"15"::"15"::"4"::nil)
 
 fun printResults pointss = 
     (* let	 *)
@@ -100,4 +102,7 @@ fun printResults pointss =
 	app Point.printPointList pointss
 
 end
+
+
+
 

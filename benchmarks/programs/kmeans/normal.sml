@@ -13,14 +13,6 @@ end
 
 structure Normal :> NORMAL = struct
 
-(* string -> int -> string -> string list -> string *)
-(* ie printf("%s %i %s") + a for loop + printf("%s") *)
-val genericDebugFmt  =
-	StringPrintf.format 
-		(StringPrintf.STR o 
-		 StringPrintf.INT o 
-		 StringPrintf.STR o 
-		 (StringPrintf.LIST StringPrintf.STR))
 
 (* TODO: is Vector.toList an expensive operation? *)
 (* take two vectors of ClusterCenters and if any of them are non-normal in *)
@@ -124,24 +116,18 @@ fun execute (points : Point.t list,
 		val initialClusterCenters = 
 			initializeClusterCenters(points, randomPtr, nClusterCenters, debug)
 
-		(* helper function for debugging *)
-		(* fun printIterationInfo (index, points) = *)
-		(* 	print(genericDebugFmt "\nLoop iteration index: "  *)
-		(* 						  index  *)
-		(* 						  "\npoints: "  *)
-		(* 						  (map Point.featuresRepr points))					 *)
-		(* val _ = if debug then *)
-		(* 			printIterationInfo (~1, initialClusterCenters) *)
-		(* 		else () *)
-
 		fun loop (10, clusterCenters) = 
 			clusterCenters
 		  | loop (index, clusterCenters) = 
-			loop (index + 1, work(points, clusterCenters))
-    in
-		vectorToList (Vector.map 
+			let val res = vectorToList(Vector.map ClusterCenter.getPoint clusterCenters)
+			    val _ = Point.printPointList res
+			in loop (index + 1, work(points, clusterCenters)) end
+        val res = vectorToList (Vector.map 
 						  ClusterCenter.getPoint 
 						  (loop (0, initialClusterCenters)))
+		val _ = Point.printPointList res				
+    in
+		res
     end
 
 

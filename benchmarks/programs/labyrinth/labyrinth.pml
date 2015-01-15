@@ -51,30 +51,24 @@ val routes = case getArg "-routes" args
 
 fun readData pts = 
     let val stream = TextIO.openIn("data/3ddata.txt")
-        fun nextInt () = case TextIO.inputLine stream
-                           of SOME s => Int.fromString s
-                            | NONE => NONE
-        val SOME n = nextInt()
-        fun lp pts = 
-            if pts = 0
+        fun nextLine() = 
+            case TextIO.inputLine stream
+                of SOME s => 
+                    let val nums = String.tokenize " " s
+                        val x1::x2::x3::nil = List.map (fn x => Option.valOf(Int.fromString x)) nums 
+                    in SOME (x1, x2, x3) end
+                 | NONE => NONE
+        val SOME (n,m,p) = nextLine()         
+        fun lp i =
+            if i = 0 
             then nil
-            else let val SOME x1 = nextInt()
-                     val SOME y1 = nextInt()
-                     val SOME z1 = nextInt()
-                     val SOME x2 = nextInt()
-                     val SOME y2 = nextInt()
-                     val SOME z2 = nextInt()
-                 in (pts,(x1,y1,z1),(x2,y2,z2))::lp (pts-1) end
-    in (n, lp pts) end
+            else case (nextLine(), nextLine())
+                    of (SOME p1, SOME p2) => (i, p1, p2)::lp (i-1)
+                     | _ => nil
+    in (n, m, p, lp pts) end
 
-val (width, pts) = readData routes handle e => (print "EXN\n"; raise e)
+val (height, width, depth, pts) = readData routes handle e => (print "EXN\n"; raise e)
         
-val width = case getArg "-size" args
-        of SOME n => (case Int.fromString n of SOME n => n | NONE => width)
-         | NONE => width
-val height = width
-val depth = width
-
 fun pntToStr (i, j, k) = "(" ^ Int.toString i ^ ", " ^ Int.toString j ^ ", " ^ Int.toString k ^ ")"
 
 val maze = mkMaze height width depth

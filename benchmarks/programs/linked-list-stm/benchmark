@@ -1,3 +1,5 @@
+pmlc mc-same-length-txs.mlb
+
 echo "" > times.txt
 trap "exit" INT
 echo "------------------------Partial Abort----------------------------"

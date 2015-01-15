@@ -1,3 +1,4 @@
+pmlc mc.mlb
 echo "" > times.txt
 trap "exit" INT
 echo "------------------------Partial Abort----------------------------"
