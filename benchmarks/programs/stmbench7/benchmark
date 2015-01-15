@@ -1,0 +1,22 @@
+pmlc mc.mlb
+echo "" > times.txt
+trap "exit" INT
+echo "------------------------Partial Abort----------------------------"
+for i in {1..10}
+do
+    echo "Iteration $i"
+    ./a.out -numAtomicPerComp 50 -numAssmLevels 4  > currentTime.txt
+    cat currentTime.txt
+    cat currentTime.txt >> times.txt
+done
+
+echo "------------------------Full Abort----------------------------"
+for i in {1..10}
+do
+    echo "Iteration $i"
+    ./a.out -numAtomicPerComp 50 -numAssmLevels 4 -stm full > currentTime.txt
+    cat currentTime.txt
+    cat currentTime.txt >> times.txt
+done
+
+grep -o '[0-9]\+\.[0-9]\+\|[0-9]\+' times.txt > stripped.txt
