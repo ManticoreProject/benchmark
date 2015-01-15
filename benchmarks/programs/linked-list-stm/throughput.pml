@@ -80,9 +80,10 @@ fun firstHalf l startTime f1 f2 =
 fun start startTime l i =
     if i = 0
     then nil
-    else let fun r1() = Rand.inRangeInt(0, computeSplit MAXVAL)
+    else let val maxValSplit = computeSplit MAXVAL
+             fun r1() = Rand.inRangeInt(0, maxValSplit)
              fun r2() = Rand.inRangeInt(0, computeSplit (OrderedLinkedList.size l))
-             fun r3() = Rand.inRangeInt(computeSplit MAXVAL, MAXVAL)
+             fun r3() = Rand.inRangeInt(maxValSplit, MAXVAL)
              fun r4() = Rand.inRangeInt(computeSplit (OrderedLinkedList.size l), OrderedLinkedList.size l)
              val ch1 = PrimChan.new()
              val ch2 = PrimChan.new()
@@ -108,7 +109,7 @@ val _ = initialize INITSIZE
 val startTime = Time.now()
 val ops = join(start (Time.toSecs startTime) l THREADS)
 val endTime = Time.now()
-val _ = print ("Total throughput is " ^ Int.toString ops ^ " operations\n")
+val _ = print ("Total throughput is " ^ Double.fromInt(Int.toString ops) / Double.fromInt THREADS ^ " operations / thread\n")
 val _ = printStats()
 
 
