@@ -108,8 +108,9 @@ val _ = initialize INITSIZE
 val startTime = Time.now()
 val ops = join(start (Time.toSecs startTime) l THREADS)
 val endTime = Time.now()
-val _ = printStats()
 val _ = print ("Total throughput is " ^ Int.toString ops ^ " operations\n")
+val _ = printStats()
+
 
 
 
