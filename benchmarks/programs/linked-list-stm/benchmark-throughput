@@ -5,9 +5,9 @@ pmlc throughput.mlb
 trap "exit" INT
 
 echo "------------------------Partial Abort----------------------------"
-for j in 2 4 8 16 32 48
+for j in {2..48}
 do
-    for i in {1..5}
+    for i in {1..15}
     do
         echo "Iteration $i"
         ./a.out -threads $j > currentTime.txt
@@ -15,9 +15,9 @@ do
         cat currentTime.txt >> times.txt
     done
 echo "------------------------Full Abort----------------------------"
-for j in 2 4 8 16 32 48
+for j in {2..48}
 do
-    for i in {1..5}
+    for i in {1..15}
     do
         echo "Iteration $i"
         ./a.out -threads $j -stm full > currentTime.txt
