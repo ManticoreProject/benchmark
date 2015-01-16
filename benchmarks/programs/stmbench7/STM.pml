@@ -13,15 +13,15 @@ struct
 
     type 'a tvar = 'a PartialSTM.tvar 
 
-    val (get,put,atomic,new,printStats,abort,unsafeGet) = 
+    val (get,put,atomic,new,printStats,abort,unsafeGet, same) = 
         if String.same(whichSTM, "bounded")
         then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
               BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
               BoundedHybridPartialSTM.printStats,BoundedHybridPartialSTM.abort,
-              BoundedHybridPartialSTM.unsafeGet)
+              BoundedHybridPartialSTM.unsafeGet, BoundedHybridPartialSTM.same)
         else if String.same(whichSTM, "full")
-             then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats,FullAbortSTM.abort,FullAbortSTM.unsafeGet)
-             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats,PartialSTM.abort,PartialSTM.unsafeGet)
+             then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats,FullAbortSTM.abort,FullAbortSTM.unsafeGet, FullAbortSTM.same)
+             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats,PartialSTM.abort,PartialSTM.unsafeGet, PartialSTM.same)
 
     (*won't typecheck without these nonsense bindings*)
     val get : 'a tvar -> 'a = get
@@ -31,5 +31,6 @@ struct
     val printStats : unit -> unit = printStats
     val abort : unit -> 'a = abort
     val unsafeGet : 'a tvar -> 'a = unsafeGet
+    val same : 'a tvar * 'a tvar -> bool = same
              
 end

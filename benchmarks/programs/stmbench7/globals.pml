@@ -22,6 +22,8 @@ struct
     val THREADS = getIntFlg "-threads" 4
     val ITERS = getIntFlg "-iters" 5
 
+    fun dToI d = Long.toInt(Double.round d)
+
     val NumAssmPerAssm = 3
     val NumAssmLevels = getIntFlg "-numAssmLevels" 7
     val NumCompPerModule = 50 (*500*)
@@ -41,5 +43,16 @@ struct
 	val MinYoungCompDate = 2000
 	val MaxYoungCompDate = 2999
 	val YoungCompFrac = 10
+	val MaxCompParts = Long.toInt (Double.round(1.05 * Double.fromInt InitialTotalCompParts))
+	val MaxAtomicParts = MaxCompParts * NumAtomicPerComp
+    val ManualSize = 1000
+    val InitialTotalComplexAssemblies = 
+        let val num = 1.0 - Double.pow(Double.fromInt NumAssmPerAssm, Double.fromInt(NumAssmLevels - 1))
+            val denom = Double.fromInt (1 - NumAssmPerAssm)
+        in Long.toInt (Double.round(num / denom))
+        end 
+    val MaxComplexAssemblies = dToI(1.05 * Double.fromInt InitialTotalComplexAssemblies)
 
+    val InitialTotalBaseAssemblies = Double.pow(Double.fromInt NumAssmPerAssm, Double.fromInt (NumAssmLevels - 1))
+    val MaxBaseAssemblies = dToI(1.05 * InitialTotalBaseAssemblies)
 end

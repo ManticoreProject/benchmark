@@ -22,9 +22,9 @@ struct
         let fun tMod(D.Mod(man, assem)) = tAssem assem
             and tAssem tv = 
                 case STM.get tv
-                    of D.ComplexAssembly(_, _, assems, _) =>
+                    of D.ComplexAssembly(_, _, assems, _,_) =>
                         List.foldl (fn(a, total) => total + tAssem a) 0 assems
-                     | D.BaseAssembly(id,_,compositeParts) => List.foldl (fn(x, total) => tComposite x + total) 0 compositeParts
+                     | D.BaseAssembly(id,_,compositeParts,_) => List.foldl (fn(x, total) => tComposite x + total) 0 compositeParts
                      | _ => 0
             and tComposite comp = 
                 case STM.get comp
@@ -43,7 +43,7 @@ struct
                                          in lp(ns, visited, n) end
                                  | nil => (visited, count)
                         in lp(to', visited, count) end
-        in STM.atomic(fn () => tMod module) end
+        in tMod module end
 
     (**
      * T1: traverse the whole structure depth-first, starting from the module and the root 
@@ -106,8 +106,19 @@ struct
     fun t3a() = traverse (fn (atom, visited) => 
             if S.isEmpty visited 
             then let val (oldDate, newDate, newAtom) = D.atomUpdateBuildDate atom
-                     val _ = I.removeAtomicPartFromBuildDateIndex(oldDate, atom)
-                     val _ = I.addAtomicPartToBuildDateIndex(newDate, atom)
+                     fun drop atoms = 
+                        case atoms
+                            of atom'::atoms => if STM.same(atom, atom')
+                                               then atoms
+                                               else atom'::drop atoms
+                             | _ => raise Fail "Atom not found\n"
+                     val SOME tv = I.lookupAtomicPartBuildDateIndex oldDate
+                     val newList = drop (STM.get tv)
+                     val _ = STM.put(tv, newList)
+                     val res = I.lookupAtomicPartBuildDateIndex newDate
+                     val _ = case res
+                                of SOME tv => STM.put(tv, atom::STM.get tv)
+                                 | NONE => I.addAtomicPartBuildDateIndex(newDate, atom)
                  in newAtom end
             else STM.get atom)
 (*
@@ -123,8 +134,19 @@ struct
      *)
     fun t3b() = traverse (fn (atom, visited) => 
             let val (oldDate, newDate, newAtom) = D.atomUpdateBuildDate atom
-                val _ = I.removeAtomicPartFromBuildDateIndex(oldDate, atom)
-                val _ = I.addAtomicPartToBuildDateIndex(newDate, atom)
+                fun drop atoms = 
+                        case atoms
+                            of atom'::atoms => if STM.same(atom, atom')
+                                               then atoms
+                                               else atom'::drop atoms
+                             | _ => raise Fail "Atom not found\n"
+                     val SOME tv = I.lookupAtomicPartBuildDateIndex oldDate
+                     val newList = drop (STM.get tv)
+                     val _ = STM.put(tv, newList)
+                     val res = I.lookupAtomicPartBuildDateIndex newDate
+                     val _ = case res
+                                of SOME tv => STM.put(tv, atom::STM.get tv)
+                                 | NONE => I.addAtomicPartBuildDateIndex(newDate, atom)
             in newAtom end)
 
     (**
@@ -137,8 +159,19 @@ struct
                         if i = 0
                         then STM.get atom
                         else let val (oldDate, newDate, newAtom) = D.atomUpdateBuildDate atom
-                                 val _ = I.removeAtomicPartFromBuildDateIndex(oldDate, atom)
-                                 val _ = I.addAtomicPartToBuildDateIndex(newDate, atom)
+                                 fun drop atoms = 
+                                    case atoms
+                                        of atom'::atoms => if STM.same(atom, atom')
+                                                           then atoms
+                                                           else atom'::drop atoms
+                                         | _ => raise Fail "Atom not found\n"
+                                 val SOME tv = I.lookupAtomicPartBuildDateIndex oldDate
+                                 val newList = drop (STM.get tv)
+                                 val _ = STM.put(tv, newList)
+                                 val res = I.lookupAtomicPartBuildDateIndex newDate
+                                 val _ = case res
+                                            of SOME tv => STM.put(tv, atom::STM.get tv)
+                                             | NONE => I.addAtomicPartBuildDateIndex(newDate, atom)
                              in newAtom end
                 in lp 4 end
         in traverse oper end
@@ -153,12 +186,12 @@ struct
         let fun tComposite comp = f comp
             fun tAssem tv = 
                 case STM.get tv
-                    of D.ComplexAssembly(_, _, assems, _) =>
+                    of D.ComplexAssembly(_, _, assems, _, _) =>
                         List.foldl (fn(a, total) => total + tAssem a) 0 assems
-                     | D.BaseAssembly(id,_,compositeParts) => List.foldl (fn(x, total) => tComposite x + total) 0 compositeParts
+                     | D.BaseAssembly(id,_,compositeParts,_) => List.foldl (fn(x, total) => tComposite x + total) 0 compositeParts
                      | _ => 0
             fun tMod(D.Mod(man, assem)) = tAssem assem
-        in STM.atomic(fn () => tMod module) end
+        in tMod module end
 
     (**
      * T4: traverse the structure depth-first, from the module and the root complex assembly 
@@ -214,14 +247,14 @@ struct
         let fun tMod(D.Mod(man, assem)) = tAssem assem
             and tAssem tv = 
                 case STM.get tv
-                    of D.ComplexAssembly(_, _, assems, _) =>
+                    of D.ComplexAssembly(_, _, assems, _, _) =>
                         List.foldl (fn(a, total) => total + tAssem a) 0 assems
-                     | D.BaseAssembly(id,_,compositeParts) => List.foldl (fn(x, total) => tComposite x + total) 0 compositeParts
+                     | D.BaseAssembly(id,_,compositeParts, _) => List.foldl (fn(x, total) => tComposite x + total) 0 compositeParts
                      | _ => 0
             and tComposite comp = 
                 case STM.get comp
                     of D.Comp(id,_,doc,usedIn,parts,rootPart) => (STM.get rootPart; 1)
-        in STM.atomic(fn () => tMod module) end
+        in tMod module end
 
     (**
      * Q6: find all complex assemblies that are ascendants of some base assembly such that 
@@ -235,12 +268,12 @@ struct
         let fun tMod(D.Mod(man, assem)) = tAssem assem
             and tAssem tv = 
                 case STM.get tv
-                    of D.ComplexAssembly(_, _, assems, _) =>   
+                    of D.ComplexAssembly(_, _, assems, _, _) =>   
                         let fun f(a, total) = 
                                 let val res = tAssem a
                                 in if res > 0 then res + 1 + total else total end
                         in List.foldl f 0 assems end
-                     | D.BaseAssembly(id,date,compositeParts) => 
+                     | D.BaseAssembly(id,date,compositeParts,_) => 
                         if List.foldl (fn(x, total) => tComposite(x, date) orelse total) false compositeParts
                         then 1
                         else 0
@@ -248,7 +281,7 @@ struct
             and tComposite(comp, assemDate) = 
                 case STM.get comp
                     of D.Comp(id,date,doc,usedIn,parts,rootPart) => date > assemDate
-        in STM.atomic(fn () => tMod module) end
+        in tMod module end
 
     (** 
      * Q7: iterate through all atomic parts, using the atomic part ID index, and perform a 

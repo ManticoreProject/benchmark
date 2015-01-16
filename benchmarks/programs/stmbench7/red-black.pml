@@ -284,7 +284,36 @@ struct
                  | _ => id
        in STM.atomic(fn _ => lp(id, t)) end
 
+    fun randVal t = 
+        let fun lp t = 
+                case STM.get t
+                    of T(c,l,x,v,r) =>
+                        let val n = Rand.inRangeInt(0, 3)
+                        in if n = 0
+                           then lp l handle e => v
+                           else if n = 1
+                                then v
+                                else lp r handle e => v
+                        end
+                    | _ => raise Fail "leaf\n"
+        in STM.atomic(fn _ => lp t) end
 
+    fun toList t = 
+        let fun lp t = 
+                case STM.get t
+                    of T(c,l,x,v,r) =>
+                        let val left = lp l
+                            val right = lp r
+                        in left @ ((x,v)::right) end
+                     | _ => nil
+        in STM.atomic(fn _ => lp t) end
+
+    fun size t = 
+        let fun lp t = 
+            case STM.get t
+                of T(c,l,x,v,r) => 1 + lp l + lp r
+                 | _ => 0
+        in STM.atomic(fn () => lp t) end
 
 end
 

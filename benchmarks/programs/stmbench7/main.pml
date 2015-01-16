@@ -2,14 +2,25 @@
 structure G = Globals
 
 
-val operations = Vector.fromList LongTraversals.operations
+val operations = Vector.fromList(LongTraversals.operations @ ShortTraversals.operations @ 
+                                 ShortTraversals.operations @ StructuralModifications.operations)
+
+fun readData() = 
+    let val stream = TextIO.openIn "data/data.txt"
+        fun toInt c = Option.valOf (Int.fromString c)
+        fun lp () = 
+            case TextIO.inputLine stream
+                of SOME line => List.map toInt (String.tokenize " " line)::lp()
+                 | _ => nil
+    in lp() end
+
 
 
 fun threadLoop ops = 
     case ops
         of opNum::ops => 
             let val oper = Vector.sub(operations, opNum - 1)
-                val res = oper()
+                val res = STM.atomic oper
                 val _ = print ("Finished loop iteration\n")
             in threadLoop ops end
          | nil => ()
@@ -27,12 +38,10 @@ fun join chs =
         of ch::chs => (PrimChan.recv ch; join chs)
          | nil => ()
 
-
-val o1 = [10, 9, 5, 8, 3]
-val o2 = [9, 1, 4, 1, 2]
-val o3 = [10, 9, 4, 12, 1]
-val o4 = [6, 5, 10, 10, 3]
-val ops = [o1, o2, o3, o4]
+val ops = readData()
+val _ = if List.length ops = G.THREADS
+        then ()
+        else (print "Input does not match number of threads\n"; raise Fail " ")
 
 val startTime = Time.now()
 val _ = join(start(ops, G.THREADS))
