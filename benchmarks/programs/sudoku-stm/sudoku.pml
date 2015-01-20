@@ -52,14 +52,14 @@ fun choice (v : value) : value list tvar =
 fun choices (vs : value list list) : choices matrix = List.map (fn x => List.map choice x) vs
 
 fun single xs = List.length xs = 1
-
+(*
 fun findSingles xs = 
     case xs
         of x::xs => 
             let val v = get x
             in if single v then (v @ findSingles xs) else findSingles xs end
          | nil => nil
-
+*)
 fun drop x xs = 
     case xs
         of x'::xs => if String.same(x, x') then xs else x'::drop x xs
@@ -98,14 +98,27 @@ fun same arg =
         of (x::xs, y::ys) => String.same(x, y) andalso same(xs, ys)
          | (nil, nil) => true
          | _ => false
- 
+(*
 fun removeSingles singles var = 
     let val x = get var
     in if single x orelse same(x, diff(x, singles)) then () else put(var, diff(x, singles)) end
+*)
+
+fun removeSingles singles (raw, tv) = 
+    if same(raw, diff(raw, singles)) then () else put(tv, diff(raw, singles))
+
+fun findSingles row = 
+    case row
+        of tv::row => 
+            let val raw = get tv
+                val (singles, nonSingles) = findSingles row
+            in if single raw then (List.hd raw::singles, nonSingles) else (singles,(raw,tv)::nonSingles)
+            end
+         | _ => (nil, nil)
 
 fun reduce (row : choices row) = 
-    let val singles = findSingles row
-    in List.map (removeSingles singles) row end
+    let val (singles, nonSingles) = findSingles row
+    in List.map (removeSingles singles) nonSingles end
     
 fun pruneBy chan f m = 
     let val _ = atomic(fn () => List.map reduce (f m))
@@ -240,9 +253,8 @@ val endTime = Time.now()
 val _ = print ("Total was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
 val _ = printStats()
 
+fun printSolution g = List.map (fn x => print (String.concatWith " " x ^ "\n")) g
 
-
-(*val _ = printSolution solution
-*)
+val _ = printSolution solution
 
                                     
