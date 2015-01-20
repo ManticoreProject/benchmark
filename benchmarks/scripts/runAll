@@ -1,7 +1,7 @@
 
 trap "exit" INT
 
-files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation")
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm)
 
 for f in "${files[@]}"
 do

@@ -13,7 +13,7 @@ partial = data[1:split,]
 full = data[-(1:split),]
 
 pTimes = partial[c(TRUE,FALSE,FALSE,FALSE)]
-partialAborts = partial[c(FALSE,TRUE,TRUE,TRUE)]
+partialAborts = partial[c(FALSE,TRUE,FALSE, FALSE)]
 fullAborts = partial[c(FALSE,FALSE,TRUE,FALSE)]
 pAborts = partial[c(FALSE,FALSE,FALSE,TRUE)]
 
