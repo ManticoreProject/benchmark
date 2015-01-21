@@ -21,8 +21,9 @@ struct
               BoundedHybridPartialSTM.unsafeGet)
         else if String.same(whichSTM, "full")
              then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats,FullAbortSTM.abort,FullAbortSTM.unsafeGet)
-             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats,PartialSTM.abort,PartialSTM.unsafeGet)
-
+             else if String.same(whichSTM, "partial")
+                  then (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats,PartialSTM.abort,PartialSTM.unsafeGet)
+                  else (print "Unknown STM\n"; raise Fail("Unknown STM\n"))
     (*won't typecheck without these nonsense bindings*)
     val get : 'a tvar -> 'a = get
     val put : 'a tvar * 'a -> unit = put

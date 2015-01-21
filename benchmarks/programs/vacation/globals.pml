@@ -21,13 +21,13 @@ struct
              
     val global_angleConstraint = getDoubleFlg "-angle" 20.0
     
-    val numRelation = getIntFlg "-r" 65536
+    val numRelation = getIntFlg "-r" 500
 
     val numClient = getIntFlg "-c" 4
 
-    val numTransaction = getIntFlg "-t" 67108864
+    val numTransaction = getIntFlg "-t" 50000
 
-    val num = getIntFlg "-n" 10
+    val num = getIntFlg "-n" 50
 
     val queries = getIntFlg "-q" 90
 
