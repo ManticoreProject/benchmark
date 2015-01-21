@@ -155,7 +155,7 @@ struct
     fun f o = print ("sm2 = " ^ Int.toString(STM.atomic o) ^ "\n") handle Fail s => print s
 
     val operations = [sm2, sm3, sm4, sm5, sm6, sm7]
-
+    val titles = ["sm2", "sm3", "sm4", "sm5", "sm6", "sm7"]
 
 
 end

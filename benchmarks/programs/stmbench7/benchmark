@@ -6,12 +6,12 @@ trap "exit" INT
 echo "------------------------Partial Abort----------------------------"
 for i in {1..10}
 do
-    echo "Iteration $i"
-    res=$(./a.out -numAtomicPerComp 50 -numAssmLevels 4  > currentTime.txt)
+    echo "Iteration $i"  
+    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4  > currentTime.txt)
     while [ $? -eq "139" ]; 
     do
         echo "Error!, trying again..."
-        res=$(./a.out -numAtomicPerComp 50 -numAssmLevels 4  > currentTime.txt)
+        res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4  > currentTime.txt)
     done
     cat currentTime.txt
     cat currentTime.txt >> times.txt
@@ -21,11 +21,11 @@ echo "------------------------Full Abort----------------------------"
 for i in {1..10}
 do
     echo "Iteration $i"
-    res=$(./a.out -numAtomicPerComp 50 -numAssmLevels 4 -stm full > currentTime.txt)
+    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -stm full > currentTime.txt)
     while [ $? -eq "139" ]; 
     do
         echo "Error!, trying again..."
-        res=$(./a.out -numAtomicPerComp 50 -numAssmLevels 4 -stm full > currentTime.txt)
+        res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -stm full > currentTime.txt)
     done
     cat currentTime.txt
     cat currentTime.txt >> times.txt

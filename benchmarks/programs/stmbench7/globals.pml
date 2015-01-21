@@ -24,13 +24,15 @@ struct
 
     fun dToI d = Long.toInt(Double.round d)
 
-    val NumAssmPerAssm = 3
+    val TIME = Int.toLong(getIntFlg "-time" 10)
+
+    val NumAssmPerAssm = getIntFlg "-numAssmPerAssm" 3
     val NumAssmLevels = getIntFlg "-numAssmLevels" 7
     val NumCompPerModule = 50 (*500*)
     val InitialTotalCompParts = NumCompPerModule
     val NumAtomicPerComp = getIntFlg "-numAtomicPerComp" 200
     val NumTypes = 10
-    val DocumentSize = (*20000 *) 1000
+    val DocumentSize = getIntFlg (*20000 *) "-docSize" 1000
     val NumCompPerAssm = 3
     val XYRange = 100000
     val NumConnPerAtomic = 6

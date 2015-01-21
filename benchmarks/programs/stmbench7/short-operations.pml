@@ -258,7 +258,8 @@ struct
 
     val operations = [op1, op2, op3, op4, op5, op6, op7, op8, op9, op10, 
                       op11, op12, op13, op14, op15]
-
+    val titles = ["op1", "op2", "op3", "op4", "op5", "op6", "op7", "op8", "op9", "op10", 
+                  "op11", "op12", "op13", "op14", "op15"]
      
 end
 

@@ -14,8 +14,10 @@ struct
 
 
     fun pickRand l = 
-        let val r = Rand.inRangeInt(0, List.length l)
-        in List.nth(l, r) end
+        if List.length l = 0
+        then raise Fail "picking rand of 0 length list\n"
+        else let val r = Rand.inRangeInt(0, List.length l)
+             in List.nth(l, r) end
 
     fun randTraversal f = 
         let fun tComposite comp = f comp
@@ -273,7 +275,7 @@ struct
         in tMod module end
 
     val operations = [st1, st2, st3, st4, st5, st6, st7, st8, st9, st10]
-    
+    val titles = ["st1", "st2", "st3", "st4", "st5", "st6", "st7", "st8", "st9", "st10"]
 end
 
 

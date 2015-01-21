@@ -291,8 +291,8 @@ struct
                in I.foldAtomicPart f 0 end
 
 
-    val operations = [t1, t2a, t2b, t2c, t3a, t3b, t3c, t4, t5, t6, q6, q7]
-    
+    val operations = [t1, t2a, t2b, t2c, t3a, (*t3b, t3c,*) t4, t5, t6, q6, q7]
+    val titles = ["t1", "t2a", "t2b", "t2c", "t3a", (*"t3b", "t3c",*) "t4", "t5", "t6", "q6", "q7"]
     
 end
 
