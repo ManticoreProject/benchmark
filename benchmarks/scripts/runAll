@@ -1,13 +1,21 @@
+iters=10
+while getopts ":i:" options; 
+do
+    case $options in
+	i ) iters=$OPTARG ;;
+    esac
+done
+
 
 trap "exit" INT
 
-files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm)
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7" "sudoku-stm")
 
 for f in "${files[@]}"
 do
     echo "Processing $f"
     cd ../programs/$f
-    ./benchmark
+    ./benchmark -c -i $iters
     cd ../../scripts
 done
 

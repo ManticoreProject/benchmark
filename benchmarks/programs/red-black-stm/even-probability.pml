@@ -71,7 +71,7 @@ val _ = initialize 100000
 val startTime = Time.now()
 val _ = join(start t THREADS)
 val endTime = Time.now()
-val _ = print ("Total was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
+val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 
 val _ = atomic(fn _ => RBTree.chkOrder intComp t)
 val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)

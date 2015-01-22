@@ -1,10 +1,19 @@
 #!/bin/bash
 
-pmlc sudoku.pml
+iters=10
+
+while getopts ":ci:" options; 
+do
+    case $options in
+	c ) pmlc sudoku.pml ;;
+	i ) iters=$OPTARG ;;
+    esac
+done
+
 echo "" > times.txt
 trap "exit" INT
 echo "------------------------Partial Abort----------------------------"
-for i in {1..10}
+for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
     res=$(./a.out -p 4 > currentTime.txt)
@@ -14,11 +23,13 @@ do
         res=$(./a.out -p 4 > currentTime.txt)
     done
     cat currentTime.txt
+    echo "name = Partial Abort" >> times.txt
     cat currentTime.txt >> times.txt
+    echo "end" >> times.txt
 done
 
 echo "------------------------Full Abort----------------------------"
-for i in {1..10}
+for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
     res=$(./a.out -p 4 -stm full > currentTime.txt)
@@ -28,7 +39,9 @@ do
         res=$(./a.out -p 4 -stm full > currentTime.txt)
     done
     cat currentTime.txt
+    echo "name = Full Abort" >> times.txt
     cat currentTime.txt >> times.txt
+    echo "end" >> times.txt
 done
 
-grep -o '[0-9]\+\.[0-9]\+\|[0-9]\+' times.txt > stripped.txt
+

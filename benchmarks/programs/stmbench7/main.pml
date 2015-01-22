@@ -10,8 +10,6 @@ val titles = Vector.fromList(LongTraversals.titles @ ShortTraversals.titles @
 
 (*Time how long it takes to perform x operations*)
 
-val _ = print("n = " ^ Int.toString(Vector.length operations) ^ "\n")
-
 fun readData() = 
     let val stream = TextIO.openIn "data/data.txt"
         fun toInt c = Option.valOf (Int.fromString c)
@@ -53,7 +51,7 @@ val _ = if List.length ops = G.THREADS
 val startTime = Time.now()
 val _ = join(start(ops, G.THREADS))
 val endTime = Time.now()
-val _ = print ("Total was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
+val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = STM.printStats()
 
 

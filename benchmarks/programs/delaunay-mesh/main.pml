@@ -123,7 +123,7 @@ val _ = print "starting refinement\n"
 val startTime = Time.now()
 val _ = join (startThreads G.threads)
 val endTime = Time.now()
-val _ = print ("Total time was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
+val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 
 (*
 val _ = print "Checking mesh\n"

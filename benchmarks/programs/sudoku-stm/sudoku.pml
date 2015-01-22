@@ -52,14 +52,7 @@ fun choice (v : value) : value list tvar =
 fun choices (vs : value list list) : choices matrix = List.map (fn x => List.map choice x) vs
 
 fun single xs = List.length xs = 1
-(*
-fun findSingles xs = 
-    case xs
-        of x::xs => 
-            let val v = get x
-            in if single v then (v @ findSingles xs) else findSingles xs end
-         | nil => nil
-*)
+
 fun drop x xs = 
     case xs
         of x'::xs => if String.same(x, x') then xs else x'::drop x xs
@@ -90,7 +83,7 @@ fun boxes x =
     let fun split x = chop boxSize x
         fun pack x = split (List.map split x)
         fun unpack x = List.map List.concat (List.concat x)
-    in unpack (map cols (pack x)) end
+    in unpack (List.map cols (pack x)) end
 
 (*avoid false conflicts*)
 fun same arg = 
@@ -98,11 +91,6 @@ fun same arg =
         of (x::xs, y::ys) => String.same(x, y) andalso same(xs, ys)
          | (nil, nil) => true
          | _ => false
-(*
-fun removeSingles singles var = 
-    let val x = get var
-    in if single x orelse same(x, diff(x, singles)) then () else put(var, diff(x, singles)) end
-*)
 
 fun removeSingles singles (raw, tv) = 
     if same(raw, diff(raw, singles)) then () else put(tv, diff(raw, singles))
@@ -202,7 +190,7 @@ fun solve (grid : value list list)  =
     let val solutionChan = PrimChan.new()
         val matrix : choices matrix = choices grid
         val _ = prune matrix
-        val _ = search solutionChan matrix
+        val _ = search solutionChan matrix 
         val res = PrimChan.recv solutionChan
     in res end
 
@@ -247,10 +235,12 @@ val minimal : value list list    = [String.explode ".98......",
 
 
 
+
+
 val startTime = Time.now()
 val solution = solve minimal
 val endTime = Time.now()
-val _ = print ("Total was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
+val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = printStats()
 
 fun printSolution g = List.map (fn x => print (String.concatWith " " x ^ "\n")) g

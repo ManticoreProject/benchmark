@@ -184,7 +184,7 @@ val THREADS = case getArg "-threads" args
 val startTime = Time.now()
 val _ = join(start THREADS)
 val endTime = Time.now()
-val _ = print ("Total was: " ^ Time.toString (endTime - startTime) ^ " seconds\n")
+val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = printStats()
 (*val _ = print ("Could not find " ^ Int.toString (atomic(fn () => get noPathCount)) ^ " paths\n")*)
 

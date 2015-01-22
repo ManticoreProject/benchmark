@@ -1,50 +1,20 @@
-
-
-
 echo "\\documentclass[12pt]{article}" > times.tex
 echo "\\begin{document}" >> times.tex
 
-titles=("Delaunay Mesh Refinement" "Labyrinth" "Ordered Linked List" "Red Black Tree" "Vacation" "KMeans")
-files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm")
+titles=("Delaunay Mesh Refinement" "Labyrinth" 'Ordered Linked List'  "Red Black Tree" "Vacation" "KMeans" "STMBench7" "Sudoku")
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7" "sudoku-stm")
 i=0
 for f in "${files[@]}"
 do
     echo "Processing $f"
-    cd ../programs/$f
-    if [ ! -f stripped.txt ]; then
+    if [ ! -f ../programs/$f/times.txt ]; then
        echo "file doesn't exist for $f"
-       cd ../../scripts
        continue
     fi
 
+    ./processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}" >> times.tex
     
 
-    tfile="../../scripts/times.tex"
-    
-    Rscript ../../scripts/processTimes.R stripped.txt > out
-    grep -o "\-\?[0-9]*\.[0-9]*\|[0-9]\+" out > out2
-    rm out
-    str=$(cat out2)
-    str=$(echo $str)
-    IFS=' ' read -a array <<< $str
-    echo "" >> $tfile 
-    echo "\\begin{figure}[H]" >> $tfile
-    echo "\\centering" >> $tfile
-    echo "\\begin{tabular}{| c | c | c |}" >> $tfile
-    echo "\\hline" >> $tfile
-    echo "&Partial Abort  & Full Abort \\\\\\hline" >> $tfile
-    echo "Execution Time & ${array[0]} & ${array[1]} \\\\\\hline" >> $tfile
-
-    echo "Partial Aborts & ${array[3]} & - \\\\\\hline" >> $tfile
-    echo "Full Aborts & ${array[4]} & ${array[6]} \\\\\\hline" >> $tfile
-    echo "Total Aborts & ${array[5]} & ${array[6]} \\\\\\hline" >> $tfile
-    echo "Speedup & ${array[2]}\\% & - \\\\\\hline" >> $tfile
-
-    echo "\\end{tabular}" >> $tfile
-    echo "\\caption{${titles[$i]}}" >> $tfile
-    echo "\\end{figure}" >> $tfile
-
-    cd ../../scripts
     i=$((i+1))
 done
 
