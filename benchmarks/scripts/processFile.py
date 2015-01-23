@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, getopt, re
+import sys, getopt, re, os
 
 #argv contains the filename and the arguments
 
@@ -15,13 +15,20 @@ def getFlag(f):
             return next(it)
     return None
 
+def getFile():
+    for arg in sys.argv:
+        filename, ext = os.path.splitext(arg)
+        if ext == '.txt':
+            return arg
+    return None
+
 def getOpt(f):
     for arg in sys.argv:
         if arg == f:
             return True
     return False
 
-f = getFlag("-file")
+f = getFile()
 if f is None:
     print "No file specified"
     sys.exit(1)
@@ -105,7 +112,7 @@ def mkComparisonString(lists, k):
     for key in lists:
         l = lists[key]
         change = ((base - mean(l[k])) / base) * 100
-        s += ' & ' + "{:10.2f}".format(change) + "\%"
+        s += ' & ' + ("%.2f" % change) + "\%"
     s += '\\\\\\hline'
     return s
         
