@@ -3,7 +3,7 @@ STM.pml
 point.pml
 commonUtil.pml
 normal.pml
-Cluster.pml
+cluster.pml
 kmeans.pml
 main.pml
 
