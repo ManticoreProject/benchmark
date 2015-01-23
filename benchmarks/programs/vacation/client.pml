@@ -12,7 +12,7 @@ struct
         then MakeRes
         else if r < percentUser + ((100 - percentUser) div 2)
              then DelCustomer
-             else UpdateTables
+             else UpdateTables 
 
     (*generate a random reservation type*)
     fun randResType _ = 
@@ -34,13 +34,15 @@ struct
                         let fun mkReservation(query, maxPrice, maxId) = 
                                 case query(manager, i)
                                     of SOME res => 
-                                        if R.getNumFree res >= 0
-                                        then let val price = R.getPrice res
-                                             in if price > maxPrice
-                                                then (true, price, i)
-                                                else (isFound, maxPrice, maxId)
-                                             end
-                                        else (isFound, maxPrice, maxId)
+                                        let val raw = STM.get res
+                                        in if R.getNumFree raw > 0
+                                           then let val price = R.getPrice raw
+                                                in if price > maxPrice
+                                                   then (true, price, i)
+                                                   else (isFound, maxPrice, maxId)
+                                                end
+                                           else (isFound, maxPrice, maxId)
+                                        end
                                      | NONE => (isFound, maxPrice, maxId)
                         in case types
                             of R.Car::types =>
@@ -59,11 +61,15 @@ struct
                             val _ = if id1 > 0 then M.reserveCar(manager, customerId, id1) else ()
                             val _ = if id2 > 0 then M.reserveFlight(manager, customerId, id2) else ()
                             val _ = if id3 > 0 then M.reserveRoom(manager, customerId, id3) else ()
+
+
+
+                            
                         in () end   
         in STM.atomic(fn () => lp(false, maxPrices, maxIds, types, ids)) end
 
     fun deleteCustomer(qRange, manager) = 
-        let val customerId = Rand.inRangeInt(1, qRange+1)   
+        let val customerId = Rand.inRangeInt(1, qRange+1)
             fun trans() = 
                 case M.queryCustomerBill(manager, customerId)
                     of SOME bill => M.deleteCustomer(manager, customerId)
@@ -71,28 +77,25 @@ struct
         in STM.atomic trans end
         
     datatype Op = Add of int * int | Delete
-    
+
     fun updateTables(numQPerTrans, qRange, manager) = 
         let val numUpdate = Rand.inRangeInt(1, numQPerTrans+1)
-            val types = List.tabulate(numUpdate, randResType)
-            val ids = List.tabulate(numUpdate, fn _ => Rand.inRangeInt(1, qRange+1))
-            fun f _ = if Rand.inRangeInt(0, 2) = 0 then let val r = Rand.inRangeInt(50, 101) in Add(r, r)end else Delete
-            val ops = List.tabulate(numUpdate, f)
-            fun lp(types, ids, ops) = 
-                case (types, ids, ops)
-                    of (t::types, id::ids, Add(price,_)::ops) =>
-                        (case t
-                            of R.Car => M.addCar(manager, id, 100, price)
-                             | R.Flight => M.addFlight(manager, id, 100, price)
-                             | R.Room => M.addRoom(manager, id, 100, price))
-                     | (t::types, id::ids, Delete::ops) =>     
-                        (case t
-                            of R.Car => M.deleteCar(manager, id, 100)
-                             | R.Flight => M.deleteFlight(manager, id, 100)
-                             | R.Room => M.deleteRoom(manager, id, 100))
-                     | (nil, nil, nil) => ()
-                     | _ => raise Fail "Lists are different lengths\n"
-        in STM.atomic(fn () => lp(types, ids, ops)) end     
+            fun f _ = 
+                if Rand.inRangeInt(1, 2) = 0 
+                then let val r = Rand.inRangeInt(50, 101)
+                     in (randResType(), Rand.inRangeInt(1, qRange+1), Add(r, r)) end
+                else (randResType(), Rand.inRangeInt(1, qRange+1), Delete)
+            val info = List.tabulate(numUpdate, f)
+            fun updateTables arg = 
+                case arg
+                    of (R.Car, id, Add(price,_)) => M.addCar(manager, id, 100, price)
+                     | (R.Flight, id, Add(price,_)) => M.addFlight(manager, id, 100, price)
+                     | (R.Room, id, Add(price,_)) => M.addRoom(manager, id, 100, price)
+                     | (R.Car, id, Delete) => M.deleteCar(manager, id, 100)
+                     | (R.Flight, id, Delete) => M.deleteFlight(manager, id, 100)
+                     | (R.Room, id, Delete) => M.deleteRoom(manager, id, 100)
+            val _ = STM.atomic(fn () => List.map updateTables info)  
+        in () end     
   
     fun runClient(i, numOperation, numQPerTrans, qRange, percentUser, manager) = 
         let fun lp i =

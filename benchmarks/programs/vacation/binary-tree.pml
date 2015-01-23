@@ -14,51 +14,7 @@ struct
 
     fun newTree() = STM.new L
 
-    fun update compare x t f = 
-        let fun lp t = 
-                case STM.get t
-                    of L => ()
-                     | T(l, v, v', r) =>
-                        case compare(x, v)
-                            of LESS => lp l
-                             | GREATER => lp r
-                             | EQUAL => STM.put(t, T(l, v, f v', r))
-        in STM.atomic(fn () => lp t) end                     
-
-    fun unsafeUpdate compare x t f = 
-        let fun lp t = 
-                case STM.unsafeGet t
-                    of L => ()
-                     | T(l, v, v', r) =>
-                        case compare(x, v)
-                            of LESS => lp l
-                             | GREATER => lp r
-                             | EQUAL => STM.put(t, T(l, v, f v', r))
-        in STM.atomic(fn () => lp t) end      
-			
-    fun member compare x t = 
-        let fun lp t = 
-                case STM.get t 
-                    of L => false
-                     | T(l, v, v', r) =>
-                        (case compare(x, v)
-                            of LESS => lp l
-                             | GREATER => lp r
-                             | EQUAL => true)
-        in STM.atomic(fn () => lp t) end
-
-    fun unsafeMember compare x t = 
-        let fun lp t = 
-                case STM.unsafeGet t 
-                    of L => false
-                     | T(l, v, v', r) =>
-                        (case compare(x, v)
-                            of LESS => lp l
-                             | GREATER => lp r
-                             | EQUAL => true)
-        in STM.atomic(fn () => lp t) end
-
-    fun find compare x t = 
+    fun find(compare, x, t) = 
         let fun lp t = 
                 case STM.get t
                     of L => NONE
@@ -69,7 +25,18 @@ struct
                              | EQUAL => SOME v')
        in STM.atomic(fn () => lp t) end    
 
-    fun insert compare x y t =
+    fun unsafeFind(compare, x, t) = 
+        let fun lp t = 
+                case STM.unsafeGet t
+                    of L => NONE
+                     | T(l, v, v', r) =>    
+                        (case compare(x, v)
+                            of LESS => lp l
+                             | GREATER => lp r
+                             | EQUAL => SOME v')
+       in STM.atomic(fn () => lp t) end 
+
+    fun insert(compare, x, y, t) =
         let fun lp t = 
                 case STM.get t
                     of L => STM.put(t, T(STM.new L, x, y, STM.new L))
@@ -80,7 +47,7 @@ struct
                              | EQUAL => ())
         in STM.atomic(fn () => lp t) end
 
-    fun unsafeInsert compare x y t =
+    fun unsafeInsert(compare, x, y, t) =
         let fun lp t = 
                 case STM.unsafeGet t
                     of L => STM.put(t, T(STM.new L, x, y, STM.new L))
@@ -90,8 +57,8 @@ struct
                              | GREATER => lp r
                              | EQUAL => ())
         in STM.atomic(fn () => lp t) end
-   
-    fun remove compare x t = 
+
+    fun remove(compare, x, t) = 
         let fun removeMax t = 
                 case STM.get t
                     of T(l,v,v',r) => 
@@ -117,7 +84,7 @@ struct
         in STM.atomic(fn _ => lp t)
         end
 
-    fun unsafeRemove compare x t = 
+    fun unsafeRemove(compare, x, t) = 
         let fun removeMax t = 
                 case STM.unsafeGet t
                     of T(l,v,v',r) => 

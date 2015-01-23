@@ -27,7 +27,7 @@ struct
 
     val numTransaction = getIntFlg "-t" 50000
 
-    val num = getIntFlg "-n" 50
+    val num = getIntFlg "-n" 10
 
     val queries = getIntFlg "-q" 90
 

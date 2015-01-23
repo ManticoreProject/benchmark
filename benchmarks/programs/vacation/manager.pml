@@ -14,31 +14,21 @@ struct
     fun ignore _ = ()
 
     fun unsafeAddRes(manager,id,num,price) = 
-        case BT.unsafeRemove intComp id manager
-            of SOME res => 
-                (case R.addToTotal(res, num)
-                    of SOME res => 
-                        if R.numTotal res = 0
-                        then ()  (*don't put it back*)
-                        else BT.unsafeInsert intComp id (R.updatePrice(res, price)) manager
-                     | NONE => BT.unsafeInsert intComp id res manager)
-            | NONE => BT.unsafeInsert intComp id (R.mkReservation(id, num, price)) manager
-    
-    fun addReservation(manager, id, num, price) = 
-        case BT.remove intComp id manager
-            of SOME res => 
-                (case R.addToTotal(res, num)
-                    of SOME res => 
-                        if R.numTotal res = 0
-                        then ()  (*don't put it back*)
-                        else BT.insert intComp id (R.updatePrice(res, price)) manager
-                     | NONE => BT.insert intComp id res manager)
-            | NONE => 
-                if num < 1 orelse price < 0
-                then ()
-                else BT.insert intComp id (R.mkReservation(id, num, price)) manager
+        case BT.unsafeFind(intComp, id, manager)
+            of SOME res => if R.addToTotal(res, num) = 0
+                           then ignore (BT.unsafeRemove(intComp, id, manager))
+                           else ()
+             | NONE => BT.unsafeInsert(intComp, id, R.mkReservation(num, price), manager)
 
-    
+    fun addReservation(manager,id,num,price) = 
+        if num < 1 orelse price < 0
+        then ()
+        else case BT.find(intComp, id, manager)
+                of SOME res => if R.addToTotal(res, num) = 0
+                               then ignore(BT.remove(intComp, id, manager))
+                               else ()
+                 | NONE => BT.insert(intComp, id, R.mkReservation(num, price), manager)
+        
     fun addCar((manager,_,_,_), id, num, price) = addReservation(manager, id, num, price)
     fun addRoom((_,manager,_,_), id, num, price) = addReservation(manager, id, num, price)
     fun addFlight((_,_,manager,_), id, num, price) = addReservation(manager, id, num, price)
@@ -58,10 +48,10 @@ struct
      * -- Returns NONE if the car does not exist
      * =============================================================================
      *)
-    fun queryCar((manager,_,_,_), carId) = BT.find intComp carId manager
-    fun queryRoom((_, manager,_,_), roomId) = BT.find intComp roomId manager
-    fun queryFlight((_,_,manager,_), flightId) = BT.find intComp flightId manager
-    fun queryCustomer((_,_,_,manager), customerId) = BT.find intComp customerId manager
+    fun queryCar((manager,_,_,_), carId) = BT.find(intComp, carId, manager)
+    fun queryRoom((_, manager,_,_), roomId) = BT.find(intComp, roomId, manager)
+    fun queryFlight((_,_,manager,_), flightId) = BT.find(intComp, flightId, manager)
+    fun queryCustomer((_,_,_,manager), customerId) = BT.find(intComp, customerId, manager)
 
     (* =============================================================================
      * manager_addCustomer
@@ -70,18 +60,14 @@ struct
      * =============================================================================
      *)
     fun addCustomer((_,_,_,manager), customerId) = 
-        if BT.member intComp customerId manager
-        then ()
-        else let val customer = C.mkCustomer customerId
-                 val _ = BT.insert intComp customerId customer manager 
-             in () end
+        let val customer = C.mkCustomer customerId
+            val _ = BT.insert(intComp, customerId, customer, manager)
+        in () end
 
     fun unsafeAddCustomer((_,_,_,manager), customerId) = 
-        if BT.unsafeMember intComp customerId manager
-        then ()
-        else let val customer = C.mkCustomer customerId
-                 val _ = BT.unsafeInsert intComp customerId customer manager
-             in () end
+        let val customer = C.mkCustomer customerId
+            val _ = BT.unsafeInsert(intComp, customerId, customer, manager)
+        in () end
 
     (* =============================================================================
      * reserve
@@ -89,31 +75,16 @@ struct
      * =============================================================================
      *)
     fun reserve(resTable, customerTable, customerId, resId, resType) = 
-        case BT.remove intComp customerId customerTable
-            of NONE => ()
-             | SOME customer =>
-                case BT.remove intComp resId resTable
-                    of NONE => BT.insert intComp customerId customer customerTable  (*put customer back*)
-                     | SOME reservation =>
-                        case R.makeReservation reservation
-                            of SOME reservation =>
-                                (case C.addResInfo(customer, resType, resId, R.getPrice reservation)
-                                    of SOME customer =>
-                                        let val _ = BT.insert intComp customerId customer customerTable 
-                                            val _ = BT.insert intComp resId reservation resTable
-                                        in () end
-                                     | NONE => 
-                                        let val SOME reservation = R.cancelReservation reservation
-                                            val _ = BT.insert intComp customerId customer customerTable 
-                                            val _ = BT.insert intComp resId reservation resTable
-                                        in () end)
-                             | NONE => (*reservation couldn't be made, put items back*)
-                                let val _ = BT.insert intComp customerId customer customerTable 
-                                    val _ = BT.insert intComp resId reservation resTable
-                                in () end
-    
+        case (BT.find(intComp, customerId, customerTable), BT.find(intComp, resId, resTable))
+            of (SOME customer, SOME res) =>
+                let val price = R.makeReservation res
+                in if price >= 0
+                   then ignore(C.addResInfo(customer, resType, resId, price))
+                   else if R.cancelReservation res then () else raise Fail("Impossible: reserve\n")
+                end
+             | _ => ()
      
-    fun reserveCar((carTable,_,_,customerTable), customerId, carId) = 
+    fun reserveCar((carTable,_,_,customerTable), customerId:int, carId:int) = 
         reserve(carTable, customerTable, customerId, carId, R.Car)
 
     fun reserveRoom((_,roomTable,_,customerTable), customerId, roomId) = 
@@ -129,7 +100,7 @@ struct
      * =============================================================================
      *)
     fun queryCustomerBill((_,_,_,customers), customerId) = 
-        case BT.find intComp customerId customers
+        case BT.find(intComp, customerId, customers)
             of SOME customer => SOME(C.getBill customer)
              | NONE => NONE
      
@@ -140,27 +111,24 @@ struct
      * -- Returns TRUE on success, else FALSE
      * =============================================================================
      *)
-    fun deleteCustomer((carTable, roomTable, flightTable, customerTable), customerId) = 
-        case BT.remove intComp customerId customerTable  (*remove customer*)
+    fun deleteCustomer((carTable, roomTable, flightTable, customerTable), customerId) =
+        case BT.remove(intComp, customerId, customerTable)
             of NONE => ()
-             | SOME (_, customerInfo) => 
+             | SOME customer =>
                 let fun lp info = (*drop all reservations*)
                         case info
                             of (typ,id,price)::rest =>
                                 let fun drop table = (*drop from this table*)
-                                        (case BT.remove intComp id table
-                                           of NONE => STM.abort() (*someone else deleted this customer*)
-                                            | SOME reservation =>
-                                                case R.cancelReservation reservation
-                                                    of NONE => STM.abort()
-                                                     | SOME res => BT.insert intComp id res table)
+                                        (case BT.find(intComp, id, table)
+                                           of NONE => (raise Fail "Error in delete customer\n")
+                                            | SOME reservation => ignore(R.cancelReservation reservation))
                                 in case typ
                                     of R.Car => (drop carTable; lp rest)
                                      | R.Room => (drop roomTable; lp rest)
                                      | R.Flight => (drop flightTable; lp rest)
                                 end
                              | nil => ()
-                in lp customerInfo end  
+                in lp (STM.get customer) end
 
 
 
