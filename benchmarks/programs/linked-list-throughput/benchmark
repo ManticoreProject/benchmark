@@ -1,0 +1,36 @@
+iters=10
+while getopts ":ci:" options; 
+do
+    case $options in
+	c ) pmlc throughput.mlb ;;
+	i ) iters=$OPTARG ;;
+    esac
+done
+
+
+
+
+trap "exit" INT
+
+for j in {2..48}
+do
+    f="results/times-$j.txt"
+    echo "" > $f
+    echo "------------------------Partial Abort----------------------------"
+    for i in {1..15}
+    do
+        echo "Iteration $i"
+        ./a.out -threads $j > currentTime.txt
+        cat currentTime.txt
+        cat currentTime.txt >> $f
+    done
+    echo "------------------------Full Abort----------------------------"
+    for i in {1..15}
+    do
+        echo "Iteration $i"
+        ./a.out -threads $j -stm full > currentTime.txt
+        cat currentTime.txt
+        cat currentTime.txt >> $f
+    done
+done
+

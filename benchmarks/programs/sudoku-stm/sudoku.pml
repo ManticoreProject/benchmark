@@ -1,3 +1,11 @@
+type 'a tvar = 'a PartialSTM.tvar 
+type value  = string
+type 'a row  = 'a tvar list
+type 'a matrix = 'a row list
+type grid = value matrix
+type choices = value list
+
+
 (*----------------------------------STM-------------------------------*)
 fun getArg f args = 
     case args 
@@ -10,7 +18,7 @@ val args = CommandLine.arguments ()
 
 val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
 
-type 'a tvar = 'a PartialSTM.tvar 
+
 
 val (get,put,atomic,new,printStats,abort,unsafeGet, same) = 
     if String.same(whichSTM, "bounded")
@@ -34,13 +42,17 @@ val same : 'a tvar * 'a tvar -> bool = same
 
 (*----------------------------------Sudoku-------------------------------*)
 
-type value  = string
-type 'a row  = 'a tvar list
-type 'a matrix = 'a row list
-type grid = value matrix
-type choices = value list
 
+
+(*
 val values = List.tabulate(9, fn i => Int.toString(i+1))
+val values = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", 
+              "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+val boxSize = 5
+*)
+
+val values = ["A", "B", "C", "D", "E", "F", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+val boxSize = 4
 
 fun empty (v : value) : bool = String.same(v, ".")
 
@@ -71,7 +83,7 @@ fun transpose l =
          | (nil::xss) => transpose xss
          | (x::xs)::xss => (x::List.map List.hd xss)::transpose (xs::List.map List.tl xss)
 
-val boxSize = 3
+
 fun chop n l = 
     case l
         of nil => nil
@@ -107,19 +119,33 @@ fun findSingles row =
 fun reduce (row : choices row) = 
     let val (singles, nonSingles) = findSingles row
     in List.map (removeSingles singles) nonSingles end
-    
+
 fun pruneBy chan f m = 
     let val _ = atomic(fn () => List.map reduce (f m))
     in PrimChan.send(chan, ()) end
 
+
+val rowChan = PrimChan.new()
+val colChan = PrimChan.new()
+val boxChan = PrimChan.new()
+
+fun pruneBy(chan, f) =
+    let val m = PrimChan.recv chan
+        val _ = atomic(fn () => List.map reduce (f m))
+        val _ = PrimChan.send(chan, m)
+    in pruneBy(chan, f) end
+    
+val _ = Threads.spawnEq(fn () => pruneBy(rowChan, rows))
+val _ = Threads.spawnEq(fn () => pruneBy(colChan, cols))
+val _ = Threads.spawnEq(fn () => pruneBy(boxChan, boxes))
+
 fun prune (ms : choices matrix) : unit =
-    let val rowsDone = PrimChan.new()
-        val colsDone = PrimChan.new()
-        val boxesDone = PrimChan.new() 
-        val _ = Threads.spawnEq(fn () => pruneBy rowsDone rows ms)
-        val _ = Threads.spawnEq(fn () => pruneBy colsDone cols ms)
-        val _ = Threads.spawnEq(fn () => pruneBy boxesDone boxes ms)
-        val _ = List.map PrimChan.recv [rowsDone, colsDone, boxesDone]
+    let val _ = PrimChan.send(rowChan, ms) handle e => (print "handled exn!!!!\n"; raise e)
+        val _ = PrimChan.send(colChan, ms)
+        val _ = PrimChan.send(boxChan, ms)
+        val _ = PrimChan.recv rowChan
+        val _ = PrimChan.recv colChan
+        val _ = PrimChan.recv boxChan
     in () end
 
 fun nodups l = 
@@ -130,14 +156,14 @@ fun nodups l =
 fun consistent x = nodups (List.concat (List.filter single x))
 
 fun isInconsistent cm = 
-    let fun readAll x = List.map (fn x => get x) x
+    let fun readAll x = List.map (fn x => unsafeGet x) x
         val rowC = List.foldl (fn (x,y) => consistent (readAll x) andalso y) true (rows cm)
         val colC = List.foldl (fn (x,y) => consistent (readAll x) andalso y) true (cols cm)
         val boxC = List.foldl (fn (x,y) => consistent (readAll x) andalso y) true (boxes cm)
     in not (rowC andalso colC andalso boxC) end
 
 fun void (m : choices matrix) = 
-    let val raw : choices list list = List.map (fn x => List.map (fn x => get x) x) m
+    let val raw : choices list list = List.map (fn x => List.map (fn x => unsafeGet x) x) m
     in List.exists (fn x => List.exists (fn x => List.null x) x) raw end
 
 fun blocked m = 
@@ -168,15 +194,15 @@ fun expand' m =
     in res end
 
 fun expand m = 
-    let val ms  = atomic(fn () => List.map (fn x => List.map (fn x => get x) x) m)
+    let val ms  = atomic(fn () => List.map (fn x => List.map (fn x => unsafeGet x) x) m)
         val mms = expand' ms
     in List.map (fn m => List.map (fn x => List.map (fn x => new x) x) m) mms end
 
 fun complete m =
-    List.all (fn x => List.all (fn x => single (get x)) x) m
+    List.all (fn x => List.all (fn x => single (unsafeGet x)) x) m
 
 
-
+(*
 fun search chan m = 
     if atomic(fn () => blocked m)
     then ()
@@ -193,7 +219,24 @@ fun solve (grid : value list list)  =
         val _ = search solutionChan matrix 
         val res = PrimChan.recv solutionChan
     in res end
+*)
 
+fun search m = 
+    if atomic(fn () => blocked m)
+    then NONE
+    else if atomic(fn () => complete m)
+         then let val res = atomic(fn () => List.map (fn x => List.map (fn x => List.hd (get x)) x) m)
+              in SOME res end
+         else let val ms = expand m
+                  val res = List.map (fn x => (prune x; search x)) ms
+                  fun f(a, b) = case a of SOME _ => a | _ => b
+              in List.foldl f NONE res end
+
+fun solve (grid : value list list)  = 
+    let val matrix : choices matrix = choices grid
+        val _ = prune matrix
+        val res = Option.valOf(search matrix) handle e => (print "No solution\n"; raise e)
+    in res end
 
 (* Examples *)
 val easy : value list list    =    [String.explode "2....1.38",
@@ -233,12 +276,53 @@ val minimal : value list list    = [String.explode ".98......",
                                     String.explode "5.1......",
                                     String.explode "...4...2."]
 
+val largeEasy = [String.explode "N.V.IW.ALFU...C.TH.G....S",
+                 String.explode ".RWUL.DV.N.EA......JG.TPQ",
+                 String.explode "...G.SP.YXVIB.RU....H..OW",
+                 String.explode ".TBXHOU.J.S..GK...L...RAD",
+                 String.explode "F.C.DG.E.HX...Q..K..JUI..",
+                 String.explode ".UOD.......TV.NHMQ.......",
+                 String.explode "..A.KEVN..BLQ.YOC.UI..DR.",
+                 String.explode "E.....C..U..XAM...F.P..Y.",
+                 String.explode ".WIBG.Q.KY....ES.XR.M....",
+                 String.explode "RQ..Y..OG......V.....E..N",
+                 String.explode "PY....ISN.HF...DL.AKET.J.",
+                 String.explode "S.LN.CKXV...U.....WB.OH..",
+                 String.explode "B.DC..YROT.G.W.FUIX..AK.V",
+                 String.explode "..UA.ML.....T...EONC.DW.P",
+                 String.explode ".E.HJQA.UW...OI.PRV....NX",
+                 String.explode "X..V.....K......DW..O..IE",
+                 String.explode "....O.SF.DT....NH.B.CMQK.",
+                 String.explode ".C..A.M...EKN..P..I.....U",
+                 String.explode ".GE..YR.AIO.FCW..SKVN.X..",
+                 String.explode ".......QELM.JI.......RPB.",
+                 String.explode "..MYC..U..I...HJ.E.LR.N.T",
+                 String.explode "ABR...H...JN..F.X.SUKGED.",
+                 String.explode "HL..X....RP.OEAWF.CM.B...",
+                 String.explode "QPK.FI......WX.B.NH.UJAL.",
+                 String.explode "J....D.BX.K...GAYV.QF.M.I"]
 
+val medium = [String.explode "B.78.5E.3..AD.C0",
+              String.explode "..4..7...C.FA..2",
+              String.explode "A..........437..",
+              String.explode "..5...9F.......8",
+              String.explode ".4..B8...E.793..",
+              String.explode "..E37C....FDB..4",
+              String.explode "9F.7..5D.3....8.",
+              String.explode "5..D.F3.24A8C.0.",
+              String.explode ".8......B....0D5",
+              String.explode "..D......8..F.E.",
+              String.explode "..A.9.F..67...BC",
+              String.explode "...C.AB....E724.",
+              String.explode "7A.9.B1...5..63.",
+              String.explode "D.CEF.7.A....8..",
+              String.explode "....E.A..D..5...",
+              String.explode ".63509C..B..E..."]
 
-
+val _ = print "Starting solve\n"
 
 val startTime = Time.now()
-val solution = solve minimal
+val solution = solve medium handle Fail s => (print s; raise Fail s)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = printStats()
@@ -246,5 +330,7 @@ val _ = printStats()
 fun printSolution g = List.map (fn x => print (String.concatWith " " x ^ "\n")) g
 
 val _ = printSolution solution
+
+
 
                                     

@@ -10,17 +10,20 @@ do
     esac
 done
 
+
+
+
 echo "" > times.txt
 trap "exit" INT
 echo "------------------------Partial Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    res=$(./a.out -p 4 > currentTime.txt)
-    while [ $? -eq "139" ]; 
+    ./a.out -p 4 > currentTime.txt
+    while [ $? -ne 0 ]; 
     do
         echo "Error!, trying again..."
-        res=$(./a.out -p 4 > currentTime.txt)
+        ./a.out -p 4 > currentTime.txt
     done
     cat currentTime.txt
     echo "name = Partial Abort" >> times.txt
@@ -32,11 +35,11 @@ echo "------------------------Full Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    res=$(./a.out -p 4 -stm full > currentTime.txt)
-    while [ $? -eq "139" ]; 
+    ./a.out -p 4 -stm full > currentTime.txt
+    while [ $? -ne 0 ]; 
     do
         echo "Error!, trying again..."
-        res=$(./a.out -p 4 -stm full > currentTime.txt)
+        ./a.out -p 4 -stm full > currentTime.txt
     done
     cat currentTime.txt
     echo "name = Full Abort" >> times.txt
