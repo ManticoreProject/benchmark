@@ -1,9 +1,11 @@
 iters=10
-while getopts ":ci:" options; 
+cores=4
+while getopts ":ci:p:" options; 
 do
     case $options in
 	c ) pmlc throughput.mlb ;;
 	i ) iters=$OPTARG ;;
+	p ) cores=$OPTARG ;;
     esac
 done
 
@@ -12,25 +14,30 @@ done
 
 trap "exit" INT
 
-for j in {2..48}
+for j in $(seq 2 2 $cores);
 do
+    echo "Running with $j cores"
     f="results/times-$j.txt"
     echo "" > $f
     echo "------------------------Partial Abort----------------------------"
-    for i in {1..15}
+    for i in $(seq 1 $iters);
     do
         echo "Iteration $i"
         ./a.out -threads $j > currentTime.txt
         cat currentTime.txt
+        echo "name = Partial Abort" >> $f
         cat currentTime.txt >> $f
+        echo "end" >> $f
     done
     echo "------------------------Full Abort----------------------------"
-    for i in {1..15}
+    for i in $(seq 1 $iters);
     do
         echo "Iteration $i"
         ./a.out -threads $j -stm full > currentTime.txt
         cat currentTime.txt
+        echo "name = Full Abort" >> $f
         cat currentTime.txt >> $f
+        echo "end" >> $f
     done
 done
 
