@@ -111,7 +111,10 @@ def mkComparisonString(lists, k):
     base = mean(lists[baseline][k])
     for key in lists:
         l = lists[key]
-        change = ((base - mean(l[k])) / base) * 100
+        if base == 0:
+            change = 0
+        else:
+            change = ((base - mean(l[k])) / base) * 100
         s += ' & ' + ("%.2f" % change) + "\%"
     s += '\\\\\\hline'
     return s

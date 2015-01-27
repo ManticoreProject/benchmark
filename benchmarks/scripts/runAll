@@ -9,7 +9,7 @@ done
 
 trap "exit" INT
 
-files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7" "sudoku-stm")
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7")
 
 for f in "${files[@]}"
 do
@@ -19,4 +19,4 @@ do
     cd ../../scripts
 done
 
- 
+
