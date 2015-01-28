@@ -12,10 +12,11 @@ struct
             of (D.Atom(id,_,_,_,_,_,_,_),D.Atom(id',_,_,_,_,_,_,_)) => 
                 if id < id' then LESS else if id > id' then GREATER else EQUAL)
 
+    exception NoRand of string
 
     fun pickRand l = 
         if List.length l = 0
-        then raise Fail "picking rand of 0 length list\n"
+        then raise NoRand "picking rand of 0 length list\n"
         else let val r = Rand.inRangeInt(0, List.length l)
              in List.nth(l, r) end
 
@@ -27,7 +28,7 @@ struct
                      | D.BaseAssembly(id,_,compositeParts,_) => tComposite (pickRand compositeParts)
                      | _ => 0
             fun tMod(D.Mod(man,assem)) = tAssem assem
-        in tMod module end
+        in tMod module handle NoRand _ => 0 end
 
     (**
      * ST1: traverse the structure top-down, from the module to an atomic part, via a random path. 
@@ -47,7 +48,7 @@ struct
                         of D.Atom(id,typ,date,x,y,_,_,_) => x + y
                     end 
                 | _ => raise Fail "NilComp in st2\n"
-        in randTraversal f end
+        in randTraversal f handle NoRand _ => 0 end
 
     (**
      * ST2: traverse the structure top-down, from the module to a document, via a random path 
@@ -174,7 +175,7 @@ struct
                      | D.BaseAssembly(id,_,compositeParts,_) => tComposite (pickRand compositeParts)
                      | _ => 0
             fun tMod(D.Mod(man,assem)) = tAssem assem
-        in tMod module end
+        in tMod module handle NoRand _ => 0 end
 
     (**
      * ST7: the same as ST1, but performs an update operation on non-indexed attributes 
@@ -191,7 +192,7 @@ struct
                             in x + y end
                     end 
                 | _ => raise Fail "NilComp in st7\n"
-        in randTraversal f end
+        in randTraversal f handle NoRand _ => 0 end
 
     (**
      * ST8: the same as ST2, but performs an update operation on the (non-indexed) text of 
@@ -272,7 +273,7 @@ struct
                      | D.BaseAssembly(id,_,compositeParts,_) => tComposite (pickRand compositeParts)
                      | _ => 0
             fun tMod(D.Mod(man,assem)) = tAssem assem
-        in tMod module end
+        in tMod module handle NoRand _ => 0 end
 
     val operations = [st1, st2, st3, st4, st5, st6, st7, st8, st9, st10]
     val titles = ["st1", "st2", "st3", "st4", "st5", "st6", "st7", "st8", "st9", "st10"]

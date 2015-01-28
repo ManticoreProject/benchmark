@@ -98,7 +98,7 @@ struct
                             of D.BaseAssembly(id, date, components, parent) => Builder.buildBaseAssem parent
                              | _ => raise Fail "Expected base assembly\n"
         in 1 end                     
-            
+    
     (**
      * SM6: delete a base assembly with a randomly chosen ID. Fail if the lookup operation on 
      * the base assembly ID index fails or if the chosen base assembly is the only descendant 
@@ -115,11 +115,11 @@ struct
                     of assem'::assems => if STM.same(assem, assem') then assems else assem'::drop assems
                      | nil => raise Fail "Did not find assembly in sm6\n"
             val _ = case STM.get parent
-                        of D.ComplexAssembly(id, date, subAssemblies, level, parent) =>
-                            if List.length subAssemblies = 1
+                        of D.ComplexAssembly(id', date', subAssemblies', level', parent') =>
+                            if List.length subAssemblies' = 1
                             then STM.abort()
-                            else let val newSubAssems = drop subAssemblies
-                                 in STM.put(parent, D.ComplexAssembly(id, date, newSubAssems, level, parent))
+                            else let val newSubAssems = drop subAssemblies'
+                                 in STM.put(parent, D.ComplexAssembly(id', date', newSubAssems, level', parent'))
                                  end
                          | _ => raise Fail "Expected complex assembly\n"
             val _ = I.removeBaseAssembly id             
@@ -151,7 +151,6 @@ struct
      * (base and complex) descendant from, C. 
      *)
 
-            
     fun f o = print ("sm2 = " ^ Int.toString(STM.atomic o) ^ "\n") handle Fail s => print s
 
     val operations = [sm2, sm3, sm4, sm5, sm6, sm7]

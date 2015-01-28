@@ -10,7 +10,7 @@ threads=$2
 
 echo -n "" > data/data.txt
 
-ops=30
+ops=36
 
 for (( t=0; t<$threads; t++ ))
 do

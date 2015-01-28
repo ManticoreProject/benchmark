@@ -3,10 +3,10 @@ structure G = Globals
 
 
 val operations = Vector.fromList(LongTraversals.operations @ ShortTraversals.operations @ 
-                                 ShortTraversals.operations (*@ StructuralModifications.operations*))
+                                 ShortTraversals.operations @ StructuralModifications.operations)
 
 val titles = Vector.fromList(LongTraversals.titles @  ShortTraversals.titles @ 
-                             ShortTraversals.titles (*@ StructuralModifications.titles *))
+                             ShortTraversals.titles @ StructuralModifications.titles )
 
 (*Time how long it takes to perform x operations*)
 
