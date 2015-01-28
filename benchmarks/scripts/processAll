@@ -12,7 +12,7 @@ do
        continue
     fi
 
-    ./processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}" >> times.tex
+    python processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}" >> times.tex
     
 
     i=$((i+1))
