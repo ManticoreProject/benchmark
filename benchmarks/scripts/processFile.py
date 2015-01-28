@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, getopt, re, os
+import sys, getopt, re, os, numpy
 
 #argv contains the filename and the arguments
 
@@ -100,14 +100,14 @@ def mkString(lists, k):
     for l in lists:
         l = lists[l]
         if k in l:
-            s += ' & ' + str(mean(l[k]))
+            s += ' & ' + str(mean(l[k])) + ' & ' + str(numpy.std(l[k]))
         else:
-            s += ' & - '
+            s += ' & - & - '
     s += '\\\\\\hline'
     return s
         
 def mkComparisonString(lists, k):
-    s = k + " (\% change)"
+    s = k + "$\\Delta$"
     base = mean(lists[baseline][k])
     for key in lists:
         l = lists[key]
@@ -115,7 +115,7 @@ def mkComparisonString(lists, k):
             change = 0
         else:
             change = ((base - mean(l[k])) / base) * 100
-        s += ' & ' + ("%.2f" % change) + "\%"
+        s += ' & ' + ("%.2f" % change) + "\% & -"
     s += '\\\\\\hline'
     return s
         
@@ -123,9 +123,9 @@ def mkComparisonString(lists, k):
 if getOpt("-tex"):
     print "\\begin{figure}[H]"
     print "\\centering"
-    print('\\begin{tabular}{|' + reduce (lambda x, y: ' c |' + x, range(len(lists)+1), '') + '}')
+    print('\\begin{tabular}{|' + reduce (lambda x, y: ' c |' + x, range((len(lists)+1) * 2), '') + '}')
     print "\\hline"
-    print (reduce (lambda x, y: x + ' & '+  y, lists.keys(), '') + '\\\\\\hline')
+    print (reduce (lambda x, y: x + ' & '+ y + " & " + y + " $\\sigma$", lists.keys(), '') + '\\\\\\hline')
     doneKeys = []
     for k in lists:
         l = lists[k]
