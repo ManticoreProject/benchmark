@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import sys, getopt, re, os, pdb
+import sys, getopt, re, os
 import statistics as st
 from collections import OrderedDict
 
@@ -87,6 +87,12 @@ while nl != "__done__":
         
     nl = next(fh, "__done__")
 
+for n in lists:
+    lists[n] = OrderedDict(sorted(lists[n].items()))
+
+lists = OrderedDict(sorted(lists.items()))
+
+
 def isCommon(key, lists):
     keys = map(lambda x : lists[x].keys(), lists)
     for ks in keys:
@@ -139,13 +145,11 @@ if getOpt("-tex"):
     print("\\centering")
     print('\\begin{tabular}{|' + reduce (lambda x, y: ' c |' + x, range((len(lists)+1) * 2), '') + '}')
     print("\\hline")
-    keys = sorted(lists.keys())
-    print (reduce (lambda x, y: x + ' & '+ y + " & " + y + " $\\sigma$", keys, '') + '\\\\\\hline')
+    print (reduce (lambda x, y: x + ' & '+ y + " & " + y + " $\\sigma$", lists.keys(), '') + '\\\\\\hline')
     doneKeys = []
-    for k in keys:
+    for k in lists:
         l = lists[k]
-        subKeys = sorted(l.keys())
-        for k in subKeys:
+        for k in l:
             if k in doneKeys:
                 continue
             print(mkString(lists, k))
