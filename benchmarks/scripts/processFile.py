@@ -5,7 +5,7 @@ import statistics as st
 #argv contains the filename and the arguments
 
 if len(sys.argv) < 2:
-    print "usage: python processFile <output file>"
+    print("usage: python processFile <output file>")
 
 baseline = "Full Abort"
 
@@ -31,7 +31,7 @@ def getOpt(f):
 
 f = getFile()
 if f is None:
-    print "No file specified"
+    print("No file specified")
     sys.exit(1)
 
 numCatagories = 0
@@ -122,10 +122,10 @@ def mkComparisonString(lists, k):
         
 
 if getOpt("-tex"):
-    print "\\begin{figure}[H]"
-    print "\\centering"
+    print("\\begin{figure}[H]")
+    print("\\centering")
     print('\\begin{tabular}{|' + reduce (lambda x, y: ' c |' + x, range((len(lists)+1) * 2), '') + '}')
-    print "\\hline"
+    print("\\hline")
     print (reduce (lambda x, y: x + ' & '+ y + " & " + y + " $\\sigma$", lists.keys(), '') + '\\\\\\hline')
     doneKeys = []
     for k in lists:
@@ -137,11 +137,11 @@ if getOpt("-tex"):
             if isCommon(k, lists) and baseline in lists:
                 print(mkComparisonString(lists, k))
             doneKeys.append(k)    
-    print "\\end{tabular}"
+    print("\\end{tabular}")
     caption = getFlag("-caption")
     if caption is not None:
         print ("\\caption{" + caption + "}")
-    print "\\end{figure}"
+    print("\\end{figure}")
 else:
     for key in lists:
         print (key + ":")
