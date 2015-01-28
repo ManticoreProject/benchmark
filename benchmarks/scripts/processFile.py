@@ -1,5 +1,6 @@
 #!/usr/bin/python
-import sys, getopt, re, os, numpy
+import sys, getopt, re, os
+import statistics as st
 
 #argv contains the filename and the arguments
 
@@ -100,7 +101,7 @@ def mkString(lists, k):
     for l in lists:
         l = lists[l]
         if k in l:
-            s += ' & ' + str(mean(l[k])) + ' & ' + str(numpy.std(l[k]))
+            s += ' & ' + str(mean(l[k])) + ' & ' + str(st.stdev(l[k]))
         else:
             s += ' & - & - '
     s += '\\\\\\hline'
