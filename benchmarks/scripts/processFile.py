@@ -113,7 +113,7 @@ def mkString(lists, k):
     for l in lists:
         l = lists[l]
         if k in l:
-            s += ' & ' + str(mean(l[k])) + ' & ' + str(st.stdev(l[k]))
+            s += ' & ' + ("%.2f" % mean(l[k])) + ' & ' + ("%.2f" % st.stdev(l[k]))
         else:
             s += ' & - & - '
     s += '\\\\\\hline'
