@@ -125,27 +125,27 @@ fun pruneBy chan f m =
     in PrimChan.send(chan, ()) end
 
 
-val rowChan = PrimChan.new()
-val colChan = PrimChan.new()
-val boxChan = PrimChan.new()
+val rowMVar = MVar.newEmpty()
+val colMVar = MVar.newEmpty()
+val boxMVar = MVar.newEmpty()
 
 fun pruneBy(chan, f) =
-    let val m = PrimChan.recv chan
+    let val m = MVar.take chan
         val _ = atomic(fn () => List.map reduce (f m))
-        val _ = PrimChan.send(chan, m)
+        val _ = MVar.put(chan, m)
     in pruneBy(chan, f) end
     
-val _ = Threads.spawnEq(fn () => pruneBy(rowChan, rows))
-val _ = Threads.spawnEq(fn () => pruneBy(colChan, cols))
-val _ = Threads.spawnEq(fn () => pruneBy(boxChan, boxes))
+val _ = Threads.spawnEq(fn () => pruneBy(rowMVar, rows))
+val _ = Threads.spawnEq(fn () => pruneBy(colMVar, cols))
+val _ = Threads.spawnEq(fn () => pruneBy(boxMVar, boxes))
 
 fun prune (ms : choices matrix) : unit =
-    let val _ = PrimChan.send(rowChan, ms) handle e => (print "handled exn!!!!\n"; raise e)
-        val _ = PrimChan.send(colChan, ms)
-        val _ = PrimChan.send(boxChan, ms)
-        val _ = PrimChan.recv rowChan
-        val _ = PrimChan.recv colChan
-        val _ = PrimChan.recv boxChan
+    let val _ = MVar.put(rowMVar, ms) handle e => (print "handled exn!!!!\n"; raise e)
+        val _ = MVar.put(colMVar, ms)
+        val _ = MVar.put(boxMVar, ms)
+        val _ = MVar.take rowMVar
+        val _ = MVar.take colMVar
+        val _ = MVar.take boxMVar
     in () end
 
 fun nodups l = 
@@ -222,10 +222,10 @@ fun solve (grid : value list list)  =
 *)
 
 fun search m = 
-    if atomic(fn () => blocked m)
+    if blocked m
     then NONE
-    else if atomic(fn () => complete m)
-         then let val res = atomic(fn () => List.map (fn x => List.map (fn x => List.hd (get x)) x) m)
+    else if complete m
+         then let val res = List.map (fn x => List.map (fn x => List.hd (unsafeGet x)) x) m
               in SOME res end
          else let val ms = expand m
                   val res = List.map (fn x => (prune x; search x)) ms
