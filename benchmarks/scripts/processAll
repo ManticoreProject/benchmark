@@ -1,8 +1,8 @@
 echo "\\documentclass[12pt]{article}" > times.tex
 echo "\\begin{document}" >> times.tex
 
-titles=("Delaunay Mesh Refinement" "Labyrinth" 'Ordered Linked List'  "Red Black Tree" "Vacation" "KMeans" "STMBench7" "Sudoku")
-files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7" "sudoku-stm")
+titles=("Delaunay Mesh Refinement" "Labyrinth" 'Ordered Linked List'  "Red Black Tree" "Vacation" "KMeans" "STMBench7")
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7")
 i=0
 for f in "${files[@]}"
 do
