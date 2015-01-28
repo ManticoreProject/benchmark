@@ -1,6 +1,7 @@
 #!/usr/bin/python
-import sys, getopt, re, os
+import sys, getopt, re, os, pdb
 import statistics as st
+from collections import OrderedDict
 
 #argv contains the filename and the arguments
 
@@ -138,11 +139,13 @@ if getOpt("-tex"):
     print("\\centering")
     print('\\begin{tabular}{|' + reduce (lambda x, y: ' c |' + x, range((len(lists)+1) * 2), '') + '}')
     print("\\hline")
-    print (reduce (lambda x, y: x + ' & '+ y + " & " + y + " $\\sigma$", lists.keys(), '') + '\\\\\\hline')
+    keys = sorted(lists.keys())
+    print (reduce (lambda x, y: x + ' & '+ y + " & " + y + " $\\sigma$", keys, '') + '\\\\\\hline')
     doneKeys = []
-    for k in lists:
+    for k in keys:
         l = lists[k]
-        for k in l:
+        subKeys = sorted(l.keys())
+        for k in subKeys:
             if k in doneKeys:
                 continue
             print(mkString(lists, k))
