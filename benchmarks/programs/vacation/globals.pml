@@ -19,8 +19,6 @@ struct
             of SOME n => (case Double.fromString n of SOME n => n | NONE => dflt)
              | NONE => dflt
              
-    val global_angleConstraint = getDoubleFlg "-angle" 20.0
-    
     val numRelation = getIntFlg "-r" 500
 
     val numClient = getIntFlg "-c" 4
