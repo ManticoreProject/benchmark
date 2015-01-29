@@ -4,6 +4,7 @@ struct
     structure M = Manager
     structure R = Reservation
     structure C = Customer
+    structure Rand = ThreadSafeRand
     
     datatype action = MakeRes | DelCustomer | UpdateTables
 
@@ -15,19 +16,19 @@ struct
              else UpdateTables 
 
     (*generate a random reservation type*)
-    fun randResType _ = 
-        case Rand.inRangeInt(0, 3)
+    fun randResType seed _ = 
+        case Rand.inRangeInt(0, 3, seed)
             of 0 => R.Car
              | 1 => R.Flight
              | _ => R.Room
     
-    fun makeRes(numQPerTrans, qRange, manager) = 
+    fun makeRes(numQPerTrans, qRange, manager, seed) = 
         let val maxPrices = (~1, ~1, ~1)
             val maxIds = (~1, ~1, ~1)
-            val numQuery = Rand.inRangeInt(1, numQPerTrans+1)
-            val customerId = Rand.inRangeInt(1, qRange+1)
-            val types = List.tabulate(numQuery, randResType)
-            val ids = List.tabulate(numQuery, fn _ => Rand.inRangeInt(1, qRange+1))
+            val numQuery = Rand.inRangeInt(1, numQPerTrans+1, seed)
+            val customerId = Rand.inRangeInt(1, qRange+1, seed)
+            val types = List.tabulate(numQuery, (randResType seed))
+            val ids = List.tabulate(numQuery, fn _ => Rand.inRangeInt(1, qRange+1, seed))
             fun lp(isFound, (p1,p2,p3), (id1,id2,id3), types, ids) = 
                 case ids
                     of i::ids =>
@@ -68,8 +69,8 @@ struct
                         in () end   
         in STM.atomic(fn () => lp(false, maxPrices, maxIds, types, ids)) end
 
-    fun deleteCustomer(qRange, manager) = 
-        let val customerId = Rand.inRangeInt(1, qRange+1)
+    fun deleteCustomer(qRange, manager, seed) = 
+        let val customerId = Rand.inRangeInt(1, qRange+1, seed)
             fun trans() = 
                 case M.queryCustomerBill(manager, customerId)
                     of SOME bill => M.deleteCustomer(manager, customerId)
@@ -78,13 +79,13 @@ struct
         
     datatype Op = Add of int * int | Delete
 
-    fun updateTables(numQPerTrans, qRange, manager) = 
-        let val numUpdate = Rand.inRangeInt(1, numQPerTrans+1)
+    fun updateTables(numQPerTrans, qRange, manager, seed) = 
+        let val numUpdate = Rand.inRangeInt(1, numQPerTrans+1, seed)
             fun f _ = 
-                if Rand.inRangeInt(1, 2) = 0 
-                then let val r = Rand.inRangeInt(50, 101)
-                     in (randResType(), Rand.inRangeInt(1, qRange+1), Add(r, r)) end
-                else (randResType(), Rand.inRangeInt(1, qRange+1), Delete)
+                if Rand.inRangeInt(1, 2, seed) = 0 
+                then let val r = Rand.inRangeInt(50, 101, seed)
+                     in (randResType seed (), Rand.inRangeInt(1, qRange+1, seed), Add(r, r)) end
+                else (randResType seed (), Rand.inRangeInt(1, qRange+1, seed), Delete)
             val info = List.tabulate(numUpdate, f)
             fun updateTables arg = 
                 case arg
@@ -97,14 +98,14 @@ struct
             val _ = STM.atomic(fn () => List.map updateTables info)  
         in () end     
   
-    fun runClient(i, numOperation, numQPerTrans, qRange, percentUser, manager) = 
+    fun runClient(i, numOperation, numQPerTrans, qRange, percentUser, manager, seed) = 
         let fun lp i =
                 if i = 0
                 then ()
-                else case selectAction(Rand.inRangeInt(0, 100), percentUser)
-                        of MakeRes => (makeRes(numQPerTrans, qRange, manager); lp(i-1))
-                         | DelCustomer => (deleteCustomer(qRange, manager); lp(i-1))
-                         | UpdateTables => (updateTables(numQPerTrans, qRange, manager); lp(i-1))
+                else case selectAction(Rand.inRangeInt(0, 100, seed), percentUser)
+                        of MakeRes => (makeRes(numQPerTrans, qRange, manager, seed); lp(i-1))
+                         | DelCustomer => (deleteCustomer(qRange, manager, seed); lp(i-1))
+                         | UpdateTables => (updateTables(numQPerTrans, qRange, manager, seed); lp(i-1))
             val _ = lp numOperation
         in () end   
 
