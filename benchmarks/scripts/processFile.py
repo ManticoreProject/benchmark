@@ -1,9 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys, getopt, re, os
 import statistics as st
 from collections import OrderedDict
-
-#argv contains the filename and the arguments
 
 if len(sys.argv) < 2:
     print("usage: python processFile <output file>")
