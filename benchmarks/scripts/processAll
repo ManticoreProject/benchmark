@@ -1,5 +1,13 @@
-echo "\\documentclass[12pt]{article}" > times.tex
-echo "\\begin{document}" >> times.tex
+if [ ! -d "results" ]; then
+    mkdire results
+fi
+
+DATETIME=$( date +"%F-%H-%M-%S" )
+
+outFile="results/times-$DATETIME.tex"
+
+echo "\\documentclass[12pt]{article}" > $outFile
+echo "\\begin{document}" >> $outFile
 
 titles=("Delaunay Mesh Refinement" "Labyrinth" 'Ordered Linked List'  "Red Black Tree" "Vacation" "KMeans" "STMBench7")
 files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7")
@@ -12,11 +20,13 @@ do
        continue
     fi
 
-    python processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}" >> times.tex
+    python processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}" >> $outFile
     
 
     i=$((i+1))
 done
 
 
-echo "\\end{document}" >> times.tex
+echo "\\end{document}" >> $outFile
+
+
