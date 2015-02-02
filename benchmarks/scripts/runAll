@@ -16,7 +16,7 @@ outFile="results/times-$DATETIME.tex"
 
 trap "exit" INT
 
-files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7")
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7" "sudoku-stm")
 
 for f in "${files[@]}"
 do
