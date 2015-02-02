@@ -6,6 +6,13 @@ do
     esac
 done
 
+if [ ! -d "results" ]; then
+    mkdir results
+fi
+
+DATETIME=$( date +"%F-%H-%M-%S" )
+
+outFile="results/times-$DATETIME.tex"
 
 trap "exit" INT
 
@@ -19,4 +26,4 @@ do
     cd ../../scripts
 done
 
-
+./processAll > $outFile

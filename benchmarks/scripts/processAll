@@ -1,32 +1,24 @@
-if [ ! -d "results" ]; then
-    mkdire results
-fi
 
-DATETIME=$( date +"%F-%H-%M-%S" )
 
-outFile="results/times-$DATETIME.tex"
-
-echo "\\documentclass[12pt]{article}" > $outFile
-echo "\\begin{document}" >> $outFile
+echo "\\documentclass[12pt]{article}" 
+echo "\\begin{document}"
 
 titles=("Delaunay Mesh Refinement" "Labyrinth" 'Ordered Linked List'  "Red Black Tree" "Vacation" "KMeans" "STMBench7")
 files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7")
 i=0
 for f in "${files[@]}"
 do
-    echo "Processing $f"
     if [ ! -f ../programs/$f/times.txt ]; then
-       echo "file doesn't exist for $f"
        continue
     fi
 
-    python processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}" >> $outFile
+    python processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}" 
     
 
     i=$((i+1))
 done
 
 
-echo "\\end{document}" >> $outFile
+echo "\\end{document}" 
 
 
