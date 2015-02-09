@@ -148,10 +148,10 @@ if getOpt("-tex"):
     doneKeys = []
     for k in lists:
         l = lists[k]
-        iters = len(l)
         for k in l:
             if k in doneKeys:
                 continue
+            iters = len(l[k])
             print(mkString(lists, k))
             if isCommon(k, lists) and baseline in lists:
                 print(mkComparisonString(lists, k))
