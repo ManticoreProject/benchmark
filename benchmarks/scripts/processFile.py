@@ -144,9 +144,11 @@ if getOpt("-tex"):
     print('\\begin{tabular}{|' + reduce (lambda x, y: ' c |' + x, range((len(lists)+1) * 2), '') + '}')
     print("\\hline")
     print (reduce (lambda x, y: x + ' & '+ y + " & " + y + " $\\sigma$", lists.keys(), '') + '\\\\\\hline')
+    iters = 0
     doneKeys = []
     for k in lists:
         l = lists[k]
+        iters = len(l)
         for k in l:
             if k in doneKeys:
                 continue
@@ -157,7 +159,9 @@ if getOpt("-tex"):
     print("\\end{tabular}")
     caption = getFlag("-caption")
     if caption is not None:
-        print ("\\caption{" + caption + "}")
+        print ("\\caption{" + caption + " (Average of " + str(iters) + " iterations)}")
+    else:
+        print ("\\caption{Average of " + str(iters) + " iterations}")
     print("\\end{figure}")
 else:
     for key in lists:
