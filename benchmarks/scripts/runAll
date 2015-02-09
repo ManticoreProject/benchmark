@@ -6,6 +6,13 @@ do
     esac
 done
 
+collectStats=$(grep -o "COLLECT_STATS" ../../lib/basis/include/debug.def)
+
+if [ -n "$collectStats" ]; then
+    echo "Error: collecting stats"
+    exit 1
+fi
+
 if [ ! -d "results" ]; then
     mkdir results
 fi

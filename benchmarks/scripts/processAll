@@ -1,24 +1,28 @@
 
+name=$(hostname)
 
 echo "\\documentclass[12pt]{article}" 
+echo "\\title{$name}"
 echo "\\begin{document}"
+echo "\\maketitle"
 
-titles=('Delaunay Mesh Refinement' "Labyrinth" 'Ordered Linked List'  'Red Black Tree' "Vacation" "KMeans" "STMBench7" "16 X 16 Sudoku)
-files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7" "sudoku-stm)
+
+titles=('Delaunay Mesh Refinement' "Labyrinth" 'Ordered Linked List'  'Red Black Tree' "Vacation" "KMeans" "STMBench7" '16 X 16 Sudoku')
+files=("delaunay-mesh" "labyrinth" "linked-list-stm" "red-black-stm" "vacation" "kmeans-stm" "stmbench7" "sudoku-stm")
 i=0
 for f in "${files[@]}"
 do
     if [ ! -f ../programs/$f/times.txt ]; then
+        i=$((i+1))
        continue
     fi
 
-    python processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}" 
-    
+    python processFile.py -file ../programs/$f/times.txt -tex -caption "${titles[$i]}"
+
 
     i=$((i+1))
 done
 
 
-echo "\\end{document}" 
-
+echo "\\end{document}"
 
