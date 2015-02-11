@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, getopt, re, os, processFile as pf
+import sys, getopt, re, os, processFile as pf, locale
 import statistics as st
 from collections import OrderedDict
 
@@ -13,6 +13,8 @@ print("\\centering")
 print('\\begin{tabular}{|' + pf.reduce (lambda x, y: ' c |' + x, range(0, 6), '') + '}')
 print("\\hline")
 
+locale.setlocale(locale.LC_ALL, 'en_US')
+
 
 def dumpApp(name, appData):
     for n in appData:
@@ -25,7 +27,8 @@ def dumpApp(name, appData):
         l = appData[n]
         for k in l:
             mean = pf.reduce(lambda x, y: x + y, l[k]) / len(l[k])
-            s = s + ' & ' + ("%.2f" % mean)
+            s = locale.format('%.2f', mean, grouping=True)
+            s = s + ' & ' + s
     print(s + '\\\\\\hline')
 
 for f in files:
@@ -37,3 +40,7 @@ for f in files:
 
 print('\\end{tabular}')
 print('\\end{figure}')
+
+
+
+
