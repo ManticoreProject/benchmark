@@ -42,14 +42,14 @@ fun start(ops, i) =
     case ops 
         of opers::ops =>
             let val ch = PrimChan.new()
-                val _ = Threads.spawnOn(i-1, fn () => (threadLoop(0, opers); PrimChan.send(ch, ())))
+                val _ = Threads.spawnOn(i-1, fn () => (threadLoop(0, opers); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
             in ch::start(ops, i-1) end
          | nil => nil
              
 fun join chs = 
     case chs
-        of ch::chs => (PrimChan.recv ch; join chs)
-         | nil => ()
+        of ch::chs => (PrimChan.recv ch @ join chs)
+         | nil => nil
 
 val ops = readData()
 val _ = if List.length ops = G.THREADS
@@ -57,11 +57,12 @@ val _ = if List.length ops = G.THREADS
         else (print "Input does not match number of threads\n"; raise Fail " ")
 
 val startTime = Time.now()
-val _ = join(start(ops, G.THREADS))
+val stats = join(start(ops, G.THREADS))
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = STM.printStats()
 
+val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
 (*measure throughput*)
 (*

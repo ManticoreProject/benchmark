@@ -34,7 +34,7 @@ struct
     val puzzle = 
         case getArg "-puzzle" args
             of SOME f => readPuzzle f
-             | _ => readPuzzle "puzzles/puzzle1"
+             | _ => readPuzzle "puzzles/puzzle3"
 
     val (values, boxSize) = 
         case List.length puzzle

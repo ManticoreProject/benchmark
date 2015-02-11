@@ -19,11 +19,11 @@ echo "------------------------Partial Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    ./a.out -p 4 -puzzle puzzles/puzzle3  > currentTime.txt
+    ./a.out -p 4 -puzzle puzzles/puzzle3  -p 4  > currentTime.txt
     while [ $? -ne 0 ]; 
     do
         echo "Error!, trying again..."
-        ./a.out -p 4 -puzzle puzzles/puzzle3  > currentTime.txt
+        ./a.out -p 4 -puzzle puzzles/puzzle3  -p 4  > currentTime.txt
     done
     cat currentTime.txt
     echo "name = Partial Abort" >> times.txt
@@ -35,11 +35,11 @@ echo "------------------------Full Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    ./a.out -p 4 -stm full -puzzle puzzles/puzzle3  > currentTime.txt
+    ./a.out -p 4 -stm full -puzzle puzzles/puzzle3  -p 4  > currentTime.txt
     while [ $? -ne 0 ]; 
     do
         echo "Error!, trying again..."
-        ./a.out -p 4 -stm full -puzzle puzzles/puzzle3  > currentTime.txt
+        ./a.out -p 4 -stm full -puzzle puzzles/puzzle3  -p 4  > currentTime.txt
     done
     cat currentTime.txt
     echo "name = Full Abort" >> times.txt

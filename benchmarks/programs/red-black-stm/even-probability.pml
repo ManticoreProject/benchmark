@@ -1,4 +1,6 @@
 
+structure R = ThreadSafeRand
+
 fun intComp(x:int,y:int) = if x < y then LESS else if x > y then GREATER else EQUAL
 
 val insert = RBTree.insert intComp
@@ -34,42 +36,45 @@ val READS = 1
 val WRITES = 1
 val DELETES = 1
 
-fun threadLoop t i = 
+val seed = R.newSeed 0
+
+fun threadLoop(t, i, seed) = 
     if i = 0
     then ()
-    else let val randNum = Rand.inRangeInt(0, MAXVAL)
-             val prob = Rand.inRangeInt(0, READS+WRITES+DELETES)
+    else let val randNum = R.inRangeInt(0, MAXVAL, seed)
+             val prob = R.inRangeInt(0, READS+WRITES+DELETES, seed)
              val _ = if prob < READS
                      then ignore(member randNum t)
                      else if prob < READS + WRITES
                           then ignore(insert randNum t)
                           else ignore(remove randNum t)
-         in threadLoop t (i-1) end
+         in threadLoop(t, i-1, seed) end
 
 fun start t i =
     if i = 0
     then nil
     else let val ch = PrimChan.new()
-             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop t ITERS; PrimChan.send(ch, i)))
+             val seed = R.newSeed 0
+             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop(t, ITERS, seed); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
          in ch::start t (i-1) end
 
 fun join chs = 
     case chs
-        of ch::chs' => (PrimChan.recv ch; join chs')
-         | nil => ()
+        of ch::chs' => PrimChan.recv ch @ join chs'
+         | nil => nil
 
 val t = RBTree.newTree()
 
 fun initialize n = 
     if n = 0
     then ()
-    else let val randNum = Rand.inRangeInt(0, MAXVAL)
+    else let val randNum = R.inRangeInt(0, MAXVAL, seed)
              val _ = insert randNum t
          in initialize (n-1) end
 
 val _ = initialize 100000
 val startTime = Time.now()
-val _ = join(start t THREADS)
+val stats = join(start t THREADS)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 
@@ -78,5 +83,6 @@ val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)
 
 val _ = printStats()
 
+val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
 

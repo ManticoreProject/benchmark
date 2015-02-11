@@ -14,7 +14,7 @@ echo "------------------------Partial Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    ./a.out -iters 500000 > currentTime.txt
+    ./a.out -iters 500000  -p 4 > currentTime.txt
     cat currentTime.txt
     echo "name = Partial Abort" >> times.txt
     cat currentTime.txt >> times.txt
@@ -25,7 +25,7 @@ echo "------------------------Full Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    ./a.out -iters 500000 -stm full > currentTime.txt
+    ./a.out -iters 500000 -stm full  -p 4 > currentTime.txt
     cat currentTime.txt
     echo "name = Full Abort" >> times.txt
     cat currentTime.txt >> times.txt

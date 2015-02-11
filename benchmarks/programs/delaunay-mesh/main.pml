@@ -79,7 +79,7 @@ fun process wq mesh =
 
 (* =============================================================================
  * initializeWork
- * meshPtr contains all triangles, we keep adding triangles into wq 
+ * meshPtr contains all triangles, we keep adding triangles into wq
  * until no bad triangles are left and returns the number of bad triangles found
  * =============================================================================
  *)
@@ -107,13 +107,13 @@ fun startThreads i =
     if i = 0
     then nil
     else let val ch = PrimChan.new()
-             val _ = Threads.spawnOn(i-1, fn _ => (process workQ mesh; PrimChan.send(ch, i)))
+             val _ = Threads.spawnOn(i-1, fn _ => (process workQ mesh; PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
          in ch::startThreads (i-1) end 
 
 fun join cs = 
     case cs
-        of c::cs => (PrimChan.recv c; join cs)
-         | nil => ()
+        of c::cs => (PrimChan.recv c @ join cs)
+         | nil => nil
 
 
 val numBad = initializeWork workQ mesh
@@ -121,7 +121,7 @@ val numBad = initializeWork workQ mesh
 val _ = print "starting refinement\n"
 
 val startTime = Time.now()
-val _ = join (startThreads G.threads)
+val stats = join (startThreads G.threads)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 
@@ -133,7 +133,7 @@ val _ = mesh_check mesh
 val _ = STM.printStats()
 
 
-
+val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
 
 

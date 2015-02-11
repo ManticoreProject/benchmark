@@ -55,13 +55,13 @@ fun start l i =
     if i = 0
     then nil
     else let val ch = PrimChan.new()
-             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop l ITERS; PrimChan.send(ch, i)))
+             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop l ITERS; PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
          in ch::start l (i-1) end
 
 fun join chs = 
     case chs
-        of ch::chs' => (PrimChan.recv ch; join chs')
-         | nil => ()
+        of ch::chs' => PrimChan.recv ch @ join chs'
+         | nil => nil
 
 val l = OrderedLinkedList.newList()
 
@@ -76,12 +76,12 @@ fun initialize n =
 
 val _ = initialize INITSIZE
 val startTime = Time.now()
-val _ = join(start l THREADS)
+val stats = join(start l THREADS)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = printStats()
 
-
+val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
 
 

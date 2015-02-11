@@ -12,7 +12,7 @@ trap "exit" INT
 echo "------------------------Partial Abort----------------------------"
 for i in $(seq 1 $iters);
 do
-    ./a.out -t 100000  > currentTime.txt
+    ./a.out -t 100000  -p 4  > currentTime.txt
     cat currentTime.txt
     echo "name = Partial Abort" >> times.txt
     cat currentTime.txt >> times.txt
@@ -22,7 +22,7 @@ done
 echo "------------------------Full Abort----------------------------"
 for i in $(seq 1 $iters);
 do
-    ./a.out -t 100000 -stm full > currentTime.txt
+    ./a.out -t 100000 -stm full -p 4  > currentTime.txt
     cat currentTime.txt
     echo "name = Full Abort" >> times.txt
     cat currentTime.txt >> times.txt

@@ -22,7 +22,7 @@ struct
     val global_angleConstraint = getDoubleFlg "-angle" 20.0
 
     val filePrefix = case getArg "-file" args
-                        of SOME f => f | NONE => "data/dots.2"
+                        of SOME f => f | NONE => "data/ttimeu100000.2"
 
     val threads = getIntFlg "-threads" 4
 end

@@ -23,7 +23,7 @@ struct
 
     val numClient = getIntFlg "-c" 4
 
-    val numTransaction = getIntFlg "-t" 50000
+    val numTransaction = getIntFlg "-t" 100000
 
     val num = getIntFlg "-n" 10
 

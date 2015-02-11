@@ -17,7 +17,7 @@ echo "------------------------Partial Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"  
-    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4  > currentTime.txt)
+    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4  -p 4  > currentTime.txt)
     while [ $? -eq "139" ]; 
     do
         echo "Error!, trying again..."
@@ -33,7 +33,7 @@ echo "------------------------Full Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -stm full > currentTime.txt)
+    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -stm full  -p 4 > currentTime.txt)
     while [ $? -eq "139" ]; 
     do
         echo "Error!, trying again..."
