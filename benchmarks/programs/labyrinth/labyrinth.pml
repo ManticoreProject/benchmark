@@ -176,10 +176,9 @@ fun join chs =
          | nil => nil
 
 
-val THREADS = case getArg "-threads" args
-        of SOME n => (case Int.fromString n of SOME n => n | NONE => 4)
-         | NONE => 4
+val THREADS = VProc.numVProcs()
 
+val _ = print ("Running with " ^ Int.toString THREADS ^ " threads\n")
 
 val startTime = Time.now()
 val stats = join(start THREADS)

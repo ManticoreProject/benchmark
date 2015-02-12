@@ -212,7 +212,7 @@ struct
                      | nil => 0
             fun f tv = 
                 case STM.get tv
-                    of D.Comp(id, _,D.Doc(_,title,text,part), usedIn, parts, rootPart) => countIs (String.explode text)
+                    of D.Comp(id, _,D.Doc(_,title,text,part), usedIn, parts, rootPart) => String.countOccurrences(text, "I")
        in traverseToComp f end
 
     (**

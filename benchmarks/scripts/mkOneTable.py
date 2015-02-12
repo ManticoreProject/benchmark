@@ -34,7 +34,6 @@ def dumpApp(name, appData):
 for f in files:
     filename = '../programs/' + f + '/times.txt'
     appData = pf.processFile(filename)
-    #pf.printData(appData)
     dumpApp(f, appData)
 
 

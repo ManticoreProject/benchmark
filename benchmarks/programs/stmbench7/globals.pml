@@ -19,7 +19,7 @@ struct
             of SOME n => (case Double.fromString n of SOME n => n | NONE => dflt)
              | NONE => dflt
 
-    val THREADS = getIntFlg "-threads" 4
+    val THREADS = VProc.numVProcs()
     val ITERS = getIntFlg "-iters" 5
 
     fun dToI d = Long.toInt(Double.round d)

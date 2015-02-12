@@ -38,7 +38,7 @@ val (get,put,atomic,new,printStats) =
 
 val atomic : (unit -> 'a) -> 'a = atomic
 
-val THREADS = getIntFlg "-threads" 4 
+val THREADS = VProc.numVProcs()
 val ITERS = getIntFlg "-iters" 3000 
 val MAXVAL = 100000
 val INITSIZE = getIntFlg "-size" 4000

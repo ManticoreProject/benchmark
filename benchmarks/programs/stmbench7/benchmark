@@ -1,12 +1,12 @@
 #!/bin/bash
-
 iters=10
-
-while getopts ":ci:" options; 
+threads=4
+while getopts ":ci:p:" options; 
 do
     case $options in
 	c ) pmlc mc.mlb ;;
 	i ) iters=$OPTARG ;;
+	p ) threads=$OPTARG ;;
     esac
 done
 
@@ -17,11 +17,11 @@ echo "------------------------Partial Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"  
-    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4  -p 4  > currentTime.txt)
+    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4  -p $threads  > currentTime.txt)
     while [ $? -eq "139" ]; 
     do
         echo "Error!, trying again..."
-        res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4  > currentTime.txt)
+        res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -p $threads > currentTime.txt)
     done
     cat currentTime.txt
     echo "name = Partial Abort" >> times.txt
@@ -33,11 +33,11 @@ echo "------------------------Full Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -stm full  -p 4 > currentTime.txt)
+    res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -stm full -p $threads > currentTime.txt)
     while [ $? -eq "139" ]; 
     do
         echo "Error!, trying again..."
-        res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -stm full > currentTime.txt)
+        res=$(./a.out -numAtomicPerComp 20 -docSize 500 -numAssmLevels 4 -stm full -p $threads > currentTime.txt)
     done
     cat currentTime.txt
     echo "name = Full Abort" >> times.txt

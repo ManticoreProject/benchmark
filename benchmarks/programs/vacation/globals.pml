@@ -21,7 +21,7 @@ struct
              
     val numRelation = getIntFlg "-r" 500
 
-    val numClient = getIntFlg "-c" 4
+    val numClient = VProc.numVProcs()
 
     val numTransaction = getIntFlg "-t" 100000
 

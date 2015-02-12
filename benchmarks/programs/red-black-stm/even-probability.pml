@@ -25,7 +25,7 @@ val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
 
 val (atomic,new,printStats) = (RBTree.atomic,RBTree.new,RBTree.printStats)
 
-val THREADS = getIntFlg "-threads" 4 
+val THREADS = VProc.numVProcs()
          
 val ITERS = getIntFlg "-iters" 500000
 val MAXVAL = 100000

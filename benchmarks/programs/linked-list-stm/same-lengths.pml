@@ -21,10 +21,7 @@ val (get,put,atomic,new,printStats) =
          then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
          else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
 
-val THREADS = 
-    case getArg "-threads" args
-        of SOME n => (case Int.fromString n of SOME n => n | NONE => 4)
-         | NONE => 4
+val THREADS = VProc.numVProcs()
 
 val ITERS = 3000
 val MAXVAL = 10000

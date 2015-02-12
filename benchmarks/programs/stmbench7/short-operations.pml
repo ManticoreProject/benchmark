@@ -57,8 +57,7 @@ struct
     fun op4() = 
         let val D.Mod(man, designRoot) = module
             val D.Man(id,title,text) = STM.get man
-            val chars = String.explode text
-        in List.foldl (fn (c, total) => if String.same(c, "I") then 1 + total else total) 0 chars
+        in String.countOccurrences(text, "I")
         end
 
     (**

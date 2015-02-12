@@ -24,5 +24,5 @@ struct
     val filePrefix = case getArg "-file" args
                         of SOME f => f | NONE => "data/ttimeu100000.2"
 
-    val threads = getIntFlg "-threads" 4
+    val threads = VProc.numVProcs()
 end

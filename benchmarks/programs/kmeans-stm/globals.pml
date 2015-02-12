@@ -19,7 +19,7 @@ struct
             of SOME n => (case Double.fromString n of SOME n => n | NONE => dflt)
              | NONE => dflt
 
-    val threads = getIntFlg "-threads" 4
+    val threads = VProc.numVProcs()
 
     val threshold = getDoubleFlg "-thresh" 0.000001
 end
