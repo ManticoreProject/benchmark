@@ -67,15 +67,7 @@ struct
     fun op5() = 
         let val D.Mod(man, designRoot) = module
             val D.Man(id,title,text) = STM.get man
-            val chars = String.explode text
-            val first = List.hd chars
-            fun lp cs = 
-                case cs 
-                    of last::nil => first = last
-                     | c::cs => lp cs
-                     | nil => raise Fail "not enough text\n"
-            
-        in if lp chars then 1 else 0
+        in if String.firstLastSame text then 1 else 0
         end
 
     (**
@@ -256,9 +248,9 @@ struct
         in List.foldl f 0 ids end
 
     val operations = [op1, op2, op3, op4, op5, op6, op7, op8, op9, op10, 
-                      op11, op12, op13, op14, op15]
+                      (*op11,*) op12, op13, op14, op15]
     val titles = ["op1", "op2", "op3", "op4", "op5", "op6", "op7", "op8", "op9", "op10", 
-                  "op11", "op12", "op13", "op14", "op15"]
+                  (*"op11",*) "op12", "op13", "op14", "op15"]
      
 end
 

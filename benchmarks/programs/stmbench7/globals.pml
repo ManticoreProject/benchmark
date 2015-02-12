@@ -26,13 +26,15 @@ struct
 
     val TIME = Int.toLong(getIntFlg "-time" 10)
 
+    val numOps = getIntFlg "-numOps" 100
+
     val NumAssmPerAssm = getIntFlg "-numAssmPerAssm" 3
     val NumAssmLevels = getIntFlg "-numAssmLevels" 4
     val NumCompPerModule = 50 (*500*)
     val InitialTotalCompParts = NumCompPerModule
     val NumAtomicPerComp = getIntFlg "-numAtomicPerComp" 20
     val NumTypes = 10
-    val DocumentSize = getIntFlg (*20000 *) "-docSize" 500
+    val DocumentSize = getIntFlg (*20000 *) "-docSize" 1000
     val NumCompPerAssm = 3
     val XYRange = 100000
     val NumConnPerAtomic = 6

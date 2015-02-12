@@ -20,7 +20,7 @@ struct
      *)
     fun sm2() = 
         let val r = Rand.inRangeInt(0, G.MaxCompParts)
-            val comp = Option.valOf (I.lookupCompositePartIndex r) handle e => STM.abort()
+            val comp = Option.valOf (I.lookupCompositePartIndex r) 
             fun drop comps = 
                 case comps
                     of comp'::comps => if STM.same(comp, comp') then comps else comp'::drop comps
@@ -44,9 +44,9 @@ struct
      *)
     fun sm3() = 
         let val r = Rand.inRangeInt(0, G.MaxCompParts)
-            val comp = Option.valOf (I.lookupCompositePartIndex r) handle e => STM.abort()
+            val comp = Option.valOf (I.lookupCompositePartIndex r) 
             val r = Rand.inRangeInt(0, G.MaxBaseAssemblies)
-            val assem = Option.valOf (I.lookupBaseAssemblyIndex r) handle e => STM.abort()
+            val assem = Option.valOf (I.lookupBaseAssemblyIndex r) 
             val _ = case STM.get assem
                     of D.BaseAssembly(id, date, components, parent) =>
                         STM.put(assem, D.BaseAssembly(id, date, comp::components, parent))
@@ -64,7 +64,7 @@ struct
      *)
     fun sm4() = 
         let val r = Rand.inRangeInt(0, G.MaxBaseAssemblies)
-            val assem = Option.valOf (I.lookupBaseAssemblyIndex r) handle e => STM.abort()
+            val assem = Option.valOf (I.lookupBaseAssemblyIndex r) 
             fun dropEq(assems, assem) = 
                 case assems
                     of assem'::assems => if STM.same(assem, assem') then assems else assem'::dropEq(assems, assem)
@@ -93,7 +93,7 @@ struct
      *)
     fun sm5() = 
         let val r = Rand.inRangeInt(0, G.MaxBaseAssemblies)
-            val assem = Option.valOf (I.lookupBaseAssemblyIndex r) handle e => STM.abort()
+            val assem = Option.valOf (I.lookupBaseAssemblyIndex r)
             val _ = case STM.get assem
                             of D.BaseAssembly(id, date, components, parent) => Builder.buildBaseAssem parent
                              | _ => raise Fail "Expected base assembly\n"
@@ -106,7 +106,7 @@ struct
      *)
     fun sm6() = 
         let val r = Rand.inRangeInt(0, G.MaxBaseAssemblies)
-            val assem = Option.valOf (I.lookupBaseAssemblyIndex r) handle e => STM.abort()
+            val assem = Option.valOf (I.lookupBaseAssemblyIndex r) 
             val (parent, id) = case STM.get assem 
                             of D.BaseAssembly(id, date, components, parent) => (parent, id)
                              | _ => raise Fail "Expected base assembly\n"
@@ -138,7 +138,7 @@ struct
 
     fun sm7() = 
         let val r = Rand.inRangeInt(0, G.MaxComplexAssemblies)
-            val assem = Option.valOf (I.lookupComplexAssemblyIndex r) handle e => STM.abort()
+            val assem = Option.valOf (I.lookupComplexAssemblyIndex r)
             val _ = case STM.get assem
                         of D.ComplexAssembly(id, date, subAssemblies, level, parent) =>
                             Builder.buildComplexAssem(parent, level-1)

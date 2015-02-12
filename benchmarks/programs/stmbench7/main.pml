@@ -1,6 +1,6 @@
 
 structure G = Globals
-
+structure R = ThreadSafeRand
 
 val operations = Vector.fromList(LongTraversals.operations @ ShortTraversals.operations @ 
                                  ShortTraversals.operations @ StructuralModifications.operations)
@@ -11,6 +11,8 @@ val titles = Vector.fromList(LongTraversals.titles @  ShortTraversals.titles @
 (*Time how long it takes to perform x operations*)
 
 val _ = print ("There are " ^ Int.toString (Vector.length operations) ^ " operations\n")
+
+val _ = print ("Each thread performing " ^ Int.toString G.numOps ^ " opeartions\n")
 
 fun readData() = 
     let val stream = TextIO.openIn "data/data.txt"
@@ -29,20 +31,21 @@ fun readData() =
     in lp(List.tabulate(G.THREADS, fn _ => [])) end
 
 
-
-fun threadLoop(i, ops) = 
-    case ops
-        of opNum::ops => 
-            let val oper = Vector.sub(operations, opNum)
-                val res = STM.atomic oper
-            in threadLoop(i+1, ops) end
-         | nil => ()
+fun threadLoop(i, seed, tid) = 
+    if i = 0
+    then print ("Thread " ^ Int.toString tid ^ " finished\n")
+    else let val opNum = R.inRangeInt(0, Vector.length operations, seed)
+             val oper = Vector.sub(operations, opNum)
+             val res = STM.atomic(fn _ => oper() handle e => ~1)
+         in threadLoop(i-1, seed, tid) end
+         
 
 fun start(ops, i) =
     case ops 
         of opers::ops =>
             let val ch = PrimChan.new()
-                val _ = Threads.spawnOn(i-1, fn () => (threadLoop(0, opers); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
+                val seed = R.newSeed 0
+                val _ = Threads.spawnOn(i-1, fn () => (threadLoop(G.numOps, seed, i); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
             in ch::start(ops, i-1) end
          | nil => nil
              
