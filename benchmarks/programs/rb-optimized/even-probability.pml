@@ -3,9 +3,9 @@ structure R = ThreadSafeRand
 
 fun intComp(x:int,y:int) = if x < y then LESS else if x > y then GREATER else EQUAL
 
-val insert = RBTree.insert intComp
-val remove = RBTree.remove intComp
-val member = RBTree.member intComp
+val insert = RBTree.insert String.compare
+val remove = RBTree.remove String.compare
+val member = RBTree.member String.compare
 
 fun getArg f args = 
     case args 
@@ -38,10 +38,11 @@ val DELETES = 1
 
 val seed = R.newSeed 0
 
+
 fun threadLoop(t, i, seed) = 
     if i = 0
     then ()
-    else let val randNum = R.inRangeInt(0, MAXVAL, seed)
+    else let val randNum = Int.toString(R.inRangeInt(0, MAXVAL, seed))
              val prob = R.inRangeInt(0, READS+WRITES+DELETES, seed)
              val _ = if prob < READS
                      then ignore(member randNum t)
@@ -68,7 +69,7 @@ val t = RBTree.newTree()
 fun initialize n = 
     if n = 0
     then ()
-    else let val randNum = R.inRangeInt(0, MAXVAL, seed)
+    else let val randNum = Int.toString(R.inRangeInt(0, MAXVAL, seed))
              val _ = insert randNum t
          in initialize (n-1) end
 
@@ -78,7 +79,7 @@ val stats = join(start t THREADS)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 
-val _ = atomic(fn _ => RBTree.chkOrder intComp t)
+val _ = atomic(fn _ => RBTree.chkOrder String.compare t)
 val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)
 
 val _ = printStats()

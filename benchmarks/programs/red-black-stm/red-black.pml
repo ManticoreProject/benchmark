@@ -52,7 +52,7 @@ struct
     fun blacken' t = 
         case get t
             of T(Red, a, x, b) => put(t, T(Black, a, x, b))
-             | T(Black, a, x, b) => ()          
+             | T(Black, a, x, b) => ()
 
     fun blacken t = 
         case get t
