@@ -13,8 +13,7 @@ print("\\centering")
 print('\\begin{tabular}{|' + pf.reduce (lambda x, y: ' c |' + x, range(0, 6), '') + '}')
 print("\\hline")
 
-locale.setlocale(locale.LC_ALL, 'en_US')
-
+locale.setlocale(locale.LC_ALL, locale.getdefaultlocale())
 
 def dumpApp(name, appData):
     for n in appData:
@@ -27,8 +26,8 @@ def dumpApp(name, appData):
         l = appData[n]
         for k in l:
             mean = pf.reduce(lambda x, y: x + y, l[k]) / len(l[k])
-            s = locale.format('%.2f', mean, grouping=True)
-            s = s + ' & ' + s
+            st = locale.format('%.2f', mean, grouping=True)
+            s = s + ' & ' + st
     print(s + '\\\\\\hline')
 
 for f in files:
