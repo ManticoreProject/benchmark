@@ -39,7 +39,7 @@ def dumpApp(name, appData):
     partialAbort = appData['Partial Abort']
     full = avg(fullAbort['Execution-Time'])
     partial = avg(partialAbort['Execution-Time'])
-    change = ((partial - full) / partial) * 100
+    change = ((full - partial) / full) * 100
     s = s + ' & ' + locale.format('%.2f', change, grouping=True)   + '\%' 
     print(s + '\\\\\\hline')
 
