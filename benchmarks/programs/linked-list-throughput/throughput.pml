@@ -1,4 +1,9 @@
 
+structure R = ThreadSafeRand
+
+
+val seed = R.newSeed 0
+
 fun getArg f args = 
     case args 
         of arg::arg'::args => 
@@ -53,27 +58,27 @@ val DELETES = 1
 
 fun computeSplit n = Long.toInt(Double.round(Double.fromInt n * SPLIT))
 
-fun secondHalf(l, startTime, f1, f2, iters) = 
+fun secondHalf(l, startTime, f1, f2, iters, seed) = 
     if Time.toSecs (Time.now()) - startTime > TIME
     then iters
-    else let val prob = Rand.inRangeInt(0, READS+WRITES+DELETES)
+    else let val prob = R.inRangeInt(0, READS+WRITES+DELETES, seed)
              val _ = if prob < READS
                      then ignore(OrderedLinkedList.find l (f1()))
                      else if prob < READS + WRITES
                           then ignore(OrderedLinkedList.add l (f1()))
                           else ignore(OrderedLinkedList.deleteIndex l (f2()))
-         in secondHalf(l, startTime, f1, f2, iters+1) end
+         in secondHalf(l, startTime, f1, f2, iters+1, seed) end
 
-fun firstHalf l startTime f1 f2 = 
+fun firstHalf l startTime f1 f2 seed = 
     if Time.toSecs (Time.now()) - startTime > TIME
     then ()
-    else let val prob = Rand.inRangeInt(0, 3)
+    else let val prob = R.inRangeInt(0, 3, seed)
              val _ = if prob < 1
                      then ignore(OrderedLinkedList.find l (f1()))
                      else if prob < 2
                           then ignore(OrderedLinkedList.add l (f1()))
                           else ignore(OrderedLinkedList.deleteIndex l (f2()))
-         in firstHalf l startTime f1 f2 end
+         in firstHalf l startTime f1 f2 seed end
 
 
          
@@ -81,14 +86,16 @@ fun start startTime l i =
     if i = 0
     then nil
     else let val maxValSplit = computeSplit MAXVAL
-             fun r1() = Rand.inRangeInt(0, maxValSplit)
-             fun r2() = Rand.inRangeInt(0, computeSplit (OrderedLinkedList.size l))
-             fun r3() = Rand.inRangeInt(maxValSplit, MAXVAL)
-             fun r4() = Rand.inRangeInt(computeSplit (OrderedLinkedList.size l), OrderedLinkedList.size l)
+             val s1 = R.newSeed 0
+             val s2 = R.newSeed 0
+             fun r1() = R.inRangeInt(0, maxValSplit, s1)
+             fun r2() = R.inRangeInt(0, computeSplit (OrderedLinkedList.size l), s1)
+             fun r3() = R.inRangeInt(maxValSplit, MAXVAL, s2)
+             fun r4() = R.inRangeInt(computeSplit (OrderedLinkedList.size l), OrderedLinkedList.size l, s2)
              val ch1 = PrimChan.new()
              val ch2 = PrimChan.new()
-             val _ = Threads.spawnOn(i-1, fn _ => (firstHalf l startTime r1 r2; PrimChan.send(ch1, 0)))
-             val _ = Threads.spawnOn(i-2, fn _ => PrimChan.send(ch2, secondHalf(l, startTime, r3, r4,0)))
+             val _ = Threads.spawnOn(i-1, fn _ => (firstHalf l startTime r1 r2 s1; PrimChan.send(ch1, 0)))
+             val _ = Threads.spawnOn(i-2, fn _ => PrimChan.send(ch2, secondHalf(l, startTime, r3, r4,0,s2)))
          in ch1::ch2::start startTime l (i-2) end
 
 fun join chs = 
@@ -101,7 +108,7 @@ val l = OrderedLinkedList.newList()
 fun initialize n = 
     if n = 0
     then ()
-    else let val randNum = Rand.inRangeInt(0, MAXVAL)
+    else let val randNum = R.inRangeInt(0, MAXVAL, seed)
              val _ = OrderedLinkedList.add l randNum
          in initialize (n-1) end
 
