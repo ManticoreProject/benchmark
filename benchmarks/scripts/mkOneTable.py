@@ -15,6 +15,9 @@ print("\\hline")
 
 locale.setlocale(locale.LC_ALL, locale.getdefaultlocale())
 
+def avg(l):
+    return (pf.reduce(lambda x, y:x + y, l) / len(l))
+
 def dumpApp(name, appData):
     for n in appData:
         appData[n] = OrderedDict(sorted(appData[n].items()))
@@ -25,9 +28,19 @@ def dumpApp(name, appData):
     for n in appData:
         l = appData[n]
         for k in l:
-            mean = pf.reduce(lambda x, y: x + y, l[k]) / len(l[k])
+            mean = avg(l[k])
             st = locale.format('%.2f', mean, grouping=True)
             s = s + ' & ' + st
+    if 'Full Abort' not in appData:
+        return
+    if 'Partial Abort' not in appData:
+        return
+    fullAbort = appData['Full Abort']
+    partialAbort = appData['Partial Abort']
+    full = avg(fullAbort['Execution-Time'])
+    partial = avg(partialAbort['Execution-Time'])
+    change = (partial - full) / partial
+    s = s + ' & ' + locale.format('%.2f', change, grouping=True)   + '\%' 
     print(s + '\\\\\\hline')
 
 for f in files:
