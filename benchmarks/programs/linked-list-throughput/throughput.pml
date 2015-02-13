@@ -109,8 +109,23 @@ val _ = initialize INITSIZE
 val startTime = Time.now()
 val ops = join(start (Time.toSecs startTime) l THREADS)
 val endTime = Time.now()
-val _ = print ("Total throughput = " ^ Double.toString(Double.fromInt ops / Double.fromInt THREADS) ^ "\n")
+
+val halfThreads = THREADS div 2
+
+val _ = print ("Total throughput = " ^ Double.toString(Double.fromInt ops / Double.fromInt halfThreads) ^ "\n")
 val _ = printStats()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
