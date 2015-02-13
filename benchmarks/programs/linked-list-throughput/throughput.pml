@@ -119,7 +119,7 @@ val endTime = Time.now()
 
 val halfThreads = THREADS div 2
 
-val _ = print ("Total throughput = " ^ Double.toString(Double.fromInt ops / Double.fromInt halfThreads) ^ "\n")
+val _ = print ("Total throughput = " ^ Int.toString ops ^ "\n")
 val _ = printStats()
 
 
