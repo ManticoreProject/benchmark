@@ -8,19 +8,8 @@ fun getArg f args =
 
 val args = CommandLine.arguments ()
 
-val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
 
-type 'a tvar = 'a PartialSTM.tvar 
-
-val (get,put,atomic,new,printStats) = 
-    if String.same(whichSTM, "bounded")
-    then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
-          BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
-          BoundedHybridPartialSTM.printStats)
-    else if String.same(whichSTM, "full")
-         then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-         else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
-
+val (get,put,atomic,new,printStats) = (STM.get, STM.put, STM.atomic, STM.new, STM.printStats)
 val THREADS = VProc.numVProcs()
 
 val ITERS = 3000
@@ -33,9 +22,9 @@ val INITSIZE =
     
 fun ignore _ = ()
 
-val READS = 2
+val READS = 0(*2*)
 val WRITES = 4
-val DELETES = 1
+val DELETES = 0(*1*)
 
 fun threadLoop l i = 
     if i = 0

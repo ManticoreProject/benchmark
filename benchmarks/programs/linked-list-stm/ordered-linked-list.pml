@@ -17,18 +17,9 @@ struct
 
     val args = CommandLine.arguments ()
 
-    val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
+    val (get,put,atomic,new,printStats) = (STM.get, STM.put, STM.atomic, STM.new, STM.printStats)
 
-    type 'a tvar = 'a PartialSTM.tvar 
-
-    val (get,put,atomic,new,printStats) = 
-        if String.same(whichSTM, "bounded")
-        then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
-              BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
-              BoundedHybridPartialSTM.printStats)
-        else if String.same(whichSTM, "full")
-             then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
+    type 'a tvar = 'a STM.tvar
 
     datatype List = Node of int * List tvar
                   | Null
@@ -57,7 +48,7 @@ struct
     
     fun add (l,len) (v:int) = 
         let fun lp l = 
-                case get l 
+                case FFSTM.get l 
                     of Head n => lp n
                      | Null => put(l, Node(v, new Null))
                      | Node(v', n) => 
