@@ -21,22 +21,7 @@ fun getArg f args =
 
 val args = CommandLine.arguments ()
 
-val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
-
-val (get,put,atomic,new,printStats) = 
-    if String.same(whichSTM, "bounded")
-    then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
-          BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
-          BoundedHybridPartialSTM.printStats)
-    else if String.same(whichSTM, "full")
-         then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-         else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
-
-val atomic : (unit -> 'a) -> 'a = atomic
-val new : 'a -> 'a tvar = new
-val get : 'a tvar -> 'a = get
-val put : 'a tvar * 'a -> unit = put
-
+val (get,put,atomic,new,printStats) = (STM.get, STM.put, STM.atomic, STM.new, STM.printStats)
 
 type 'a vector = 'a V.vector
 
@@ -46,8 +31,8 @@ type maze = int tvar vector vector
 fun mkMaze m n o = V.tabulate(m, fn _ => V.tabulate(n, fn _ => V.tabulate(o, fn _ => new 0)))
 
 val routes = case getArg "-routes" args
-        of SOME n => (case Int.fromString n of SOME n => n | NONE => 150)
-         | NONE => 150
+        of SOME n => (case Int.fromString n of SOME n => n | NONE => 200)
+         | NONE => 200
 
 fun readData pts = 
     let val stream = TextIO.openIn("data/3ddata.txt")
