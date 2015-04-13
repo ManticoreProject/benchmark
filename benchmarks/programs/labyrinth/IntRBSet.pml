@@ -89,18 +89,18 @@ struct
 
     val empty = E
 
-    fun member x t = 
+    fun member(x, t) = 
         case t
             of E => false
              | T(_,l,y,r) => 
                 if x < y
-                then member x l
+                then member(x, l)
                 else if x > y
-                     then member x r
+                     then member(x, r)
                      else true
              | _ => raise Fail "member"
 
-    fun insert x s = 
+    fun insert(x, s) = 
         let fun ins t =
                 case t
                     of E => T(R,E,x,E)
@@ -140,18 +140,18 @@ struct
              | _ => raise Fail "removeMax"
 
 
-    fun del x s = 
+    fun del(x, s) = 
         case s
             of E => E
              | T(color,a',y,b') => 
                 if x < y
-                then bubble (T(color,del x a',y,b'))
+                then bubble (T(color,del(x, a'),y,b'))
                 else if x > y
-                     then bubble (T(color,a',y,del x b'))
+                     then bubble (T(color,a',y,del(x, b')))
                      else remove s
              | _ => raise Fail "del" 
                      
-    fun delete x s = blacken (del x s)         
+    fun delete x s = blacken (del(x, s))         
 
     fun isEmpty s = 
         case s 

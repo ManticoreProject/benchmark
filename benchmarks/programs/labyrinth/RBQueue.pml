@@ -87,7 +87,7 @@ struct
     val empty = E
 
     (*enqueue in the rightmost position*)
-    fun enqueue x s = 
+    fun enqueue(x, s) = 
         let fun ins t =
                 case t
                     of E => T(R,E,x,E)

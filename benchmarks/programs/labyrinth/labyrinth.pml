@@ -12,11 +12,11 @@ structure Q = RBQueue
 
 type 'a tvar = 'a PartialSTM.tvar
 
-fun getArg f args = 
+fun getArg(f, args) = 
     case args 
         of arg::arg'::args => 
             if String.same(f, arg) then SOME arg'
-            else getArg f (arg'::args)
+            else getArg(f, arg'::args)
          |_ => NONE
 
 val args = CommandLine.arguments ()
@@ -28,11 +28,16 @@ type 'a vector = 'a V.vector
 (*0 for open space, nonzero for taken*)
 type maze = int tvar vector vector
 
-fun mkMaze m n o = V.tabulate(m, fn _ => V.tabulate(n, fn _ => V.tabulate(o, fn _ => new 0)))
+fun mkMaze(m, n, o) = V.tabulate(m, fn _ => V.tabulate(n, fn _ => V.tabulate(o, fn _ => new 0)))
 
-val routes = case getArg "-routes" args
+val routes = case getArg("-routes", args)
         of SOME n => (case Int.fromString n of SOME n => n | NONE => 200)
          | NONE => 200
+
+fun map(f, xs) = 
+    case xs
+        of x::xs => f x::map(f, xs)
+         | nil => nil
 
 fun readData pts = 
     let val stream = TextIO.openIn("data/3ddata.txt")
@@ -40,7 +45,7 @@ fun readData pts =
             case TextIO.inputLine stream
                 of SOME s => 
                     let val nums = String.tokenize " " s
-                        val x1::x2::x3::nil = List.map (fn x => Option.valOf(Int.fromString x)) nums 
+                        val x1::x2::x3::nil = map(fn x => Option.valOf(Int.fromString x), nums) 
                     in SOME (x1, x2, x3) end
                  | NONE => NONE
         val SOME (n,m,p) = nextLine()         
@@ -56,59 +61,51 @@ val (height, width, depth, pts) = readData routes handle e => (print "EXN\n"; ra
         
 fun pntToStr (i, j, k) = "(" ^ Int.toString i ^ ", " ^ Int.toString j ^ ", " ^ Int.toString k ^ ")"
 
-val maze = mkMaze height width depth
+val _ = print ("Dimensions of grid are " ^ pntToStr(height, width, depth) ^ "\n")
 
-fun sub i j k = V.sub(V.sub(V.sub(maze, i), j), k)
+val maze = mkMaze(height, width, depth)
 
-    
-(*mark src and destination pts so paths do not run over them*)
-fun markPts pts = 
-    case pts
-        of(n, (i,j,k),(i',j',k'))::pts =>
-            let val _ = put(sub i j k, n)
-                val _ = put(sub i' j' k', n)
-            in markPts pts end
-         |nil => ()
-         
-val _ = atomic(fn () => markPts pts)
-val pts = new pts
+fun sub(i, j, k) = V.sub(V.sub(V.sub(maze, i), j), k)
 
+val ptsPtr = new pts
 
 fun toInd(i,j,k) = k + depth * j + depth * width * i
-
-fun dist x1 y1 z1 x2 y2 z2 = (x1-x2) * (x1 - x2) + (y1-y2) * (y1-y2) + (z1-z2) * (z1-z2)
 
 fun comp((p,_,_,_,_),(p',_,_,_,_)) = if p < p' then LESS else if p > p' then GREATER else EQUAL
 val insert = RBMultiset.insert comp
 val removeMin = RBMultiset.removeMin
 
-fun valid i j k i' j' k' seen x = 
+fun validXYZ(i, j, k, seen, x) = 
     if i >= 0 andalso j >= 0 andalso i < height andalso j < width andalso k >= 0 andalso k < depth
-    then if (get (sub i j k) = 0 orelse get (sub i j k) = x) andalso not(S.member (toInd(i,j,k)) seen)
-         then true
-         else false
+    then let val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
+             val z = get(sub(i, j, k))
+             val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
+         in if not(S.member(toInd(i,j,k), seen)) andalso z = 0
+            then true
+            else false
+         end
     else false
 
-
-fun addNeighbor(i, j, k, q, (i',j',k'), seen, x, path) = 
-    if valid i j k i' j' k' seen x 
-    then (Q.enqueue (i, j, k, path) q, S.insert (toInd(i,j,k)) seen)
+fun addNeighborXYZ(i, j, k, q, seen, x, path) = 
+    if validXYZ(i, j, k, seen, x)
+    then (Q.enqueue((i, j, k, path), q), S.insert(toInd(i,j,k), seen))
     else (q, seen)
 
-fun addNeighbors((i,j,k), q, dest, seen, x, path) = 
-    let val (q,seen) = addNeighbor(i-1, j, k, q, dest, seen, x, path)
-        val (q,seen) = addNeighbor(i+1, j, k, q, dest, seen, x, path)
-        val (q,seen) = addNeighbor(i, j-1, k, q, dest, seen, x, path)
-        val (q,seen) = addNeighbor(i, j+1, k, q, dest, seen, x, path)
-        val (q,seen) = addNeighbor(i, j, k-1, q, dest, seen, x, path)
-        val (q,seen) = addNeighbor(i, j, k+1, q, dest, seen, x, path)
+fun addNeighbors((i,j,k), q, seen, x, path) = 
+    let val (q,seen) = addNeighborXYZ(i-1, j, k, q, seen, x, path)
+        val (q,seen) = addNeighborXYZ(i+1, j, k, q, seen, x, path)
+        val (q,seen) = addNeighborXYZ(i, j-1, k, q, seen, x, path)
+        val (q,seen) = addNeighborXYZ(i, j+1, k, q, seen, x, path)
+        val (q,seen) = addNeighborXYZ(i, j, k-1, q, seen, x, path)
+        val (q,seen) = addNeighborXYZ(i, j, k+1, q, seen, x, path)
+        val _ = STM.abort()
     in (q,seen) end
 
-fun same (i,j,k) (i',j',k') = i = i' andalso j = j' andalso k = k'
+fun same((i,j,k), (i',j',k')) = i = i' andalso j = j' andalso k = k'
 
 fun writePath(p, n) = 
     case p
-        of (i,j,k)::p' => (put(sub i j k, n); writePath(p', n))
+        of (i,j,k)::p' => (put(sub(i, j, k), n); writePath(p', n))
          | nil => ()
 
 datatype res = NoPath | FoundPath 
@@ -118,41 +115,51 @@ datatype res = NoPath | FoundPath
 **path - the current path being explored
 **x - the route number
 **h - a function that computes the cost from the src to the current node*)
-fun route src dest seen q path x = 
-    if same src dest
+fun route(src, dest, seen, q, path, x) = (();
+    if same(src, dest)
     then (writePath(path, x); FoundPath)
-    else let val (q,seen) = addNeighbors(src, q, dest, seen, x, path)
+    else let val (q,seen) = addNeighbors(src, q, seen, x, path)
          in case Q.dequeue q
                 of SOME ((i',j',k',p), q) =>
-                    route (i',j',k') dest seen q ((i',j',k')::p) x
+                    route((i',j',k'),dest, seen, q, (i',j',k')::p, x)
                  | NONE => NoPath
-         end
+         end)
 
 fun pop() = 
     atomic(fn () => 
-        let val l = get pts
+        let val l = get ptsPtr
         in case l
-            of x::xs => (put(pts, xs); SOME x)
+            of x::xs => (put(ptsPtr, xs); SOME x)
              | nil => NONE
         end
     )
 
 val noPathCount = new 0
-fun bump() = put(noPathCount, get noPathCount + 1)
+fun bump() = atomic(fn () => put(noPathCount, get noPathCount + 1))
 
+(*
 fun threadLoop() = 
     case pop()
         of NONE => ()
          | SOME(x, src, dest) => 
-            case atomic(fn () => route src dest S.empty RBQueue.empty [src] x)
+            case atomic(fn () => route(src, dest, S.empty, RBQueue.empty, [src], x))
                 of FoundPath => threadLoop()
                  | NoPath =>  (bump(); threadLoop())
+*)
 
+fun threadLoop routes = 
+    case routes
+        of nil => ()
+         | (x, src, dest)::routes => 
+            case atomic(fn () => route(src, dest, S.empty, RBQueue.empty, [src], x))
+                of FoundPath => threadLoop routes
+                 | NoPath =>  threadLoop routes
+(*
 fun start i =
     if i = 0
     then nil
     else let val ch = PrimChan.new()
-             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop(); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
+             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop pts; PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
          in ch::start (i-1) end
 
 fun join chs = 
@@ -179,7 +186,9 @@ val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
 
 
+*)
 
+val _ = threadLoop pts
 
 
 
