@@ -48,7 +48,7 @@ struct
     
     fun add (l,len) (v:int) = 
         let fun lp l = 
-                case FFSTM.get l 
+                case get l 
                     of Head n => lp n
                      | Null => put(l, Node(v, new Null))
                      | Node(v', n) => 

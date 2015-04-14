@@ -22,7 +22,7 @@ val INITSIZE =
     
 fun ignore _ = ()
 
-val READS = 0(*2*)
+val READS = 2
 val WRITES = 4
 val DELETES = 0(*1*)
 
