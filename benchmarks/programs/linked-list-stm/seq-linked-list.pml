@@ -39,14 +39,12 @@ struct
     
 
 	fun findABCDEFG ((l,_):ListHandle) v = 
-        let fun lpABCDEFG(l, i) = (print("Iteration = " ^ Int.toString i ^ "\n");
-      				if i = 20
-      				then (STM.abort(); false)
-      				else case get l
-                        of Null => false
-                         | Head n => lpABCDEFG(n, i)
-                         | Node(v', n) => if v = v' then true else lpABCDEFG(n, i+1))
-        in atomic (fn () => lpABCDEFG(l, 0)) end
+        let fun lpABCDEFG l = 
+      				case get l
+                  of Null => false
+                   | Head n => lpABCDEFG n
+                   | Node(v', n) => if v = v' then true else lpABCDEFG n
+        in atomic (fn () => lpABCDEFG l) end
 
 	val l = newList()
 
@@ -68,9 +66,11 @@ struct
 	            val _ = add2 l randNum
 	       in initialize (n-1) end
 
-	val _ = initialize 100
+	val _ = initialize 4000
 	
+  val _ = print "Starting transaction\n"
 	val x = findABCDEFG l 1234567
+  val _ = print "Done with Transaction\n"
 
 
 end

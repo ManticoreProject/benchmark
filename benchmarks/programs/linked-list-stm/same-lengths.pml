@@ -60,9 +60,10 @@ fun initialize n =
 
 (*val _ = print ("Running with " ^ Int.toString THREADS ^ " threads\n") *)
 
-val _ = initialize INITSIZE
+val _ = initialize INITSIZE handle Fail s => (print s; raise Fail s)
+val _ = print "Done initializing\n"
 val startTime = Time.now()
-val stats = join(start l THREADS)
+val stats = join(start l THREADS) handle Fail s => (print s; raise Fail s)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = printStats()
