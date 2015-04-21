@@ -144,6 +144,7 @@ structure Main = struct
 	    		("producers", Int.toString producers),
 	    		("consumers", Int.toString consumers),
 	    		("vprocs", Int.toString ProdCon.nVps)
+	    		,("tas_fail", Int.toString (PrimChan.getStats ProdCon.theChannel))
 	    	], 
 	    	" }\n"])
 	  end
