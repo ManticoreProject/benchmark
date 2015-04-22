@@ -50,6 +50,7 @@ structure ProdCon (*: sig
 	    (* For now, random distribution with the assumption:
 	      totalVprocs >= producers + consumers *)
 	    fun assignToVProcs () = let
+	    	val _ = R.seed()
 	    	val available = IA.tabulate(totalVprocs, (fn i => i))
 	    	val available = shuffle(available, totalVprocs, 2 * totalVprocs)
 	    	val availableL = IA.foldr (fn (x, xs) => x::xs) nil available
