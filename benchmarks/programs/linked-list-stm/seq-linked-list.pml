@@ -50,7 +50,7 @@ struct
 
 	fun add2 (l,len) (v:int) = 
         let fun lp l = 
-                case STM.unsafeGet l 
+                case STM.get l 
                     of Head n => lp n
                      | Null => put(l, Node(v, new Null))
                      | Node(v', n) => 
@@ -67,10 +67,25 @@ struct
 	       in initialize (n-1) end
 
 	val _ = initialize 4000
-	
-  val _ = print "Starting transaction\n"
-	val x = findABCDEFG l 1234567
-  val _ = print "Done with Transaction\n"
+
+    fun lp i = 
+        if i = 0
+        then ()
+        else 
+            let val x = Rand.inRangeInt(0, 10000)
+                val _ = findABCDEFG l x
+            in lp(i-1)
+          end
+
+  val startTime = Time.now()
+  val _ = lp 10000
+  val endTime = Time.now() 
+  
+  val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
+
+  val _ = printStats()
+  
+  val _ = BoundedHybridPartialSTM.printTimer()
 
 
 end

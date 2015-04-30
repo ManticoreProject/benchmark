@@ -13,7 +13,7 @@ val (get,put,atomic,new,printStats) = (STM.get, STM.put, STM.atomic, STM.new, ST
 val THREADS = VProc.numVProcs()
 
 val ITERS = 3000
-val MAXVAL = 10000
+val MAXVAL = 100000
 
 val INITSIZE = 
     case getArg "-size" args
@@ -24,7 +24,7 @@ fun ignore _ = ()
 
 val READS = 2
 val WRITES = 4
-val DELETES = 0(*1*)
+val DELETES = 1
 
 fun threadLoop l i = 
     if i = 0
@@ -61,7 +61,7 @@ fun initialize n =
 (*val _ = print ("Running with " ^ Int.toString THREADS ^ " threads\n") *)
 
 val _ = initialize INITSIZE handle Fail s => (print s; raise Fail s)
-val _ = print "Done initializing\n"
+val _ = print("Done initializing, executing with "  ^ Int.toString THREADS ^ " threads\n")
 val startTime = Time.now()
 val stats = join(start l THREADS) handle Fail s => (print s; raise Fail s)
 val endTime = Time.now()
@@ -70,5 +70,5 @@ val _ = printStats()
 
 val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
-
+val _ = BoundedHybridPartialSTM.printTimer()
 

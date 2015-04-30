@@ -73,6 +73,9 @@ fun initialize n =
          in initialize (n-1) end
 
 val _ = initialize 100000
+
+val _ = print ("Done initializing tree of depth " ^ Int.toString (RBTree.depth t) ^ "\n")
+
 val startTime = Time.now()
 val stats = join(start t THREADS)
 val endTime = Time.now()
@@ -84,5 +87,5 @@ val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)
 val _ = printStats()
 
 val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
-
+val _ = BoundedHybridPartialSTM.printTimer()
 

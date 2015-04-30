@@ -100,6 +100,11 @@ struct
                      else true
              | _ => raise Fail "member"
 
+    fun size t =    
+        case t
+            of T(_,l,v,r) => 1 + size l + size r
+             | _ => 0
+
     fun insert(x, s) = 
         let fun ins t =
                 case t
@@ -157,6 +162,8 @@ struct
         case s 
             of E => true
              | _ => false
+
+
 
 end
 

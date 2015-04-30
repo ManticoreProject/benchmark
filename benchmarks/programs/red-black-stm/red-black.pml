@@ -21,26 +21,14 @@ struct
 
     val args = CommandLine.arguments ()
 
-    val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
-
-    val (get,put,atomic,new,printStats) = 
-        if String.same(whichSTM, "bounded")
-        then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
-              BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
-              BoundedHybridPartialSTM.printStats)
-        else if String.same(whichSTM, "full")
-             then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-             else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
-
-    val get : 'a tvar -> 'a = get
-    val put : 'a tvar * 'a -> unit = put
-    val atomic : (unit -> 'a) -> 'a = atomic
-    val new : 'a -> 'a tvar = new
+    val (get,put,atomic,new,printStats, unsafeGet) = (STM.get,STM.put,STM.atomic,STM.new,STM.printStats,STM.unsafeGet)
 
     datatype color = Red | Black | DBlack | NBlack  (*double black and negative black used for deletion*)
     datatype 'a tree = L        (*leaf*)
                   | DBL      (*double black *)
                   | T of color * 'a tree tvar * 'a * 'a tree tvar
+
+    
 
     fun newTree() = new L
 			
@@ -107,87 +95,89 @@ struct
 
     fun balance tv = 
         case get tv
-            of T(Red,t1,k,t2) => ()
-             | T(Black,t1,k,t2) =>
-                 if case get t1
-                     of T(Red,l',y,r') =>
-                         (case (get l', get r')
-                             of (T(Red,a,x,b), _) => 
-                                 let val _ = put(l', T(Black,a,x,b))
-                                     val r = new(T(Black, r', k, t2))
-                                     val _ = put(tv, T(Red, l', y, r)) 
-                                 in true end
-                              | (_,T(Red,b,z,c)) => 
-                                 let val _ = put(r', T(Black, l', y, b))
-                                     val r = new(T(Black,c,k,t2))
-                                     val _ = put(tv, T(Red,r',z,r)) 
-                                 in true end
-                              | _ => false)
-                     | _ => false
-                  then ()
-                  else (case get t2 
-                            of T(Red,l',y,r') =>
-                                (case (get l', get r')
-                                    of (T(Red,b,z,c),_) =>
-                                        let val _ = put(l', T(Black,c,y,r'))
-                                            val l = new(T(Black,t1,k,b))
-                                        in put(tv, T(Red,l,z,l')) end
-                                    | (_,T(Red,c,z,d)) =>
-                                        let val _ = put(r', T(Black,c,z,d))
-                                            val l = new(T(Black,t1,k,l'))
-                                        in put(tv, T(Red,l,y,r')) end
-                                    | _ => ())
-                            | _ => ())
-              | T(DBlack,t1,k,t2) =>
-                    (if (case get t1
-                            of T(Red,l',y,r') =>
-                                (case (get l', get r')
-                                    of (T(Red,a,x,b), _) => 
-                                        let val _ = put(l', T(Black,a,x,b))
-                                            val r = new(T(Black, r', k, t2))
-                                            val _ = put(tv, T(Black, l', y, r)) 
-                                        in true end
-                                     | (_,T(Red,b,z,c)) => 
-                                        let val _ = put(r', T(Black, l', y, b))
-                                            val r = new(T(Black,c,k,t2))
-                                            val _ = put(tv, T(Black,r',z,r)) 
-                                        in true end
-                                     | _ => false)
-                             | T(NBlack,l',y,r') =>  (*T(DBlack, T(NBlack,l' as T(Black,_,_,_),y,T(Black,b,y,c)), k, t2)*)
-                                (case (get l', get r')
-                                    of (T(Black,ll,vv,rr), T(Black,b,z,c)) =>
-                                        let val _ = put(l', T(Red, ll, vv, rr))
-                                            val _ = put(t1, T(Black,l',y, b))
-                                            val newR = new(T(Black, c, k, t2))
-                                            val _ = put(tv, T(Black, t1, z, newR))
-                                            val _ = balance t1
-                                        in true end
-                                     | _ => false)
-                             | _ => false)
-                     then ()
-                     else case get t2 
-                                of T(Red,l',y,r') =>
-                                    (case (get l', get r')
-                                        of (T(Red,b,z,c),_) =>
-                                            let val _ = put(l', T(Black,c,y,r'))
-                                                val l = new(T(Black,t1,k,b))
-                                            in put(tv, T(Black,l,z,l')) end
-                                        | (_,T(Red,c,z,d)) =>
-                                            let val _ = put(r', T(Black,c,z,d))
-                                                val l = new(T(Black,t1,k,l'))
-                                            in put(tv, T(Black,l,y,r')) end
-                                        | _ => ())
-                                | T(NBlack,l',y,r') => (*T(DBlack,t1,k,T(NBlack,l',y,r'))*)
-                                        (case (get l', get r') 
-                                            of (T(Black,b,z,c), T(Black,_,_,_)) => (*T(Dblack, t1, k, T(NBlack, T(Black, b, z, c), y, r' as T(Black, _, _, _))) *)
-                                                let val _ = redden r'
-                                                    val _ = put(t2, T(Black, c, y, r'))
-                                                    val newL = new(T(Black, t1, k, b))
-                                                    val _ = put(tv, T(Black, newL, z, t2))
-                                                in balance t2 end
-                                             | _ => ())
-                               | _ => ())
-              | _ => () 
+           of T(Red,t1,k,t2) => ()
+            | T(Black,t1,k,t2) =>
+                if case get t1
+                   of T(Red,l',y,r') =>
+                        (case (get l', get r')
+                           of (T(Red,a,x,b), _) => 
+                                let val _ = put(l', T(Black,a,x,b))
+                                    val r = new(T(Black, r', k, t2))
+                                    val _ = put(tv, T(Red, l', y, r)) 
+                                in true end
+                            | (_,T(Red,b,z,c)) => 
+                                let val _ = put(r', T(Black, l', y, b))
+                                    val r = new(T(Black,c,k,t2))
+                                    val _ = put(tv, T(Red,r',z,r)) 
+                                in true end
+                            | _ => false)
+                    | _ => false
+                then ()
+                else 
+                    (case get t2 
+                       of T(Red,l',y,r') =>
+                            (case (get l', get r')
+                               of (T(Red,b,z,c),_) =>
+                                    let val _ = put(l', T(Black,c,y,r'))
+                                        val l = new(T(Black,t1,k,b))
+                                    in put(tv, T(Red,l,z,l')) end
+                                | (_,T(Red,c,z,d)) =>
+                                    let val _ = put(r', T(Black,c,z,d))
+                                        val l = new(T(Black,t1,k,l'))
+                                    in put(tv, T(Red,l,y,r')) end
+                                | _ => ())
+                        | _ => ())
+            | T(DBlack,t1,k,t2) =>
+                (if (case get t1
+                       of T(Red,l',y,r') =>
+                            (case (get l', get r')
+                               of (T(Red,a,x,b), _) => 
+                                    let val _ = put(l', T(Black,a,x,b))
+                                        val r = new(T(Black, r', k, t2))
+                                        val _ = put(tv, T(Black, l', y, r)) 
+                                    in true end
+                                | (_,T(Red,b,z,c)) => 
+                                    let val _ = put(r', T(Black, l', y, b))
+                                        val r = new(T(Black,c,k,t2))
+                                        val _ = put(tv, T(Black,r',z,r)) 
+                                    in true end
+                                | _ => false)
+                        | T(NBlack,l',y,r') =>  (*T(DBlack, T(NBlack,l' as T(Black,_,_,_),y,T(Black,b,y,c)), k, t2)*)
+                            (case (get l', get r')
+                               of (T(Black,ll,vv,rr), T(Black,b,z,c)) =>
+                                    let val _ = put(l', T(Red, ll, vv, rr))
+                                        val _ = put(t1, T(Black,l',y, b))
+                                        val newR = new(T(Black, c, k, t2))
+                                        val _ = put(tv, T(Black, t1, z, newR))
+                                        val _ = balance t1
+                                    in true end
+                                | _ => false)
+                        | _ => false)
+                then ()
+                else 
+                    case get t2 
+                       of T(Red,l',y,r') =>
+                            (case (get l', get r')
+                               of (T(Red,b,z,c),_) =>
+                                    let val _ = put(l', T(Black,c,y,r'))
+                                        val l = new(T(Black,t1,k,b))
+                                    in put(tv, T(Black,l,z,l')) end
+                                | (_,T(Red,c,z,d)) =>
+                                    let val _ = put(r', T(Black,c,z,d))
+                                        val l = new(T(Black,t1,k,l'))
+                                    in put(tv, T(Black,l,y,r')) end
+                                | _ => ())
+                        | T(NBlack,l',y,r') => 
+                            (case (get l', get r') 
+                               of (T(Black,b,z,c), T(Black,_,_,_)) => (*T(Dblack, t1, k, T(NBlack, T(Black, b, z, c), y, r' as T(Black, _, _, _))) *)
+                                    let val _ = redden r'
+                                        val _ = put(t2, T(Black, c, y, r'))
+                                        val newL = new(T(Black, t1, k, b))
+                                        val _ = put(tv, T(Black, newL, z, t2))
+                                    in balance t2 end
+                                | _ => ())
+                        | _ => ())
+            | _ => () 
 
     fun makeBlack t = 
         case get t
@@ -311,4 +301,21 @@ struct
                 of T(c,l,v,r) => 1 + Int.max(lp l, lp r)
                  | _ => 0
         in atomic(fn () => lp t) end
+
+    fun unsafeDepth t = 
+        let fun lp t =  
+            case unsafeGet t
+                of T(c,l,v,r) => 1 + Int.max(lp l, lp r)
+                 | _ => 0
+        in atomic(fn () => lp t) end  
+
+    fun printFun printVal t = 
+        case t 
+           of L => print "Leaf\n"
+            | DBL => print "Double black leaf\n"
+            | T(c, l, v, r) => print ("Node val = " ^ printVal v ^ ", depth is " ^ Int.toString (1+(Int.max(unsafeDepth l, unsafeDepth r))) ^ "\n")
+
+    val _ = ReadSet.registerPrintFun (printFun Int.toString)
+
+
 end

@@ -75,29 +75,37 @@ fun comp((p,_,_,_,_),(p',_,_,_,_)) = if p < p' then LESS else if p > p' then GRE
 val insert = RBMultiset.insert comp
 val removeMin = RBMultiset.removeMin
 
+(*
 fun validXYZ(i, j, k, seen, x) = 
     if i >= 0 andalso j >= 0 andalso i < height andalso j < width andalso k >= 0 andalso k < depth
     then let val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
              val z = get(sub(i, j, k))
              val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
-         in if not(S.member(toInd(i,j,k), seen)) andalso z = 0
+         in if  z = 0
             then true
             else false
          end
     else false
+*)
 
 fun addNeighborXYZ(i, j, k, q, seen, x, path) = 
-    if validXYZ(i, j, k, seen, x)
-    then (Q.enqueue((i, j, k, path), q), S.insert(toInd(i,j,k), seen))
+    if i >= 0 andalso j >= 0 andalso i < height andalso j < width andalso k >= 0 andalso k < depth
+    then let val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
+             val z = get(sub(i, j, k))
+             val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
+         in if  z = 0
+            then (print("Adding " ^ Int.toString (toInd(i,j,k)) ^ "\n"); (Q.enqueue((i,j,k,path), q), S.insert(toInd(i,j,k), seen)))
+            else (print "adding to queue\n"; (q, S.insert(toInd(i,j,k), seen)))
+         end
     else (q, seen)
 
 fun addNeighbors((i,j,k), q, seen, x, path) = 
-    let val (q,seen) = addNeighborXYZ(i-1, j, k, q, seen, x, path)
-        val (q,seen) = addNeighborXYZ(i+1, j, k, q, seen, x, path)
-        val (q,seen) = addNeighborXYZ(i, j-1, k, q, seen, x, path)
-        val (q,seen) = addNeighborXYZ(i, j+1, k, q, seen, x, path)
-        val (q,seen) = addNeighborXYZ(i, j, k-1, q, seen, x, path)
-        val (q,seen) = addNeighborXYZ(i, j, k+1, q, seen, x, path)
+    let val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i-1, j, k, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i+1, j, k, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i, j-1, k, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i, j+1, k, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i, j, k-1, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i, j, k+1, q, seen, x, path) else (q, seen)
         val _ = STM.abort()
     in (q,seen) end
 
