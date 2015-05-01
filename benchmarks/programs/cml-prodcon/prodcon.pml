@@ -1,9 +1,9 @@
 (* prodcon.pml
  *
- * COPYRIGHT (c) 2009 The Manticore Project (http://manticore.cs.uchicago.edu)
+ * COPYRIGHT (c) 2015 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
  *
- * PML version of ping-pong benchmark for two processors.
+ * PML version of a CML producer/consumer microbenchmark.
  *)
 
 structure R = Rand
