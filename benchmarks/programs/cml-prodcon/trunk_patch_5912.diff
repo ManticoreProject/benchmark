@@ -1,0 +1,119 @@
+Index: src/lib/basis/cml/alt-prim-chan.pml
+===================================================================
+--- src/lib/basis/cml/alt-prim-chan.pml	(revision 5920)
++++ src/lib/basis/cml/alt-prim-chan.pml	(working copy)
+@@ -11,6 +11,31 @@
+ 
+ #include "spin-lock.def"
+ 
++#define SPIN_LOCK_STATS(name, OFFSET, vp)									\
++	fun spinLp (i : long) : () =											\
++		fun doBackoff (i : long) : () =										\
++			if I64Gt(i, 0 : long) then										\
++				do Pause()													\
++				apply doBackoff (I64Sub(i, 1 : long))						\
++			else															\
++				return ()													\
++																			\
++	 if I32isSet(ADDR_OF(OFFSET, name))										\
++		   then																\
++		do Pause()															\
++		apply spinLp (i)													\
++		  else if I32TAS(ADDR_OF(OFFSET, name))								\
++		then																\
++			(* log this failure *)											\
++			let oldCnt : int = vpload(LOG, vp)								\
++			let newCnt : int = I32Add(oldCnt, 1)							\
++			do vpstore(LOG, vp, newCnt)										\
++																			\
++		  	do apply doBackoff (i)											\
++			apply spinLp (I64Add(i, i))										\
++		else return ()														\
++	do apply spinLp (1 : long)
++
+ structure PrimChan (*: sig
+ 
+     type 'a chan
+@@ -254,7 +279,7 @@
+ 	
+ 	define @chan-recv (ch : chan_rep / exh : exh) : any =
+ 	    let self : vproc = SchedulerAction.@atomic-begin ()
+-	    SPIN_LOCK(ch, CH_LOCK)
++	    SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 	  (* a loop to try to get an item from the sendq *)
+ 	    fun tryLp () : any =
+ 		  let item : sendq_item = @chan-dequeue-send (ch)
+@@ -306,7 +331,7 @@
+ 	    let ch : chan_rep = #0(arg)
+ 	    let msg : any = #1(arg)
+ 	    let self : vproc = SchedulerAction.@atomic-begin ()
+-	    SPIN_LOCK(ch, CH_LOCK)
++	    SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 	    fun tryLp () : unit =
+ 		  let item : recvq_item = @chan-dequeue-recv(ch)
+ 		  (* in *)
+@@ -371,7 +396,7 @@
+ 	define @chan-recv-evt (ch : chan_rep / exh : exh) : PEvt.pevent =
+ 	    fun pollFn () : bool = @chan-waiting-send(ch)
+ 	    fun doFn (self : vproc, recvK : cont(any) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 		  fun tryLp () : () =
+ 			let item : sendq_item = @chan-dequeue-send (ch)
+ 			(* in *)
+@@ -411,7 +436,7 @@
+ 		  (* in *)
+ 		    apply tryLp ()
+ 	    fun blkFn (self : vproc, flg : PEvt.event_state, fls : FLS.fls, recvK : cont(any) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 		(* a loop to try to get an item from the sendq *)
+ 		  fun tryLp () : () =
+ 			let item : sendq_item = @chan-dequeue-send-match (flg, ch)
+@@ -479,7 +504,7 @@
+ 	    let msg : any = #1(arg)
+ 	    fun pollFn () : bool = @chan-waiting-recv(ch)
+ 	    fun doFn (self : vproc, sendK : cont(unit) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 		  fun tryLp () : () =
+ 			let item : recvq_item = @chan-dequeue-recv (ch)
+ 			(* in *)
+@@ -529,7 +554,7 @@
+ 		  (* in *)
+ 		    apply tryLp ()
+ 	    fun blkFn (self : vproc, flg : PEvt.event_state, fls : FLS.fls, sendK : cont(unit) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 		(* a loop to try to get an item from the sendq *)
+ 		  fun tryLp () : () =
+ 			let item : recvq_item = @chan-dequeue-recv-match (flg, ch)
+@@ -600,6 +625,20 @@
+ 	    return (PEvt.BEVT(pollFn, doFn, blkFn))
+ 	  ;
+ 
++	  define @init-stats(arg : unit / exh : exh) : unit =
++	  	let vp : vproc = host_vproc
++		  do vpstore(LOG, vp, 0)
++		  	return (UNIT)
++	  ;
++
++	  define @get-stats(id : ml_int / exh : exh) : ml_int =
++	    let vp_id : int = unwrap(id)
++	    let vp : vproc = VProc.@vproc-by-id(vp_id)
++	  	let theCount : int = vpload(LOG, vp)
++	  	  return (alloc (theCount))
++
++	  ;
++
+       )
+ 
+     type 'a chan = _prim (chan_rep)
+@@ -611,4 +650,7 @@
+     val sendEvt : ('a chan * 'a) -> unit PrimEvent.pevent	= _prim (@chan-send-evt)
+     val recvEvt : 'a chan -> 'a PrimEvent.pevent		= _prim (@chan-recv-evt)
+ 
++    val initLogging : unit -> unit		= _prim (@init-stats)
++    val getLog : int -> int			= _prim (@get-stats)
++
+   end

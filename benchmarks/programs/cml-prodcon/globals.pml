@@ -24,5 +24,7 @@ struct
     val numConsumers = getIntFlg "-consumers" 1
 
     val numOperations = getIntFlg "-messages" 1000000
+
+    val computationalWork = getIntFlg "-comp" 5
       
 end
