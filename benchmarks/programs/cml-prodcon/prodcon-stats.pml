@@ -1,9 +1,10 @@
-(* prodcon.pml
+(* prodcon-stats.pml
  *
  * COPYRIGHT (c) 2015 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
  *
- * PML version of a CML producer/consumer microbenchmark.
+ * PML version of a CML producer/consumer microbenchmark with TAS
+ * failure statistics recording.
  *)
 
 structure R = Rand
@@ -23,6 +24,53 @@ structure ProdCon (*: sig
     fun spawnOn (f, id) = VProcExtras.spawnOn f (L.nth(vps, id))
 
     val theChannel = PrimChan.new()
+
+    
+    (* we're going to follow the convention that only threads hosted on the vproc 
+       can write to that vproc's LOG field, but any can read from it. *)
+    fun initAllVPs () = let
+    	fun strip (prods, cons) = let
+	    	val prodVPs = List.map (fn (vp, _) => vp) prods
+	    	val conVPs =  List.map (fn (vp, _) => vp) cons
+	    in
+	    	(prodVPs, conVPs)
+	    end
+
+    	val pair = L.zip (L.tabulate(nVps, (fn i => i)), (L.tabulate(nVps, (fn _ => CVar.new()))))
+    	val cvs = L.map (fn (vp, cv) => (spawnOn((fn () => (PrimChan.initLogging() ; CVar.signal cv)), vp) ; cv)) pair
+
+    in
+    	L.app CVar.wait cvs
+    end
+
+    fun getStats assignments = let
+
+    	fun extract (prodA, consA) = let
+    		val prodVPs = L.map (fn (vp, _) => vp) prodA
+    		val consVPs = L.map (fn (vp, _) => vp) consA
+    	in
+    		(prodVPs, consVPs)
+    	end
+
+    	fun calculateStats vps = let
+    		val numWorkers = Float.fromInt(L.length vps)
+	    	val stats = L.map (fn v => Float.fromInt(PrimChan.getLog(v))) vps
+	    	val sum = L.foldl (fn (x, n) => x + n) 0.0 stats
+	    	val avg = sum / numWorkers
+	    	val min = L.foldl (fn (x, best) => if x < best then x else best) (L.hd(stats)) stats 
+			val max = L.foldl (fn (x, best) => if x > best then x else best) (L.hd(stats)) stats    		
+	    	val std_dev = let 
+	    		val squareDiff = L.map (fn x => let val r = (x - avg) in r * r end) stats
+	    		in Float.sqrt((L.foldl (fn (x, n) => x + n) 0.0 squareDiff) / numWorkers) end
+    	in
+    		(sum, avg, std_dev, min, max)
+    	end
+
+    	val (prodVPs, consVPs) = extract(assignments)
+    in
+    	(calculateStats prodVPs, calculateStats consVPs)
+    end
+
 
     fun prepareAssignments (totalVprocs, totalOps, producers, consumers) = let
 
@@ -139,9 +187,12 @@ structure Main = struct
 
     fun timeit (ops, producers, consumers) = let
       val args = ProdCon.prepareAssignments(ProdCon.nVps, ops, producers, consumers)
+      val _ = ProdCon.initAllVPs()
 	  val t0 = Time.now()
 	  val () = ProdCon.run args
 	  val t = (Time.now() - t0)
+	  val ((prodSum, prodAvg, prodDev, prodMin, prodMax), (consSum, consAvg, consDev, consMin, consMax))
+	  		 = ProdCon.getStats(args)
 	  in
 	    Print.print (String.concat ["{ ",
 	    	toJson [
@@ -150,7 +201,27 @@ structure Main = struct
 	    		("producers", Int.toString producers),
 	    		("consumers", Int.toString consumers),
 	    		("vprocs", Int.toString ProdCon.nVps),
-	    		("comp", Int.toString G.computationalWork)
+	    		("comp", Int.toString G.computationalWork),
+	    		("tf_sum", Float.toString (prodSum + consSum))
+
+	    		,("tf_prod_sum", Float.toString prodSum)
+	    		,("tf_cons_sum", Float.toString consSum)
+
+	    		,("tf_prod_avg", Float.toString prodAvg)
+	    		,("tf_cons_avg", Float.toString consAvg)
+				
+	 (* not very interesting stats below, it kind of just measures 
+	 	the fairness of a spinlock *)
+	 (*
+	    		,("tf_prod_dev", Float.toString prodDev)
+	    		,("tf_prod_min", Float.toString prodMin)
+	    		,("tf_prod_max", Float.toString prodMax)
+
+	    		
+	    		,("tf_cons_dev", Float.toString consDev)
+	    		,("tf_cons_min", Float.toString consMin)
+	    		,("tf_cons_max", Float.toString consMax)
+	  *)
 	    	], 
 	    	" }\n"])
 	  end
