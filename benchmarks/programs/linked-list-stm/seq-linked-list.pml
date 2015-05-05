@@ -19,6 +19,13 @@ struct
 
     val (get,put,atomic,new,printStats) = (STM.get, STM.put, STM.atomic, STM.new, STM.printStats)
 
+    val commit = 
+        case getArg "-stm" args 
+           of SOME stm => if String.same(stm, "ordered") then OrderedSTM.commit else BoundedHybridPartialSTM.commit
+            | NONE => BoundedHybridPartialSTM.commit
+
+    val commit : unit -> unit = commit
+
     type 'a tvar = 'a STM.tvar
 
     datatype List = Node of int * List tvar
@@ -72,10 +79,30 @@ struct
         if i = 0
         then ()
         else 
-            let val x = Rand.inRangeInt(0, 10000)
+            let val x = 10001 (*Rand.inRangeInt(0, 10000) *)
                 val _ = findABCDEFG l x
             in lp(i-1)
           end
+
+
+    _primcode(
+        define @changeTS(x : ![any, long, long] / exh:exh) : unit = 
+            do #2(x) := 100000:long
+            return(enum(0):unit);
+    )
+    val changeTS : 'a tvar -> unit = _prim(@changeTS)
+
+    fun invalidate(i, (l, _)) = 
+        let fun lp(i, l) = 
+            if i = 0
+            then changeTS(l)
+            else case STM.unsafeGet l 
+               of Null => (raise Fail "Error")
+                | Head n => lp(i, n)
+                | Node(v, n) => lp(i-1, n)
+        in lp(i, l) end
+
+    val _ = invalidate(2000, l)
 
   val startTime = Time.now()
   val _ = lp 10000

@@ -34,11 +34,6 @@ struct
           | Null => print ("value = Null\n")
 
     val _ = ReadSet.registerPrintFun(printFun)
-
-    val atomic : (unit -> 'a) -> 'a = atomic
-    val new : 'a -> 'a tvar = new
-    val get : 'a tvar -> 'a = get
-    val put : 'a tvar * 'a -> unit = put
     
     fun newList() : ListHandle = (new (Head(new Null)), new 0)
 
@@ -67,9 +62,9 @@ struct
 
     fun printList ((l,len):ListHandle) = 
         case get l
-            of Null => print "\n"
-             | Head n => printList(n,len)
-             | Node(v, n) => (print (Int.toString v ^ ", "); printList(n,len))
+           of Null => print "\n"
+            | Head n => printList(n,len)
+            | Node(v, n) => (print (Int.toString v ^ ", "); printList(n,len))
 
     fun find ((l,_):ListHandle) v = 
         let fun findLoop l = 
@@ -101,21 +96,24 @@ struct
                 end
         in if atomic(fn () => lp l) then dec len else () end            
 
-    fun deleteIndex ((l,len):ListHandle) (i:int) = 
-        let fun deleteLoop(prevPtr, i) = 
-                let val prevNode = get prevPtr
-                    val curNodePtr = next prevNode
-                in case get curNodePtr
-                        of Null => false
-                         | Node(curVal, nextPtr) =>
+    fun deleteIndex (l, len) (i:int) = 
+        let fun deleteLoop(prev, prevPtr, curPtr, i) =
+                let val cur = get curPtr
+                in 
+                    case cur
+                       of Null => false
+                        | Node(_, nextPtr) => 
                             if i = 0
-                            then (case prevNode
-                                    of Head _ => (put(prevPtr, Head nextPtr); true)
-                                     | Node(v, _) => (put(prevPtr, Node(v, nextPtr)); true))
-                            else deleteLoop(curNodePtr, i-1)
-                         | Head n => raise Fail "found head node as next\n"
+                            then
+                                (case prev
+                                   of Head _ => (put(prevPtr, Head nextPtr); true)
+                                    | Node(v, _) => (put(prevPtr, Node(v, nextPtr)); true))
+                            else
+                                deleteLoop(cur, curPtr, nextPtr, i-1)
+                        | Head _ => raise Fail("This should be impossible\n")
                 end
-        in if atomic(fn () => deleteLoop(l, i)) then dec len else () end     
+        in if atomic(fn () => let val first = get l in deleteLoop(first, l, next first, i) end) then dec len else () 
+        end
 
     fun size(l,len) = atomic(fn () => get len)
 end

@@ -8,9 +8,9 @@
 
 structure S = IntRBSet
 structure V = Vector 
-structure Q = RBQueue
+structure Q = RBQueue   
 
-type 'a tvar = 'a PartialSTM.tvar
+type 'a tvar = 'a PartialSTM.tvar       
 
 fun getArg(f, args) = 
     case args 
@@ -61,7 +61,7 @@ val (height, width, depth, pts) = readData routes handle e => (print "EXN\n"; ra
         
 fun pntToStr (i, j, k) = "(" ^ Int.toString i ^ ", " ^ Int.toString j ^ ", " ^ Int.toString k ^ ")"
 
-val _ = print ("Dimensions of grid are " ^ pntToStr(height, width, depth) ^ "\n")
+val _ = print ("Dimensions of grid are " ^ pntToStr(height, width, depth) ^ ", finding " ^ Int.toString routes ^ " routes\n")
 
 val maze = mkMaze(height, width, depth)
 
@@ -75,38 +75,22 @@ fun comp((p,_,_,_,_),(p',_,_,_,_)) = if p < p' then LESS else if p > p' then GRE
 val insert = RBMultiset.insert comp
 val removeMin = RBMultiset.removeMin
 
-(*
-fun validXYZ(i, j, k, seen, x) = 
-    if i >= 0 andalso j >= 0 andalso i < height andalso j < width andalso k >= 0 andalso k < depth
-    then let val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
-             val z = get(sub(i, j, k))
-             val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
-         in if  z = 0
-            then true
-            else false
-         end
-    else false
-*)
-
 fun addNeighborXYZ(i, j, k, q, seen, x, path) = 
     if i >= 0 andalso j >= 0 andalso i < height andalso j < width andalso k >= 0 andalso k < depth
-    then let val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
-             val z = get(sub(i, j, k))
-             val _ = FFSTM.print2(String.concat["i = ", Int.toString i, ", j = ", Int.toString j, ", k = ", Int.toString k, "\n"])
-         in if  z = 0
-            then (print("Adding " ^ Int.toString (toInd(i,j,k)) ^ "\n"); (Q.enqueue((i,j,k,path), q), S.insert(toInd(i,j,k), seen)))
-            else (print "adding to queue\n"; (q, S.insert(toInd(i,j,k), seen)))
+    then let val z = get(sub(i, j, k))
+         in if z = 0
+            then (Q.enqueue((i,j,k,path), q), S.insert(toInd(i,j,k), seen))
+            else (q, S.insert(toInd(i,j,k), seen))
          end
     else (q, seen)
 
 fun addNeighbors((i,j,k), q, seen, x, path) = 
-    let val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i-1, j, k, q, seen, x, path) else (q, seen)
-        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i+1, j, k, q, seen, x, path) else (q, seen)
-        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i, j-1, k, q, seen, x, path) else (q, seen)
-        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i, j+1, k, q, seen, x, path) else (q, seen)
-        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i, j, k-1, q, seen, x, path) else (q, seen)
-        val (q,seen) = if not(S.member(toInd(i,j,k), seen)) then addNeighborXYZ(i, j, k+1, q, seen, x, path) else (q, seen)
-        val _ = STM.abort()
+    let val (q,seen) = if not(S.member(toInd(i-1,j,k), seen)) then addNeighborXYZ(i-1, j, k, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i+1,j,k), seen)) then addNeighborXYZ(i+1, j, k, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j-1,k), seen)) then addNeighborXYZ(i, j-1, k, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j+1,k), seen)) then addNeighborXYZ(i, j+1, k, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j,k-1), seen)) then addNeighborXYZ(i, j, k-1, q, seen, x, path) else (q, seen)
+        val (q,seen) = if not(S.member(toInd(i,j,k+1), seen)) then addNeighborXYZ(i, j, k+1, q, seen, x, path) else (q, seen)
     in (q,seen) end
 
 fun same((i,j,k), (i',j',k')) = i = i' andalso j = j' andalso k = k'
@@ -123,7 +107,7 @@ datatype res = NoPath | FoundPath
 **path - the current path being explored
 **x - the route number
 **h - a function that computes the cost from the src to the current node*)
-fun route(src, dest, seen, q, path, x) = (();
+fun route(src, dest, seen, q, path, x) = 
     if same(src, dest)
     then (writePath(path, x); FoundPath)
     else let val (q,seen) = addNeighbors(src, q, seen, x, path)
@@ -131,7 +115,7 @@ fun route(src, dest, seen, q, path, x) = (();
                 of SOME ((i',j',k',p), q) =>
                     route((i',j',k'),dest, seen, q, (i',j',k')::p, x)
                  | NONE => NoPath
-         end)
+         end
 
 fun pop() = 
     atomic(fn () => 
@@ -145,7 +129,7 @@ fun pop() =
 val noPathCount = new 0
 fun bump() = atomic(fn () => put(noPathCount, get noPathCount + 1))
 
-(*
+
 fun threadLoop() = 
     case pop()
         of NONE => ()
@@ -153,21 +137,21 @@ fun threadLoop() =
             case atomic(fn () => route(src, dest, S.empty, RBQueue.empty, [src], x))
                 of FoundPath => threadLoop()
                  | NoPath =>  (bump(); threadLoop())
-*)
 
+(*)
 fun threadLoop routes = 
     case routes
         of nil => ()
-         | (x, src, dest)::routes => 
+         | (x, src, dest)::routes =>
             case atomic(fn () => route(src, dest, S.empty, RBQueue.empty, [src], x))
                 of FoundPath => threadLoop routes
                  | NoPath =>  threadLoop routes
-(*
+*)
 fun start i =
     if i = 0
     then nil
     else let val ch = PrimChan.new()
-             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop pts; PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
+             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop(); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
          in ch::start (i-1) end
 
 fun join chs = 
@@ -185,7 +169,7 @@ val stats = join(start THREADS)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = printStats()
-(*val _ = print ("Could not find " ^ Int.toString (atomic(fn () => get noPathCount)) ^ " paths\n")*)
+val _ = print ("Could not find " ^ Int.toString (atomic(fn () => get noPathCount)) ^ " paths\n")
 
 
 
@@ -194,9 +178,9 @@ val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
 
 
-*)
 
-val _ = threadLoop pts
+
+(*val _ = threadLoop pts*)
 
 
 

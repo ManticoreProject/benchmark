@@ -138,6 +138,12 @@ struct
              | NONE => NONE
        end
 
+    fun size t = 
+        case t 
+           of E => 0
+            | T(_,l,v,r) => 1 + size l + size r
+            | EE => 0
+
 end
 
 

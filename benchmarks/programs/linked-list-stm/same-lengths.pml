@@ -8,8 +8,6 @@ fun getArg f args =
 
 val args = CommandLine.arguments ()
 
-
-val (get,put,atomic,new,printStats) = (STM.get, STM.put, STM.atomic, STM.new, STM.printStats)
 val THREADS = VProc.numVProcs()
 
 val ITERS = 3000
@@ -66,7 +64,7 @@ val startTime = Time.now()
 val stats = join(start l THREADS) handle Fail s => (print s; raise Fail s)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
-val _ = printStats()
+val _ = STM.printStats()
 
 val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
