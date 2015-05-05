@@ -97,8 +97,9 @@ structure ProdCon (*: sig
 
 	    fun assignToVProcs () = let
 	    	val _ = R.seed()
-	    	val available = IA.tabulate(producers + consumers, (fn i => i mod totalVprocs))
-	    	val available = shuffle(available, totalVprocs, 2 * totalVprocs)
+	    	val size = producers + consumers
+	    	val available = IA.tabulate(size, (fn i => i mod totalVprocs))
+	    	val available = shuffle(available, size, 2 * size)
 	    	val availableL = IA.foldr (fn (x, xs) => x::xs) nil available
 	    in
 	    	(L.take(availableL, producers), L.take(L.drop(availableL, producers), consumers))
