@@ -43,7 +43,7 @@ structure ProdCon (*: sig
     	L.app CVar.wait cvs
     end
 
-    fun getStats assignments = let
+    fun getStats getter assignments = let
 
     	fun extract (prodA, consA) = let
     		val prodVPs = L.map (fn (vp, _) => vp) prodA
@@ -53,17 +53,14 @@ structure ProdCon (*: sig
     	end
 
     	fun calculateStats vps = let
-    		val numWorkers = Float.fromInt(L.length vps)
-	    	val stats = L.map (fn v => Float.fromInt(PrimChan.getLog(v))) vps
-	    	val sum = L.foldl (fn (x, n) => x + n) 0.0 stats
-	    	val avg = sum / numWorkers
-	    	val min = L.foldl (fn (x, best) => if x < best then x else best) (L.hd(stats)) stats 
-			val max = L.foldl (fn (x, best) => if x > best then x else best) (L.hd(stats)) stats    		
-	    	val std_dev = let 
-	    		val squareDiff = L.map (fn x => let val r = (x - avg) in r * r end) stats
-	    		in Float.sqrt((L.foldl (fn (x, n) => x + n) 0.0 squareDiff) / numWorkers) end
+    		val numWorkers = Word64.fromInt(L.length vps)
+	    	val stats = L.map (fn v => getter v) vps
+	    	val sum = L.foldl (fn (x, n) => Word64.add(x, n)) 0 stats
+	    	val avg = Word64.udiv(sum, numWorkers)
+	    	val min = L.foldl (fn (x, best) => if Word64.lessThan(x, best) then x else best) (L.hd(stats)) stats 
+			val max = L.foldl (fn (x, best) => if not(Word64.lessThan(x, best)) then x else best) (L.hd(stats)) stats    		
     	in
-    		(sum, avg, std_dev, min, max)
+    		(Word64.toLong(sum), Word64.toLong(avg), Word64.toLong(min), Word64.toLong(max))
     	end
 
     	val (prodVPs, consVPs) = extract(assignments)
@@ -189,40 +186,69 @@ structure Main = struct
     fun timeit (ops, producers, consumers) = let
       val args = ProdCon.prepareAssignments(ProdCon.nVps, ops, producers, consumers)
       val _ = ProdCon.initAllVPs()
-	  val t0 = Time.now()
+	  val t0 = CycleCounter.getTicks()
 	  val () = ProdCon.run args
-	  val t = (Time.now() - t0)
-	  val ((prodSum, prodAvg, prodDev, prodMin, prodMax), (consSum, consAvg, consDev, consMin, consMax))
-	  		 = ProdCon.getStats(args)
+	  val t1 = CycleCounter.getTicks()
+	  val t = CycleCounter.elapsed(t0, t1)
+
+	  val ((tf_prodSum, _, _, _), (tf_consSum, _, _, _))
+	  		 = ProdCon.getStats PrimChan.getFails args
+
+	  val ((_, aq_prodAvg, aq_prodMin, aq_prodMax), (_, aq_consAvg, aq_consMin, aq_consMax))
+	  		 = ProdCon.getStats PrimChan.getAcquireCycles args
+
+	  val ((hld_prodSum, _, _, _), (hld_consSum, _, _, _))
+	  		 = ProdCon.getStats PrimChan.getHeldCycles args
 	  in
 	    Print.print (String.concat ["{ ",
 	    	toJson [
 	    		("messages", Int.toString ops),
-	    		("seconds", Time.toString t),
+	    		(* ("seconds", Time.toString t), *)
+	    		("total_cycles", Word64.toString t),
 	    		("producers", Int.toString producers),
 	    		("consumers", Int.toString consumers),
 	    		("vprocs", Int.toString ProdCon.nVps),
-	    		("comp", Int.toString G.computationalWork),
-	    		("tf_sum", Float.toString (prodSum + consSum))
+	    		("comp", Int.toString G.computationalWork)
 
-	    		,("tf_prod_sum", Float.toString prodSum)
-	    		,("tf_cons_sum", Float.toString consSum)
+	    		(* sum of cycles for acquire is silly
+	    		   because multiple prods/cons acquire in parallel,
+	    		   but sum of hld is fine because only one thread
+	    		   can hold the lock at one time.
 
-	    		,("tf_prod_avg", Float.toString prodAvg)
-	    		,("tf_cons_avg", Float.toString consAvg)
-				
-	 (* not very interesting stats below, it kind of just measures 
-	 	the fairness of a spinlock *)
-	 (*
-	    		,("tf_prod_dev", Float.toString prodDev)
-	    		,("tf_prod_min", Float.toString prodMin)
-	    		,("tf_prod_max", Float.toString prodMax)
+	    		   instead, you should print out the average time spent
+	    		   for each type of thread acquiring a lock
+	    		   and holding the lock, and also print the sum of
+	    		   time holding lock mayb?
+
+	    		   Word64 supports division and can go to/from long
+
+	    		  *)
+
+	    		,("tf_sum", Long.toString (tf_prodSum + tf_consSum))
+	    		,("tf_prod_sum", Long.toString tf_prodSum)
+	    		,("tf_cons_sum", Long.toString tf_consSum)
+
+	    		,("aq_avg", Word64.toString( Word64.udiv(
+	    					Word64.add(Word64.fromLong(aq_consAvg), Word64.fromLong(aq_prodAvg)),
+	    					Word64.fromInt(2))))
+	    		,("aq_min", Long.toString (Long.min(aq_prodMin, aq_consMin)))
+	    		,("aq_max", Long.toString (Long.max(aq_prodMax, aq_consMax)))
+
+
+	    		,("aq_prod_avg", Long.toString aq_prodAvg)
+	    		,("aq_prod_min", Long.toString aq_prodMin)
+	    		,("aq_prod_max", Long.toString aq_prodMax)
+
+	    		,("aq_cons_avg", Long.toString aq_consAvg)
+	    		,("aq_cons_min", Long.toString aq_consMin)
+	    		,("aq_cons_max", Long.toString aq_consMax)
 
 	    		
-	    		,("tf_cons_dev", Float.toString consDev)
-	    		,("tf_cons_min", Float.toString consMin)
-	    		,("tf_cons_max", Float.toString consMax)
-	  *)
+
+	    		,("hld_sum", Long.toString (hld_prodSum + hld_consSum))
+	    		,("hld_prod_sum", Long.toString hld_prodSum)
+	    		,("hld_cons_sum", Long.toString hld_consSum)
+
 	    	], 
 	    	" }\n"])
 	  end
