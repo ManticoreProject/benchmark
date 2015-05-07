@@ -1,0 +1,325 @@
+Index: src/lib/basis/cml/alt-prim-chan.pml
+===================================================================
+--- src/lib/basis/cml/alt-prim-chan.pml	(revision 5923)
++++ src/lib/basis/cml/alt-prim-chan.pml	(working copy)
+@@ -9,8 +9,57 @@
+  * the channel queues.
+  *)
+ 
+-#include "spin-lock.def"
+ 
++#define SPIN_LOCK_STATS(name, OFFSET, vp)									\
++	fun spinLp (i : long, log : stat_log) : () =							\
++		fun doBackoff (i : long) : () =										\
++			if I64Gt(i, 0 : long) then										\
++				do Pause()													\
++				apply doBackoff (I64Sub(i, 1 : long))						\
++			else															\
++				return ()													\
++																			\
++	 if I32isSet(ADDR_OF(OFFSET, name))										\
++		   then																\
++		do Pause()															\
++		apply spinLp (i, log)												\
++		  else if I32TAS(ADDR_OF(OFFSET, name))								\
++		then																\
++			(* log this failure *)											\
++			let oldCnt : long = SELECT(TOT_FAIL, log)						\
++			let newCnt : long = I64Add(oldCnt, 1 : long)					\
++			do UPDATE(TOT_FAIL, log, newCnt)								\
++																			\
++		  	do apply doBackoff (i)											\
++			apply spinLp (I64Add(i, i), log)								\
++		else return ()														\
++	let log : stat_log = vpload(LOG, vp)									\
++	let startTS : long = TimeStampCounter ()								\
++																			\
++	do apply spinLp (1 : long, log)											\
++																			\
++	let endTS : long = TimeStampCounter ()									\
++	let currentTS : long = SELECT(TOT_ACQUIRE_CYCLES, log)					\
++	let currentTS : long = I64Add(currentTS, I64Sub(endTS, startTS))		\
++	do UPDATE(TOT_ACQUIRE_CYCLES, log, currentTS)							\
++	(* now record cycles spent holding this lock *)							\
++	do UPDATE(TS_STORE, log, endTS) 
++
++
++#define SPIN_UNLOCK_STATS(name, OFFSET, vp)									\
++	do UPDATE(OFFSET, name, 0)												\
++	let endTS : long = TimeStampCounter ()									\
++																			\
++	let log : stat_log = vpload(LOG, vp)									\
++	let startTS : long = SELECT(TS_STORE, log)								\
++	let currentTS : long = SELECT(TOT_HELD_CYCLES, log)						\
++																			\
++	let currentTS : long = I64Add(currentTS, I64Sub(endTS, startTS))		\
++																			\
++	do UPDATE(TOT_HELD_CYCLES, log, currentTS)
++
++
++
+ structure PrimChan (*: sig
+ 
+     type 'a chan
+@@ -32,6 +81,20 @@
+ 
+     _primcode (
+ 
++    typedef stat_log = ![
++    	long, 	(* 0: total cycles spent waiting to acquire the lock *)
++    	long, 	(* 1: total cycles spent holding the lock *)
++    	long,	(* 2: total number of TAS failures *)
++    	long	(* 3: temporary storage for a 'start' timestamp *)
++    ];
++
++
++#	define TOT_ACQUIRE_CYCLES	0
++#	define TOT_HELD_CYCLES		1
++#	define TOT_FAIL				2
++#	define TS_STORE				3
++
++
+       (* the representation of a CML thread suspended on a channel *)
+ 	typedef sendq_item = ![
+ 	    PEvt.event_state,		(* 0: event-instance status flag *)
+@@ -254,7 +317,7 @@
+ 	
+ 	define @chan-recv (ch : chan_rep / exh : exh) : any =
+ 	    let self : vproc = SchedulerAction.@atomic-begin ()
+-	    SPIN_LOCK(ch, CH_LOCK)
++	    SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 	  (* a loop to try to get an item from the sendq *)
+ 	    fun tryLp () : any =
+ 		  let item : sendq_item = @chan-dequeue-send (ch)
+@@ -273,7 +336,7 @@
+ 				  let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 				  case sts
+ 				   of PEvt.WAITING => (* we matched the send! *)
+-					SPIN_UNLOCK(ch, CH_LOCK)
++					SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 					do Threads.@enqueue-ready-in-atomic (
+ 					    self, SELECT(SENDQ_VPROC, item),
+ 					    SELECT(SENDQ_FLS, item),
+@@ -295,7 +358,7 @@
+ 			  let fls : FLS.fls = FLS.@get-in-atomic(self)
+ 			  let flg : PEvt.event_state = alloc(PEvt.WAITING)
+ 			  do @chan-enqueue-recv (ch, flg, self, fls, recvK)
+-			  SPIN_UNLOCK(ch, CH_LOCK)
++			  SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 			  (* in *)
+ 			    SchedulerAction.@stop-from-atomic(self)
+ 	    (* in *)
+@@ -306,7 +369,7 @@
+ 	    let ch : chan_rep = #0(arg)
+ 	    let msg : any = #1(arg)
+ 	    let self : vproc = SchedulerAction.@atomic-begin ()
+-	    SPIN_LOCK(ch, CH_LOCK)
++	    SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 	    fun tryLp () : unit =
+ 		  let item : recvq_item = @chan-dequeue-recv(ch)
+ 		  (* in *)
+@@ -324,7 +387,7 @@
+ 				  let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 				  case sts
+ 				   of PEvt.WAITING => (* we matched the recv! *)
+-					SPIN_UNLOCK(ch, CH_LOCK)
++					SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 					if Equal(self, SELECT(RECVQ_VPROC, item))
+ 					  then (* sending to a local thread *)
+ 					    cont sendK (_ : unit) = return (UNIT)
+@@ -359,7 +422,7 @@
+ 			    let fls : FLS.fls = FLS.@get-in-atomic(self)
+ 			    let flg : PEvt.event_state = alloc(PEvt.WAITING)
+ 			    do @chan-enqueue-send (ch, flg, msg, self, fls, sendK)
+-			    SPIN_UNLOCK(ch, CH_LOCK)
++			    SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 			    (* in *)
+ 			      SchedulerAction.@stop-from-atomic(self)
+ 	      (* in *)
+@@ -371,13 +434,13 @@
+ 	define @chan-recv-evt (ch : chan_rep / exh : exh) : PEvt.pevent =
+ 	    fun pollFn () : bool = @chan-waiting-send(ch)
+ 	    fun doFn (self : vproc, recvK : cont(any) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 		  fun tryLp () : () =
+ 			let item : sendq_item = @chan-dequeue-send (ch)
+ 			(* in *)
+ 			  if Equal(item, Q_NIL)
+ 			    then
+-			      SPIN_UNLOCK(ch, CH_LOCK)
++			      SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 			      return ()
+ 			    else
+ 			      let state : PEvt.event_state = #0(item)
+@@ -392,7 +455,7 @@
+ 					let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 					case sts
+ 					 of PEvt.WAITING => (* we matched the send! *)
+-					      SPIN_UNLOCK(ch, CH_LOCK)
++					      SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 					      do Threads.@enqueue-ready-in-atomic (
+ 						  self, SELECT(SENDQ_VPROC, item),
+ 						  SELECT(SENDQ_FLS, item),
+@@ -411,7 +474,7 @@
+ 		  (* in *)
+ 		    apply tryLp ()
+ 	    fun blkFn (self : vproc, flg : PEvt.event_state, fls : FLS.fls, recvK : cont(any) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 		(* a loop to try to get an item from the sendq *)
+ 		  fun tryLp () : () =
+ 			let item : sendq_item = @chan-dequeue-send-match (flg, ch)
+@@ -433,7 +496,7 @@
+ 					      let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 					      case sts
+ 					       of PEvt.WAITING => (* we matched the send! *)
+-						    SPIN_UNLOCK(ch, CH_LOCK)
++						    SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 						    do Threads.@enqueue-ready-in-atomic (
+ 							self, SELECT(SENDQ_VPROC, item),
+ 							SELECT(SENDQ_FLS, item),
+@@ -458,14 +521,14 @@
+ 					     * the item to the queue and continue.
+ 					     *)
+ 					      do @chan-push-send (ch, item)
+-					      SPIN_UNLOCK(ch, CH_LOCK)
++					      SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 					      SchedulerAction.@stop-from-atomic (self)
+ 					end
+ 				  (* in *)
+ 				    apply matchLp ()
+ 			    else
+ 			      do @chan-enqueue-recv (ch, flg, self, fls, recvK)
+-			      SPIN_UNLOCK(ch, CH_LOCK)
++			      SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 			      (* in *)
+ 				return ()
+ 		  (* in *)
+@@ -479,13 +542,13 @@
+ 	    let msg : any = #1(arg)
+ 	    fun pollFn () : bool = @chan-waiting-recv(ch)
+ 	    fun doFn (self : vproc, sendK : cont(unit) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 		  fun tryLp () : () =
+ 			let item : recvq_item = @chan-dequeue-recv (ch)
+ 			(* in *)
+ 			  if Equal(item, Q_NIL)
+ 			    then
+-			      SPIN_UNLOCK(ch, CH_LOCK)
++			      SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 			      return ()
+ 			    else
+ 			      let state : PEvt.event_state = #0(item)
+@@ -499,7 +562,7 @@
+ 					let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 					case sts
+ 					 of PEvt.WAITING => (* we matched the recv! *)
+-					      SPIN_UNLOCK(ch, CH_LOCK)
++					      SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 					      if Equal(self, SELECT(RECVQ_VPROC, item))
+ 						then (* sending to a local thread *)
+ 						  let fls : FLS.fls = FLS.@get-in-atomic(self)
+@@ -529,7 +592,7 @@
+ 		  (* in *)
+ 		    apply tryLp ()
+ 	    fun blkFn (self : vproc, flg : PEvt.event_state, fls : FLS.fls, sendK : cont(unit) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  SPIN_LOCK_STATS(ch, CH_LOCK, self)
+ 		(* a loop to try to get an item from the sendq *)
+ 		  fun tryLp () : () =
+ 			let item : recvq_item = @chan-dequeue-recv-match (flg, ch)
+@@ -584,14 +647,14 @@
+ 					     * the item to the queue and continue.
+ 					     *)
+ 					      do @chan-push-recv (ch, item)
+-					      SPIN_UNLOCK(ch, CH_LOCK)
++					      SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 					      SchedulerAction.@stop-from-atomic (self)
+ 					end
+ 				  (* in *)
+ 				    apply matchLp ()
+ 			    else
+ 			      do @chan-enqueue-send (ch, flg, msg, self, fls, sendK)
+-			      SPIN_UNLOCK(ch, CH_LOCK)
++			      SPIN_UNLOCK_STATS(ch, CH_LOCK, self)
+ 			      (* in *)
+ 				return ()
+ 		  (* in *)
+@@ -600,6 +663,37 @@
+ 	    return (PEvt.BEVT(pollFn, doFn, blkFn))
+ 	  ;
+ 
++	  define @init-stats(arg : unit / exh : exh) : unit =
++	  	let vp : vproc = host_vproc
++	  	let log : stat_log = alloc(0 : long, 0 : long, 0 : long, 0 : long)
++		  do vpstore(LOG, vp, log)
++		  	return (UNIT)
++	  ; 
++
++	  define @get-acquire-cycles(id : ml_int / exh : exh) : ml_long =
++	  	let vp_id : int = unwrap(id)
++	    let vp : vproc = VProc.@vproc-by-id(vp_id)
++	    let log : stat_log = vpload(LOG, vp)
++	  	let theCount : long = SELECT(TOT_ACQUIRE_CYCLES, log)
++	  	  return (alloc (theCount))
++	  	; 
++
++	  define @get-held-cycles(id : ml_int / exh : exh) : ml_long =
++	    let vp_id : int = unwrap(id)
++	    let vp : vproc = VProc.@vproc-by-id(vp_id)
++	    let log : stat_log = vpload(LOG, vp)
++	  	let theCount : long = SELECT(TOT_HELD_CYCLES, log)
++	  	  return (alloc (theCount))
++	  	; 
++
++	  define @get-fails(id : ml_int / exh : exh) : ml_long =
++	    let vp_id : int = unwrap(id)
++	    let vp : vproc = VProc.@vproc-by-id(vp_id)
++	    let log : stat_log = vpload(LOG, vp)
++	  	let theCount : long = SELECT(TOT_FAIL, log)
++	  	  return (alloc (theCount))
++	  	; 
++
+       )
+ 
+     type 'a chan = _prim (chan_rep)
+@@ -611,4 +705,10 @@
+     val sendEvt : ('a chan * 'a) -> unit PrimEvent.pevent	= _prim (@chan-send-evt)
+     val recvEvt : 'a chan -> 'a PrimEvent.pevent		= _prim (@chan-recv-evt)
+ 
++    val initLogging : unit -> unit		= _prim (@init-stats)
++    val getAcquireCycles: int -> Word64.word			= _prim (@get-acquire-cycles)
++    val getHeldCycles: int -> Word64.word			= _prim (@get-held-cycles)
++    val getFails: int -> Word64.word			= _prim (@get-fails)
++
++
+   end
+Index: src/lib/parallel-rt/gc/minor-gc.c
+===================================================================
+--- src/lib/parallel-rt/gc/minor-gc.c	(revision 5923)
++++ src/lib/parallel-rt/gc/minor-gc.c	(working copy)
+@@ -96,6 +96,9 @@
+     *rp++ = &(vp->sndQTl);
+     *rp++ = &(vp->landingPad);
+     *rp++ = &(vp->stdEnvPtr);
++
++    *rp++ = &(vp->log);
++    
+     rp = M_AddDequeEltsToLocalRoots(vp, rp);
+     *rp++ = 0;
+ 
+Index: src/lib/parallel-rt/vproc/vproc.c
+===================================================================
+--- src/lib/parallel-rt/vproc/vproc.c	(revision 5923)
++++ src/lib/parallel-rt/vproc/vproc.c	(working copy)
+@@ -295,6 +295,8 @@
+     MutexInit (&(vproc->lock));
+     CondInit (&(vproc->wait));
+ 
++    vproc->log = M_NIL;
++
+ #ifdef ENABLE_LOGGING
+     InitLog (vproc);
+ #endif
