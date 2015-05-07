@@ -17,7 +17,7 @@ echo "------------------------Partial Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    ./a.out  -p $threads > currentTime.txt
+    ./a.out -stm pnorec -p $threads > currentTime.txt
     cat currentTime.txt
     echo "name = Partial Abort" >> times.txt
     cat currentTime.txt >> times.txt
@@ -28,7 +28,7 @@ echo "------------------------Full Abort----------------------------"
 for i in $(seq 1 $iters);
 do
     echo "Iteration $i"
-    ./a.out -stm full  -p $threads > currentTime.txt
+    ./a.out -stm norec  -p $threads > currentTime.txt
     cat currentTime.txt
     echo "name = Full Abort" >> times.txt
     cat currentTime.txt >> times.txt

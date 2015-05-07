@@ -84,26 +84,6 @@ struct
             in lp(i-1)
           end
 
-
-    _primcode(
-        define @changeTS(x : ![any, long, long] / exh:exh) : unit = 
-            do #2(x) := 100000:long
-            return(enum(0):unit);
-    )
-    val changeTS : 'a tvar -> unit = _prim(@changeTS)
-
-    fun invalidate(i, (l, _)) = 
-        let fun lp(i, l) = 
-            if i = 0
-            then changeTS(l)
-            else case STM.unsafeGet l 
-               of Null => (raise Fail "Error")
-                | Head n => lp(i, n)
-                | Node(v, n) => lp(i-1, n)
-        in lp(i, l) end
-
-    val _ = invalidate(2000, l)
-
   val startTime = Time.now()
   val _ = lp 10000
   val endTime = Time.now() 
