@@ -118,14 +118,18 @@ structure Main =
 	  val t0 = Time.now()
 	  val l' = Merge.sort l
 	  val t = (Time.now() - t0)
+	  val statString = ChannelStats.toJson(ChannelStats.collectStats())
 	  in
 	    Print.print (String.concat [
 		Int.toString n, " items sorted in ", Time.toString t,
-		" seconds on ", Int.toString Merge.nVps, " processors\n"
+		" seconds on ", Int.toString Merge.nVps, " processors\n",
+		statString, "\n"
+
 	      ])
 	  end
 
   end
 
-val _ = Main.testit()
-val _ = Main.timeit 1024
+val _ = ChannelStats.init()
+(* val _ = Main.testit() *)
+val _ = Main.timeit 2048
