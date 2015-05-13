@@ -1,0 +1,220 @@
+Index: src/lib/basis/cml/alt-prim-chan.pml
+===================================================================
+--- src/lib/basis/cml/alt-prim-chan.pml	(revision 5941)
++++ src/lib/basis/cml/alt-prim-chan.pml	(working copy)
+@@ -9,7 +9,7 @@
+  * the channel queues.
+  *)
+ 
+-#include "spin-lock.def"
++#include "ticket-spin-lock.def"
+ 
+ structure PrimChan (*: sig
+ 
+@@ -50,20 +50,22 @@
+ 	    any				(* 4: link field *)
+ 	  ];
+ 
+-	typedef chan_rep = ![	    (* all fields are mutable *)
+-	    int,			(* spin lock *)
+-	    sendq_item,			(* sendq head item *)
+-	    sendq_item,			(* sendq tail item *)
+-	    recvq_item,			(* recvq head item *)
+-	    recvq_item			(* recvq tail item *)
++	typedef chan_rep = ![	(* all fields are mutable *)
++	    long,				(* 0: ticket lock turn field *)
++	    long,				(* 1: ticket lock ticket field *)
++	    sendq_item,			(* 2: sendq head item *)
++	    sendq_item,			(* 3: sendq tail item *)
++	    recvq_item,			(* 4: recvq head item *)
++	    recvq_item			(* 5: recvq tail item *)
+ 	  ];
+ 
+ 	(* offsets into the chan_rep object *)
+-#	define CH_LOCK		0
+-#	define CH_SENDQ_HD	1
+-#	define CH_SENDQ_TL	2
+-#	define CH_RECVQ_HD	3
+-#	define CH_RECVQ_TL	4
++#	define CH_LOCK_TURN		0
++#	define CH_LOCK_TICKET	1
++#	define CH_SENDQ_HD		2
++#	define CH_SENDQ_TL		3
++#	define CH_RECVQ_HD		4
++#	define CH_RECVQ_TL		5
+ 
+ 	(* offsets in sendq items *)
+ #	define SENDQ_MSG	1
+@@ -247,14 +249,14 @@
+       (***** Channel operations *****)
+ 	
+ 	define inline constr @chan-new (arg : unit / exh : exh) : chan_rep =
+-	    let ch : chan_rep = alloc(0, (sendq_item)Q_NIL, (sendq_item)Q_NIL, (recvq_item)Q_NIL, (recvq_item)Q_NIL)
++	    let ch : chan_rep = alloc(0:long, 0:long, (sendq_item)Q_NIL, (sendq_item)Q_NIL, (recvq_item)Q_NIL, (recvq_item)Q_NIL)
+ 	    let ch : chan_rep = promote (ch)
+ 	    return (ch)
+ 	  ;
+ 	
+ 	define @chan-recv (ch : chan_rep / exh : exh) : any =
+ 	    let self : vproc = SchedulerAction.@atomic-begin ()
+-	    SPIN_LOCK(ch, CH_LOCK)
++	    TICKET_SPIN_LOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 	  (* a loop to try to get an item from the sendq *)
+ 	    fun tryLp () : any =
+ 		  let item : sendq_item = @chan-dequeue-send (ch)
+@@ -273,7 +275,7 @@
+ 				  let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 				  case sts
+ 				   of PEvt.WAITING => (* we matched the send! *)
+-					SPIN_UNLOCK(ch, CH_LOCK)
++					TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 					do Threads.@enqueue-ready-in-atomic (
+ 					    self, SELECT(SENDQ_VPROC, item),
+ 					    SELECT(SENDQ_FLS, item),
+@@ -295,7 +297,7 @@
+ 			  let fls : FLS.fls = FLS.@get-in-atomic(self)
+ 			  let flg : PEvt.event_state = alloc(PEvt.WAITING)
+ 			  do @chan-enqueue-recv (ch, flg, self, fls, recvK)
+-			  SPIN_UNLOCK(ch, CH_LOCK)
++			  TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 			  (* in *)
+ 			    SchedulerAction.@stop-from-atomic(self)
+ 	    (* in *)
+@@ -306,7 +308,7 @@
+ 	    let ch : chan_rep = #0(arg)
+ 	    let msg : any = #1(arg)
+ 	    let self : vproc = SchedulerAction.@atomic-begin ()
+-	    SPIN_LOCK(ch, CH_LOCK)
++	    TICKET_SPIN_LOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 	    fun tryLp () : unit =
+ 		  let item : recvq_item = @chan-dequeue-recv(ch)
+ 		  (* in *)
+@@ -324,7 +326,7 @@
+ 				  let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 				  case sts
+ 				   of PEvt.WAITING => (* we matched the recv! *)
+-					SPIN_UNLOCK(ch, CH_LOCK)
++					TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 					if Equal(self, SELECT(RECVQ_VPROC, item))
+ 					  then (* sending to a local thread *)
+ 					    cont sendK (_ : unit) = return (UNIT)
+@@ -359,7 +361,7 @@
+ 			    let fls : FLS.fls = FLS.@get-in-atomic(self)
+ 			    let flg : PEvt.event_state = alloc(PEvt.WAITING)
+ 			    do @chan-enqueue-send (ch, flg, msg, self, fls, sendK)
+-			    SPIN_UNLOCK(ch, CH_LOCK)
++			    TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 			    (* in *)
+ 			      SchedulerAction.@stop-from-atomic(self)
+ 	      (* in *)
+@@ -371,13 +373,13 @@
+ 	define @chan-recv-evt (ch : chan_rep / exh : exh) : PEvt.pevent =
+ 	    fun pollFn () : bool = @chan-waiting-send(ch)
+ 	    fun doFn (self : vproc, recvK : cont(any) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  TICKET_SPIN_LOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 		  fun tryLp () : () =
+ 			let item : sendq_item = @chan-dequeue-send (ch)
+ 			(* in *)
+ 			  if Equal(item, Q_NIL)
+ 			    then
+-			      SPIN_UNLOCK(ch, CH_LOCK)
++			      TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 			      return ()
+ 			    else
+ 			      let state : PEvt.event_state = #0(item)
+@@ -392,7 +394,7 @@
+ 					let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 					case sts
+ 					 of PEvt.WAITING => (* we matched the send! *)
+-					      SPIN_UNLOCK(ch, CH_LOCK)
++					      TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 					      do Threads.@enqueue-ready-in-atomic (
+ 						  self, SELECT(SENDQ_VPROC, item),
+ 						  SELECT(SENDQ_FLS, item),
+@@ -411,7 +413,7 @@
+ 		  (* in *)
+ 		    apply tryLp ()
+ 	    fun blkFn (self : vproc, flg : PEvt.event_state, fls : FLS.fls, recvK : cont(any) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  TICKET_SPIN_LOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 		(* a loop to try to get an item from the sendq *)
+ 		  fun tryLp () : () =
+ 			let item : sendq_item = @chan-dequeue-send-match (flg, ch)
+@@ -433,7 +435,7 @@
+ 					      let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 					      case sts
+ 					       of PEvt.WAITING => (* we matched the send! *)
+-						    SPIN_UNLOCK(ch, CH_LOCK)
++						    TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 						    do Threads.@enqueue-ready-in-atomic (
+ 							self, SELECT(SENDQ_VPROC, item),
+ 							SELECT(SENDQ_FLS, item),
+@@ -458,14 +460,14 @@
+ 					     * the item to the queue and continue.
+ 					     *)
+ 					      do @chan-push-send (ch, item)
+-					      SPIN_UNLOCK(ch, CH_LOCK)
++					      TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 					      SchedulerAction.@stop-from-atomic (self)
+ 					end
+ 				  (* in *)
+ 				    apply matchLp ()
+ 			    else
+ 			      do @chan-enqueue-recv (ch, flg, self, fls, recvK)
+-			      SPIN_UNLOCK(ch, CH_LOCK)
++			      TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 			      (* in *)
+ 				return ()
+ 		  (* in *)
+@@ -479,13 +481,13 @@
+ 	    let msg : any = #1(arg)
+ 	    fun pollFn () : bool = @chan-waiting-recv(ch)
+ 	    fun doFn (self : vproc, sendK : cont(unit) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  TICKET_SPIN_LOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 		  fun tryLp () : () =
+ 			let item : recvq_item = @chan-dequeue-recv (ch)
+ 			(* in *)
+ 			  if Equal(item, Q_NIL)
+ 			    then
+-			      SPIN_UNLOCK(ch, CH_LOCK)
++			      TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 			      return ()
+ 			    else
+ 			      let state : PEvt.event_state = #0(item)
+@@ -499,7 +501,7 @@
+ 					let sts : PEvt.event_status = CAS(&0(state), PEvt.WAITING, PEvt.SYNCHED)
+ 					case sts
+ 					 of PEvt.WAITING => (* we matched the recv! *)
+-					      SPIN_UNLOCK(ch, CH_LOCK)
++					      TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 					      if Equal(self, SELECT(RECVQ_VPROC, item))
+ 						then (* sending to a local thread *)
+ 						  let fls : FLS.fls = FLS.@get-in-atomic(self)
+@@ -529,7 +531,7 @@
+ 		  (* in *)
+ 		    apply tryLp ()
+ 	    fun blkFn (self : vproc, flg : PEvt.event_state, fls : FLS.fls, sendK : cont(unit) / _ : exh) : () =
+-		  SPIN_LOCK(ch, CH_LOCK)
++		  TICKET_SPIN_LOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 		(* a loop to try to get an item from the sendq *)
+ 		  fun tryLp () : () =
+ 			let item : recvq_item = @chan-dequeue-recv-match (flg, ch)
+@@ -584,14 +586,14 @@
+ 					     * the item to the queue and continue.
+ 					     *)
+ 					      do @chan-push-recv (ch, item)
+-					      SPIN_UNLOCK(ch, CH_LOCK)
++					      TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 					      SchedulerAction.@stop-from-atomic (self)
+ 					end
+ 				  (* in *)
+ 				    apply matchLp ()
+ 			    else
+ 			      do @chan-enqueue-send (ch, flg, msg, self, fls, sendK)
+-			      SPIN_UNLOCK(ch, CH_LOCK)
++			      TICKET_SPIN_UNLOCK(ch, CH_LOCK_TURN, CH_LOCK_TICKET)
+ 			      (* in *)
+ 				return ()
+ 		  (* in *)
