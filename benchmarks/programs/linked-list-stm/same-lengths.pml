@@ -13,6 +13,16 @@ val THREADS = VProc.numVProcs()
 val ITERS = 3000
 val MAXVAL = 100000
 
+fun printFun(x) = 
+    case x      
+       of OrderedLinkedList.Head _ => print "Head\n"
+        | OrderedLinkedList.Null => print "Null\n"
+        | OrderedLinkedList.Node(v, n) => print("Node, val = " ^ Int.toString v ^ "\n")     
+
+
+val _ = FFReadSet.registerPrintFun printFun
+
+
 val INITSIZE = 
     case getArg "-size" args
         of SOME n => (case Int.fromString n of SOME n => n | NONE => 4000)
@@ -35,17 +45,32 @@ fun threadLoop l i =
                           else ignore(OrderedLinkedList.deleteIndex l (Rand.inRangeInt(0, OrderedLinkedList.size l)))
          in threadLoop l (i-1) end
          
+datatype 'a res = Ans of 'a | Exn of exn
+
 fun start l i =
     if i = 0
     then nil
-    else let val ch = PrimChan.new()
-             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop l ITERS; PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
+    else 
+        let val ch = PrimChan.new()
+            fun threadFun() = 
+                let val _ = threadLoop l ITERS handle e => PrimChan.send(ch, Exn e)
+                in PrimChan.send(ch, Ans (BoundedHybridPartialSTM.getStats()))
+                end
+             val _ = Threads.spawnOn(i-1, threadFun)
          in ch::start l (i-1) end
 
 fun join chs = 
-    case chs
-        of ch::chs' => PrimChan.recv ch @ join chs'
-         | nil => nil
+    let fun joinLoop(chs, stats, exns) = 
+            case chs
+                of ch::chs' => 
+                    (case PrimChan.recv ch
+                        of Ans stats' => joinLoop(chs', stats' @ stats, exns)
+                         | Exn e => joinLoop(chs', stats, Option.SOME e))
+                 | nil => 
+                    (case exns
+                       of NONE => stats
+                        | SOME e => raise e)
+    in joinLoop(chs, nil, Option.NONE) end
 
 val l = OrderedLinkedList.newList()
 
@@ -68,5 +93,4 @@ val _ = STM.printStats()
 
 val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
-val _ = BoundedHybridPartialSTM.printTimer()
 

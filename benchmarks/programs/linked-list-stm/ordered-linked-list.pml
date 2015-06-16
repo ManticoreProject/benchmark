@@ -8,12 +8,13 @@
 
 structure OrderedLinkedList = 
 struct
+
     fun getArg f args = 
         case args 
-            of arg::arg'::args => 
+           of arg::arg'::args => 
                 if String.same(f, arg) then SOME arg'
                 else getArg f (arg'::args)
-             |_ => NONE
+            |_ => NONE
 
     val args = CommandLine.arguments ()
 
@@ -21,28 +22,21 @@ struct
 
     type 'a tvar = 'a STM.tvar
 
-    datatype List = Node of int * List tvar
-                  | Null
-                  | Head of List tvar
+    datatype List = 
+                  Node of int * List tvar
+                | Null
+                | Head of List tvar
 
     type ListHandle = (List tvar) * (int tvar)
 
-    fun printFun(x) = 
-        case x 
-          of Node(v, _) => print("value = " ^ Int.toString v ^ "\n")
-          | Head _ => print("value = Head\n")
-          | Null => print ("value = Null\n")
-
-    val _ = ReadSet.registerPrintFun(printFun)
-    
     fun newList() : ListHandle = (new (Head(new Null)), new 0)
 
     fun getArg f args = 
         case args 
-            of arg::arg'::args => 
+           of arg::arg'::args => 
                 if String.same(f, arg) then SOME arg'
                 else getArg f (arg'::args)
-             |_ => NONE
+            | _ => NONE
 
     val args = CommandLine.arguments()
     
@@ -52,9 +46,9 @@ struct
     fun add (l,len) (v:int) = 
         let fun addLoop l = 
                 case get l 
-                    of Head n => addLoop n
-                     | Null => put(l, Node(v, new Null))
-                     | Node(v', n) => 
+                   of Head n => addLoop n
+                    | Null => put(l, Node(v, new Null))
+                    | Node(v', n) => 
                         if v' > v
                         then put(l, Node(v, new (Node(v', n))))
                         else addLoop n

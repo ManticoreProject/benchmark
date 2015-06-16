@@ -69,7 +69,7 @@ struct
 	fun initialize n = 
 	   if n = 0
 	   then ()
-	   else let val randNum = Rand.inRangeInt(0, 10000)
+	   else let val randNum = n
 	            val _ = add2 l randNum
 	       in initialize (n-1) end
 
