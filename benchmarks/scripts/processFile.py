@@ -2,6 +2,9 @@
 import sys, getopt, re, os
 import statistics as st
 from collections import OrderedDict
+import pdb, traceback
+
+baseline = "full"
 
 def getFlag(f):
     it = iter(sys.argv)
@@ -113,9 +116,9 @@ def printData(lists):
         for l in lists:
             l = lists[l]
             if k in l:
-                s += ' & ' + ("%.2f" % mean(l[k])) + ' & ' + ("%.2f" % st.stdev(l[k]))
+                s += ' & ' + ("%.2f" % mean(l[k])) 
             else:
-                s += ' & - & - '
+                s += ' & - '
         s += '\\\\\\hline'
         return s
             
@@ -128,17 +131,17 @@ def printData(lists):
                 change = 0
             else:
                 change = ((base - mean(l[k])) / base) * 100
-            s += ' & ' + ("%.2f" % change) + "\% & -"
+            s += ' & ' + ("%.2f" % change) + "\%"
         s += '\\\\\\hline'
         return s
             
 
     if getOpt("-tex"):
-        print("\\begin{figure}[H]")
-        print("\\centering")
-        print('\\begin{tabular}{|' + reduce (lambda x, y: ' c |' + x, range((len(lists)+1) * 2), '') + '}')
+        print('\\begin{figure}')
+        print('\\noindent\\adjustbox{max width=\\textwidth}{%')
+        print('\\begin{tabular}{|' + reduce (lambda x, y: ' c |' + x, range((len(lists)+1) ), '') + '}')
         print("\\hline")
-        print (reduce (lambda x, y: x + ' & '+ y + " & " + y + " $\\sigma$", lists.keys(), '') + '\\\\\\hline')
+        print (reduce (lambda x, y: x + ' & '+ y , lists.keys(), '') + '\\\\\\hline')
         iters = 0
         doneKeys = []
         for k in lists:
@@ -152,12 +155,13 @@ def printData(lists):
                     print(mkComparisonString(lists, k))
                 doneKeys.append(k)    
         print("\\end{tabular}")
+        print("}")
         caption = getFlag("-caption")
         if caption is not None:
-            print ("\\caption{" + caption + " (Average of " + str(iters) + " iterations)}")
+            print ("\\caption{" + caption + " (Average of " + str(iters) + " iterations, baseline: " + baseline + ")}")
         else:
-            print ("\\caption{Average of " + str(iters) + " iterations}")
-        print("\\end{figure}")
+            print ("\\caption{Average of " + str(iters) + " iterations (baseline: " + baseline + ")}")
+        print('\\end{figure}')
     else:
         for key in lists:
             print (key + ":")
@@ -170,7 +174,7 @@ def main():
     if len(sys.argv) < 2:
         print("usage: python processFile <output file>")
 
-    baseline = "Full Abort"
+    baseline = "full"
     f = getFile()
     if f is None:
         print("No file specified")
@@ -179,8 +183,12 @@ def main():
     printData(data)
 
 if __name__ == "__main__":
-    main()    
-
+    try:
+        main()    
+    except:
+        type, value, tb = sys.exc_info()
+        traceback.print_exc()
+        pdb.post_mortem(tb)
 
 
 
