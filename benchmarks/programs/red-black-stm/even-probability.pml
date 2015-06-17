@@ -50,18 +50,32 @@ fun threadLoop(t, i, seed) =
                           else ignore(remove randNum t)
          in threadLoop(t, i-1, seed) end
 
+datatype 'a res = Ans of 'a | Exn of exn
+
 fun start t i =
     if i = 0
     then nil
     else let val ch = PrimChan.new()
              val seed = R.newSeed 0
-             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop(t, ITERS, seed); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
+             fun f() =
+                let val _ = threadLoop(t, ITERS, seed) handle e => (PrimChan.send(ch, Exn e))
+            in PrimChan.send(ch, Ans (BoundedHybridPartialSTM.getStats()))
+            end
+             val _ = Threads.spawnOn(i-1, f)
          in ch::start t (i-1) end
 
 fun join chs = 
-    case chs
-        of ch::chs' => PrimChan.recv ch @ join chs'
-         | nil => nil
+    let fun joinLoop(chs, stats, exns) = 
+            case chs 
+               of nil => (
+                    case exns
+                        of Option.SOME e => (raise e)
+                         | Option.NONE => stats)
+                | ch::chs' => 
+                    (case PrimChan.recv ch
+                        of Ans a => joinLoop(chs', a @ stats, exns)
+                         | Exn e => joinLoop(chs', stats, Option.SOME e))
+    in joinLoop(chs, nil, Option.NONE) end
 
 val t = RBTree.newTree()
 
@@ -85,7 +99,7 @@ val _ = atomic(fn _ => RBTree.chkOrder intComp t)
 val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)
 
 val _ = printStats()
-
+(*
 val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 val _ = BoundedHybridPartialSTM.printTimer()
-
+*)

@@ -255,7 +255,7 @@ struct
     (*Verify red-black tree properties*)
     fun chkOrder comp t = 
         let fun lp(t, lower, upper) = 
-                case get t
+                case unsafeGet t
                     of L => true
                      | T(c,l,v,r) =>   
                         let val b1 = lp(l, lower, SOME v)
@@ -279,7 +279,7 @@ struct
 
     fun chkBlackPaths t = 
         let fun lp(t, exp, d) =
-                case (exp, get t)
+                case (exp, unsafeGet t)
                     of (Any, T(Red, l, v, r)) =>
                         let val n : int = lp(l, MustBeBlack, d+1) 
                             val n' : int = lp(r, MustBeBlack, d+1) 
@@ -308,14 +308,5 @@ struct
                 of T(c,l,v,r) => 1 + Int.max(lp l, lp r)
                  | _ => 0
         in atomic(fn () => lp t) end  
-
-    fun printFun printVal t = 
-        case t 
-           of L => print "Leaf\n"
-            | DBL => print "Double black leaf\n"
-            | T(c, l, v, r) => print ("Node val = " ^ printVal v ^ ", depth is " ^ Int.toString (1+(Int.max(unsafeDepth l, unsafeDepth r))) ^ "\n")
-
-    val _ = ReadSet.registerPrintFun (printFun Int.toString)
-
 
 end
