@@ -18,15 +18,14 @@ args = parser.parse_args()
 stms = ["ffnorec", "norec", "orderedNoRec", "pnorec", "bounded", "full", "partial", "ordered", "tailff", "ff", "ffRefCount", "ffRefCountGC"]
 benchmarks = ["linked-list-stm", "red-black-stm", "sudoku-stm", "vacation", "labyrinth"]
 
-def sendErrorEmail(program, stm, errorCount):
-	msg = MIMEText('Benchmark \"' + program + '\" failed ' + str(errorCount) + ' times using STM: \"' + stm + '\"')
+def sendErrorEmail(program, stm, errorCount, dump):
+	msg = MIMEText('Benchmark \"' + program + '\" failed ' + str(errorCount) + ' times using STM: \"' + stm + '\"\n\nDump: \n' + dump)
 	msg['Subject'] = 'Benchmark Failed!'
 	msg['From'] = 'ml9951email@gmail.com'
 	msg['To'] = 'ml9951@g.rit.edu'
 
 	try:
 		server = smtplib.SMTP('smtp.gmail.com',587) #port 465 or 587
-		server.set_debuglevel(True)
 		server.ehlo()
 		server.starttls()
 		server.ehlo()
@@ -42,10 +41,12 @@ def runSTM(stm, file, program):
 		print('------' + stm + ' Iteration ' + str(i) + '------')
 		try:
 			errorCount = 0
+			errorDump = ''
 			res1 = subprocess.Popen('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
 			while res1 != 0:
+				errorDump = errorDump + open('currentTime.txt').read() + '\n'
 				if errorCount > 2:
-					sendErrorEmail(program, stm, errorCount)
+					sendErrorEmail(program, stm, errorCount, errorDump)
 					os.remove(file)
 					sys.exit(1)
 				errorCount = errorCount + 1
@@ -70,8 +71,9 @@ def benchmark(program):
 		for stm in stms:
 			runSTM(stm, filename, program)
 	else:
+		subprocess.Popen('pmlc mc.mlb', shell=True).wait()
 		os.system('echo "" > ' + args.run + 'Times.txt')
-		runSTM(args.run, args.run + 'Times.txt')
+		runSTM(args.run, args.run + 'Times.txt', program)
 
 def runBenchmarks():
 	originalDirectory = os.path.dirname(os.path.realpath(__file__))
