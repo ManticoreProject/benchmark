@@ -3,6 +3,8 @@ import sys, getopt, re, os, signal
 import subprocess
 import argparse
 from time import gmtime, strftime
+from email.mime.text import MIMEText
+import smtplib
 
 parser = argparse.ArgumentParser()
 
@@ -14,17 +16,39 @@ parser.add_argument("-threads", type=int, help="Number of threads to use", defau
 args = parser.parse_args()
 
 stms = ["ffnorec", "norec", "orderedNoRec", "pnorec", "bounded", "full", "partial", "ordered", "tailff", "ff", "ffRefCount", "ffRefCountGC"]
-benchmarks = ["linked-list-stm", "red-black-stm"]
+benchmarks = ["linked-list-stm", "red-black-stm", "sudoku-stm", "vacation", "labyrinth"]
 
+def sendErrorEmail(program, stm, errorCount):
+	msg = MIMEText('Benchmark \"' + program + '\" failed ' + str(errorCount) + ' times using STM: \"' + stm + '\"')
+	msg['Subject'] = 'Benchmark Failed!'
+	msg['From'] = 'ml9951email@gmail.com'
+	msg['To'] = 'ml9951@g.rit.edu'
 
-def runSTM(stm, file):
+	try:
+		server = smtplib.SMTP('smtp.gmail.com',587) #port 465 or 587
+		server.set_debuglevel(True)
+		server.ehlo()
+		server.starttls()
+		server.ehlo()
+		server.login('ml9951email','ml9951EmailPassword')
+		res = server.sendmail('ml9951email@gmail.com', ['ml9951@g.rit.edu'],msg.as_string())
+		server.close()
+	except:
+		print('Exception raised when trying to send email!')
+
+def runSTM(stm, file, program):
 	subprocess.Popen('echo \"name = ' + stm + '\" >> ' + file + ';', shell=True).wait()
-	subprocess.Popen('pmlc mc.mlb', shell=True).wait()
 	for i in range(args.iters):
 		print('------' + stm + ' Iteration ' + str(i) + '------')
 		try:
+			errorCount = 0
 			res1 = subprocess.Popen('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
 			while res1 != 0:
+				if errorCount > 2:
+					sendErrorEmail(program, stm, errorCount)
+					os.remove(file)
+					sys.exit(1)
+				errorCount = errorCount + 1
 				print('execution finished with return code: ' + str(res1))
 				res1 = subprocess.Popen('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
 			subprocess.Popen('cat currentTime.txt;  cat currentTime.txt >> ' + file + '; echo \"end\" >> ' + file, shell = True).wait()
@@ -42,14 +66,14 @@ def benchmark(program):
 	filename = "benchmark-times/times-" + strftime("%Y-%m-%d %H:%M:%S", gmtime()).replace(' ', '-') + '.txt'
 	if args.run == "all":
 		os.system('echo "" > ' + filename)
+		subprocess.Popen('pmlc mc.mlb', shell=True).wait()
 		for stm in stms:
-			runSTM(stm, filename)
+			runSTM(stm, filename, program)
 	else:
 		os.system('echo "" > ' + args.run + 'Times.txt')
 		runSTM(args.run, args.run + 'Times.txt')
 
 def runBenchmarks():
-	global filename
 	originalDirectory = os.path.dirname(os.path.realpath(__file__))
 	os.chdir(originalDirectory)
 	if args.program is None:
