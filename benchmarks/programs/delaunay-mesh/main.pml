@@ -25,7 +25,7 @@ fun member compare x l =
  *)
 fun mesh_check (root,_,_,_) =
     let val q = Q.newQueue()
-        val _ = case STM.atomic(fn () => STM.get root)
+        val _ = case STM.unsafeGet root
                     of SOME e => Q.enqueue q e
                      | NONE => print "Mesh is incorrect: no root\n"
         fun addNeighbors(ns : E.element list, visited : E.element S.rbSet) = 
@@ -125,10 +125,10 @@ val stats = join (startThreads G.threads)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 
-(*
+
 val _ = print "Checking mesh\n"
 val _ = mesh_check mesh
-*)
+
 
 val _ = STM.printStats()
 

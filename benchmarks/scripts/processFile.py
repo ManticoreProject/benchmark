@@ -7,6 +7,7 @@ import functools
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-file", type=str, help="dump latex tables to specified file", default=None)
+parser.add_argument("-figuresonly", action='store_true')
 args = parser.parse_args()
 
 outStream = sys.stdout if args.file is None else open(args.file, 'w')
@@ -68,7 +69,7 @@ def dumpTex(data, benchName, date):
     outStream.write("\\centering\n")
     outStream.write('\\begin{tabular}{|' + functools.reduce (lambda x, y: ' c |' + x, range(len(data)+1), '') + '}\n')
     outStream.write("\\hline\n")
-    orderedData = data.items()
+    orderedData = sorted(data.items())
     stms = [a for a, b in orderedData]
     outStream.write (functools.reduce (lambda x, y: x + ' & ' + y, stms, '') + '\\\\\\hline\n')
     for key in keys:
@@ -93,8 +94,8 @@ def doBenchmark(benchName, text, date):
 
 def main():
     origDir = os.path.dirname(os.path.realpath(__file__))
-    outStream.write('\\documentclass[12pt]{article}\n\\usepackage[margin=0.5in]{geometry}\n\\usepackage{adjustbox,lipsum}\n\\usepackage{float}\n\\begin{document}\n')
-
+    if not(args.figuresonly):
+        outStream.write('\\documentclass[12pt]{article}\n\\usepackage[margin=0.5in]{geometry}\n\\usepackage{adjustbox,lipsum}\n\\usepackage{float}\n\\begin{document}\n')
     os.chdir(origDir)
     for bench in benchmarks:
         if not(os.path.isdir('../programs/' + bench + '/benchmark-times')):
@@ -107,7 +108,8 @@ def main():
         date = mostRecent[6:len(mostRecent)-4]
         doBenchmark(bench, open(mostRecent).read(), date)
         os.chdir(origDir)
-    outStream.write('\\end{document}\n')
+    if not(args.figuresonly):
+        outStream.write('\\end{document}\n')
 
 if __name__ == "__main__":
     main()    

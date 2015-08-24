@@ -90,22 +90,18 @@ val res1 = MVar.newEmpty()
 val res2 = MVar.newEmpty()
 val res3 = MVar.newEmpty()
 
-val stats1 = MVar.newEmpty()
-val stats2 = MVar.newEmpty()
-val stats3 = MVar.newEmpty()
-
 exception Done
 
-fun pruneBy(inMV, outMV, f, stats) =
+fun pruneBy(inMV, outMV, f) =
     let val mOpt = MVar.take inMV
-        val m = case mOpt of SOME m => m | NONE => (MVar.put(stats, BoundedHybridPartialSTM.getStats()); raise Done)
+        val m = case mOpt of SOME m => m | NONE => (raise Done)
         val res = STM.atomic(fn () => List.exists (fn x => x) (List.map reduce (f m)))
         val _ = MVar.put(outMV, res)
-    in pruneBy(inMV, outMV, f, stats) end
+    in pruneBy(inMV, outMV, f) end
     
-val _ = Threads.spawnEq(fn () => pruneBy(rowMVar, res1, rows, stats1) handle e => ())
-val _ = Threads.spawnEq(fn () => pruneBy(colMVar, res2, cols, stats2) handle e => ())
-val _ = Threads.spawnEq(fn () => pruneBy(boxMVar, res3, boxes, stats3) handle e => ())
+val _ = Threads.spawnEq(fn () => pruneBy(rowMVar, res1, rows) handle e => ())
+val _ = Threads.spawnEq(fn () => pruneBy(colMVar, res2, cols) handle e => ())
+val _ = Threads.spawnEq(fn () => pruneBy(boxMVar, res3, boxes) handle e => ())
 
 fun prune (ms : choices matrix) : unit =
     let val _ = MVar.put(rowMVar, SOME ms) 
@@ -220,7 +216,5 @@ val _ = print ("Search took " ^ Int.toString (STM.unsafeGet count) ^ " iteration
 
 val _ = printSolution solution
 
-val stats = MVar.take stats1 @ MVar.take stats2 @ MVar.take stats3
-val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
                                     

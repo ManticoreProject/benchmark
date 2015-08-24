@@ -28,26 +28,12 @@ struct
                   | DBL      (*double black *)
                   | T of color * 'a tree tvar * 'a * 'a tree tvar
 
-    
-
     fun newTree() = new L
 			
     fun redden t = 
 	case get t 
 	 of T(Red,a,x,b) => ()
 	  | T(Black, a, x, b) => put(t, T(Red, a, x, b))
-
-    fun blacken' t = 
-        case get t
-            of T(Red, a, x, b) => put(t, T(Black, a, x, b))
-             | T(Black, a, x, b) => ()
-
-    fun blacken t = 
-        case get t
-            of T(Black,a,x,b) => ()
-             | T(DBlack, a, x, b) => put(t, T(Black, a, x, b))
-             | L => ()
-             | DBL => put(t, L)
 
     fun isBB t = 
         case get t

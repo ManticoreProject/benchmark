@@ -15,7 +15,8 @@ parser.add_argument("-run", type=str, help="Which STM implementation to use (all
 parser.add_argument("-threads", type=int, help="Number of threads to use", default=4)
 args = parser.parse_args()
 
-stms = ["ffnorec", "norec", "orderedNoRec", "pnorec", "bounded", "full", "partial", "ordered", "tailff", "ff", "ffRefCount", "ffRefCountGC"]
+#"partial", 
+stms = ["ffnorec", "norec", "orderedNoRec", "pnorec", "bounded", "full", "ordered", "tailff", "ff", "ffRefCount", "ffRefCountGC", "mergeWS"]
 benchmarks = ["linked-list-stm", "red-black-stm", "sudoku-stm", "vacation", "labyrinth"]
 
 def sendErrorEmail(program, stm, errorCount, dump):
