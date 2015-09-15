@@ -18,8 +18,6 @@ struct
 
     val args = CommandLine.arguments ()
 
-    val (get,put,atomic,new,printStats) = (STM.get, STM.put, STM.atomic, STM.new, STM.printStats)
-
     type 'a tvar = 'a STM.tvar
 
     datatype List = 
@@ -29,7 +27,7 @@ struct
 
     type ListHandle = (List tvar) * (int tvar)
 
-    fun newList() : ListHandle = (new (Head(new Null)), new 0)
+    fun newList() : ListHandle = (STM.new (Head(STM.new Null)), STM.new 0)
 
     fun getArg f args = 
         case args 
@@ -40,33 +38,44 @@ struct
 
     val args = CommandLine.arguments()
     
-    fun dec n = atomic(fn () => put(n, get n - 1))
-    fun inc n = atomic(fn () => put(n, get n + 1))
+    fun dec n = STM.atomic(fn () => STM.put(n, STM.get n - 1))
+    fun inc n = STM.atomic(fn () => STM.put(n, STM.get n + 1))
     
+    fun unsafeAdd (l, len) (v:int) = 
+	let fun addLoop l =
+		case STM.unsafeGet l
+		 of Head n => addLoop n
+		  | Null => STM.unsafePut(l, Node(v, STM.new Null))
+		  | Node(v', n) =>
+		    if v' > v
+		    then STM.unsafePut(l, Node(v, STM.new(Node(v', n))))
+		    else addLoop n
+	in addLoop l; STM.unsafePut(len, STM.unsafeGet len + 1) end
+
     fun add (l,len) (v:int) = 
         let fun addLoop l = 
-                case get l 
+                case STM.get l 
                    of Head n => addLoop n
-                    | Null => put(l, Node(v, new Null))
+                    | Null => STM.put(l, Node(v, STM.new Null))
                     | Node(v', n) => 
                         if v' > v
-                        then put(l, Node(v, new (Node(v', n))))
+                        then STM.put(l, Node(v, STM.new (Node(v', n))))
                         else addLoop n
-        in atomic (fn () => addLoop l); inc len end
+        in STM.atomic'(fn () => addLoop l, STM.mkTXMsg(STM.unsafeGet len, v, 0)); inc len end
 
     fun printList ((l,len):ListHandle) = 
-        case get l
+        case STM.unsafeGet l
            of Null => print "\n"
             | Head n => printList(n,len)
             | Node(v, n) => (print (Int.toString v ^ ", "); printList(n,len))
 
-    fun find ((l,_):ListHandle) v = 
+    fun find ((l,len):ListHandle) v = 
         let fun findLoop l = 
-                case get l
+                case STM.get l
                     of Null => false
                      | Head n => findLoop n
                      | Node(v', n) => if v = v' then true else findLoop n
-        in atomic (fn () => findLoop l) end
+        in STM.atomic'(fn () => findLoop l, STM.mkTXMsg(STM.unsafeGet len, v, 1)) end
 
     fun next l = 
         case l 
@@ -76,40 +85,39 @@ struct
 
     fun delete ((l,len):ListHandle) (i:int) = 
         let fun lp prevPtr = 
-                let val prevNode = get prevPtr
+                let val prevNode = STM.get prevPtr
                     val curNodePtr = next prevNode
-                in case get curNodePtr
+                in case STM.get curNodePtr
                         of Null => false
                          | Node(curVal, nextPtr) =>
                             if curVal = i
                             then (case prevNode
-                                    of Head _ => (put(prevPtr, Head nextPtr); true)
-                                     | Node(v, _) => (put(prevPtr, Node(v, nextPtr)); true))
+                                    of Head _ => (STM.put(prevPtr, Head nextPtr); true)
+                                     | Node(v, _) => (STM.put(prevPtr, Node(v, nextPtr)); true))
                             else lp curNodePtr
                          | Head n => raise Fail "found head node as next\n"
                 end
-        in if atomic(fn () => lp l) then dec len else () end            
+        in if STM.atomic'(fn () => lp l, STM.mkTXMsg(STM.unsafeGet len, i, 2)) then dec len else () end            
 
     fun deleteIndex (l, len) (i:int) = 
         let fun deleteLoop(prev, prevPtr, curPtr, i) =
-                let val cur = get curPtr
-                in 
-                    case cur
-                       of Null => false
-                        | Node(_, nextPtr) => 
-                            if i = 0
-                            then
-                                (case prev
-                                   of Head _ => (put(prevPtr, Head nextPtr); true)
-                                    | Node(v, _) => (put(prevPtr, Node(v, nextPtr)); true))
-                            else
-                                deleteLoop(cur, curPtr, nextPtr, i-1)
-                        | Head _ => raise Fail("This should be impossible\n")
+                let val cur = STM.get curPtr
+                in case cur
+                    of Null => false
+                     | Node(_, nextPtr) => 
+                       if i = 0
+                       then
+                           (case prev
+                             of Head _ => (STM.put(prevPtr, Head nextPtr); true)
+                              | Node(v, _) => (STM.put(prevPtr, Node(v, nextPtr)); true))
+                       else
+                           deleteLoop(cur, curPtr, nextPtr, i-1)
+                     | Head _ => raise Fail("This should be impossible\n")
                 end
-        in if atomic(fn () => let val first = get l in deleteLoop(first, l, next first, i) end) then dec len else () 
+        in if STM.atomic(fn () => let val first = STM.get l in deleteLoop(first, l, next first, i) end) then dec len else () 
         end
-
-    fun size(l,len) = atomic(fn () => get len)
+	    
+    fun size(l,len) = STM.atomic(fn () => STM.get len)
 end
 
 

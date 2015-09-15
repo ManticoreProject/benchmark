@@ -13,16 +13,6 @@ val THREADS = VProc.numVProcs()
 val ITERS = 3000
 val MAXVAL = 100000
 
-fun printFun(x) = 
-    case x      
-       of OrderedLinkedList.Head _ => print "Head\n"
-        | OrderedLinkedList.Null => print "Null\n"
-        | OrderedLinkedList.Node(v, n) => print("Node, val = " ^ Int.toString v ^ "\n")     
-
-
-val _ = FFReadSet.registerPrintFun printFun
-
-
 val INITSIZE = 
     case getArg "-size" args
         of SOME n => (case Int.fromString n of SOME n => n | NONE => 4000)
@@ -78,7 +68,7 @@ fun initialize n =
     if n = 0
     then ()
     else let val randNum = Rand.inRangeInt(0, MAXVAL)
-             val _ = OrderedLinkedList.add l randNum
+             val _ = OrderedLinkedList.unsafeAdd l randNum
          in initialize (n-1) end
 
 (*val _ = print ("Running with " ^ Int.toString THREADS ^ " threads\n") *)
