@@ -31,9 +31,9 @@ structure Mesh =
      
     fun mesh_insert (rootElem,q,size,edgeSet) elem edgeMap = 
         let val _ = STM.atomic(fn() => 
-                        case STM.get rootElem
-                            of SOME _ => ()
-                             | NONE => STM.put(rootElem, SOME elem))
+				  case STM.get rootElem
+				   of SOME _ => ()
+				    | NONE => STM.put(rootElem, SOME elem))
             fun addNeighbors(es, edgeMap) = 
                 case es
                     of e::es' => 
@@ -45,13 +45,13 @@ structure Mesh =
                         else addNeighbors(es', mapInsert e elem edgeMap)
                     | nil => edgeMap
             val _ = case E.element_getEncroached elem
-            				of SOME ee => if eSetMember ee edgeSet
-            							  then () 
-            							  else E.element_setEncroached elem NONE
-            				 | NONE => ()
+            	     of SOME ee => if eSetMember ee edgeSet
+            			   then () 
+            			   else E.element_setEncroached elem NONE
+            	      | NONE => ()
         in addNeighbors(E.getEdges elem, edgeMap) end
-
-
+	    
+	    
     (* =============================================================================
      * mesh_remove
      * =============================================================================

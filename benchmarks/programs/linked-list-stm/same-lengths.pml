@@ -82,5 +82,6 @@ val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = STM.printStats()
 
 val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
+val _ = OrderedLinkedList.checkCounts l
 
 

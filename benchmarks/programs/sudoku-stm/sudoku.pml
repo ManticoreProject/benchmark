@@ -192,9 +192,7 @@ fun search m = (STM.atomic(fn () => STM.put(count, STM.unsafeGet count + 1));
 fun solve (grid : value list list)  = 
     let val matrix : choices matrix = choices grid
         val _ = prune matrix
-        val _ = printSolution (readLens matrix)
         
-        val _ = print "Done pruning first iteration\n"
         val res = Option.valOf(search matrix) handle e => (print "No solution\n"; raise e)
         (*shut down pruning threads*)
         val _ = MVar.put(rowMVar, NONE)

@@ -118,6 +118,19 @@ struct
         end
 	    
     fun size(l,len) = STM.atomic(fn () => STM.get len)
+
+    fun checkCounts (l, len) = 
+        let fun lp l =
+                let val refCount = NoRecMergeRSWriteSets.getRefCount l
+                    val _ = if refCount = 0 then () else print ("TRef ref count is " ^ Long.toString refCount ^ "\n")
+                in 
+                    case STM.unsafeGet l 
+                       of Null => ()
+                        | Node(v, next) => lp next
+                        | Head n => lp n
+                end
+        in if String.same(STM.whichSTM, "mergeWS") orelse String.same (STM.whichSTM, "ffRefCount") then lp l else (); print "Done checking ref counts\n" end
+
 end
 
 
