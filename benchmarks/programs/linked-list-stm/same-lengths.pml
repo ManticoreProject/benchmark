@@ -44,23 +44,23 @@ fun start l i =
         let val ch = PrimChan.new()
             fun threadFun() = 
                 let val _ = threadLoop l ITERS handle e => PrimChan.send(ch, Exn e)
-                in PrimChan.send(ch, Ans (BoundedHybridPartialSTM.getStats()))
+                in PrimChan.send(ch, Ans ())
                 end
              val _ = Threads.spawnOn(i-1, threadFun)
          in ch::start l (i-1) end
 
 fun join chs = 
-    let fun joinLoop(chs, stats, exns) = 
+    let fun joinLoop(chs,  exns) = 
             case chs
                 of ch::chs' => 
                     (case PrimChan.recv ch
-                        of Ans stats' => joinLoop(chs', stats' @ stats, exns)
-                         | Exn e => joinLoop(chs', stats, Option.SOME e))
+                        of Ans stats' => joinLoop(chs', exns)
+                         | Exn e => joinLoop(chs', Option.SOME e))
                  | nil => 
                     (case exns
-                       of NONE => stats
+                       of NONE => ()
                         | SOME e => raise e)
-    in joinLoop(chs, nil, Option.NONE) end
+    in joinLoop(chs, Option.NONE) end
 
 val l = OrderedLinkedList.newList()
 
@@ -76,12 +76,11 @@ fun initialize n =
 val _ = initialize INITSIZE handle Fail s => (print s; raise Fail s)
 val _ = print("Done initializing, executing with "  ^ Int.toString THREADS ^ " threads\n")
 val startTime = Time.now()
-val stats = join(start l THREADS) handle Fail s => (print s; raise Fail s)
+val _ = join(start l THREADS) handle Fail s => (print s; raise Fail s)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = STM.printStats()
 
-val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 val _ = OrderedLinkedList.checkCounts l
 
 

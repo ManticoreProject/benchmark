@@ -55,27 +55,28 @@ datatype 'a res = Ans of 'a | Exn of exn
 fun start t i =
     if i = 0
     then nil
-    else let val ch = PrimChan.new()
-             val seed = R.newSeed 0
-             fun f() =
+    else 
+        let val ch = PrimChan.new()
+            val seed = R.newSeed 0
+            fun f() =
                 let val _ = threadLoop(t, ITERS, seed) handle e => (PrimChan.send(ch, Exn e))
-            in PrimChan.send(ch, Ans (BoundedHybridPartialSTM.getStats()))
-            end
-             val _ = Threads.spawnOn(i-1, f)
-         in ch::start t (i-1) end
+                in PrimChan.send(ch, Ans ())
+                end
+            val _ = Threads.spawnOn(i-1, f)
+        in ch::start t (i-1) end
 
 fun join chs = 
-    let fun joinLoop(chs, stats, exns) = 
+    let fun joinLoop(chs, exns) = 
             case chs 
                of nil => (
                     case exns
                         of Option.SOME e => (raise e)
-                         | Option.NONE => stats)
+                         | Option.NONE => ())
                 | ch::chs' => 
                     (case PrimChan.recv ch
-                        of Ans a => joinLoop(chs', a @ stats, exns)
-                         | Exn e => joinLoop(chs', stats, Option.SOME e))
-    in joinLoop(chs, nil, Option.NONE) end
+                        of Ans a => joinLoop(chs', exns)
+                         | Exn e => joinLoop(chs', Option.SOME e))
+    in joinLoop(chs, Option.NONE) end
 
 val t = RBTree.newTree()
 
@@ -91,7 +92,7 @@ val _ = initialize 100000
 val _ = print ("Done initializing tree of depth " ^ Int.toString (RBTree.depth t) ^ "\n")
 
 val startTime = Time.now()
-val stats = join(start t THREADS)
+val _ = join(start t THREADS)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 
@@ -99,7 +100,4 @@ val _ = atomic(fn _ => RBTree.chkOrder intComp t)
 val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)
 
 val _ = printStats()
-(*
-val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
-val _ = BoundedHybridPartialSTM.printTimer()
-*)
+
