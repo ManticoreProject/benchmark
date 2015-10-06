@@ -11,13 +11,15 @@ val args = CommandLine.arguments ()
 val THREADS = VProc.numVProcs()
 
 val ITERS = 3000
-val MAXVAL = 100000
+
 
 val INITSIZE = 
     case getArg "-size" args
         of SOME n => (case Int.fromString n of SOME n => n | NONE => 4000)
          | NONE => 4000
     
+val MAXVAL = INITSIZE
+
 fun ignore _ = ()
 
 val READS = 2
@@ -32,7 +34,7 @@ fun threadLoop l i =
                      then ignore(OrderedLinkedList.find l (Rand.inRangeInt(0, MAXVAL)))
                      else if prob < READS + WRITES
                           then ignore(OrderedLinkedList.add l (Rand.inRangeInt(0, MAXVAL)))
-                          else ignore(OrderedLinkedList.deleteIndex l (Rand.inRangeInt(0, OrderedLinkedList.size l)))
+                          else ignore(OrderedLinkedList.delete l (Rand.inRangeInt(0, MAXVAL)))
          in threadLoop l (i-1) end
          
 datatype 'a res = Ans of 'a | Exn of exn

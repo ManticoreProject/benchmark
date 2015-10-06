@@ -54,17 +54,17 @@ fun start i =
              val percentQuery = G.queries
              val qRange = Long.toInt(Double.round(Double.fromInt percentQuery / 100.0 * Double.fromInt numRelation + 0.5))
              val percentUser = G.percentUser
-             val _ = Threads.spawnOn(i-1, fn _ => (C.runClient(i, numTransPerClient, numQPerTrans, qRange, percentUser, manager); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
+             val _ = Threads.spawnOn(i-1, fn _ => (C.runClient(i, numTransPerClient, numQPerTrans, qRange, percentUser, manager); PrimChan.send(ch, ())))
          in ch::start (i-1) end
 
 fun join chs = 
     case chs
-        of ch::chs' => (PrimChan.recv ch @ join chs')
-         | nil => nil
+        of ch::chs' => (PrimChan.recv ch; join chs')
+         | nil => ()
 
 val _ = print "Done initializing manager\n"
 val startTime = Time.now()
-val stats = join (start G.numClient)
+val _ = join (start G.numClient)
 val endTime = Time.now()
 
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
@@ -72,4 +72,3 @@ val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = STM.printStats()
 
 
-val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)

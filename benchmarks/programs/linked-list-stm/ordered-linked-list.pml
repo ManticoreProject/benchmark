@@ -83,21 +83,23 @@ struct
              | Node(_, n) => n
              | Null => raise Fail("trying to take next of null")
 
-    fun delete ((l,len):ListHandle) (i:int) = 
-        let fun lp prevPtr = 
-                let val prevNode = STM.get prevPtr
-                    val curNodePtr = next prevNode
-                in case STM.get curNodePtr
-                        of Null => false
-                         | Node(curVal, nextPtr) =>
-                            if curVal = i
-                            then (case prevNode
-                                    of Head _ => (STM.put(prevPtr, Head nextPtr); true)
-                                     | Node(v, _) => (STM.put(prevPtr, Node(v, nextPtr)); true))
-                            else lp curNodePtr
-                         | Head n => raise Fail "found head node as next\n"
+
+    fun delete (l, len) i = 
+        let fun lp(prev, prevPtr, curPtr) = 
+                let val cur = STM.get curPtr
+                in
+                    case cur 
+                       of Null => false
+                        | Node(v, nextPtr) => 
+                            if i = v
+                            then (
+                                case prev 
+                                   of Head _ => (STM.put(prevPtr, Head nextPtr); true)
+                                    | Node(v, _) => (STM.put(prevPtr, Node(v, nextPtr)); true))
+                            else lp(cur, curPtr, nextPtr)
                 end
-        in if STM.atomic'(fn () => lp l, STM.mkTXMsg(STM.unsafeGet len, i, 2)) then dec len else () end            
+        in if STM.atomic(fn () => let val first = STM.get l in lp(first, l, next first) end) then dec len else ()
+        end
 
     fun deleteIndex (l, len) (i:int) = 
         let fun deleteLoop(prev, prevPtr, curPtr, i) =

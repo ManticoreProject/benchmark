@@ -23,7 +23,7 @@ struct
 
     val numClient = VProc.numVProcs()
 
-    val numTransaction = getIntFlg "-t" 100000
+    val numTransaction = getIntFlg "-t" 300000
 
     val num = getIntFlg "-n" 10
 

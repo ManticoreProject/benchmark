@@ -294,5 +294,4 @@ struct
                 of T(c,l,v,r) => 1 + Int.max(lp l, lp r)
                  | _ => 0
         in atomic(fn () => lp t) end  
-
 end

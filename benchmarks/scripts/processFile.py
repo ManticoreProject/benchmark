@@ -50,15 +50,15 @@ def dumpRow(data, k, base):
     isCommon = True
     for stm, stmData in data:
         if k in stmData:
-            s += ' & ' + ("%.2f" % mean(stmData[k]))
+            s += ' & \\num[group-separator={,}]{' + ("%.2f" % mean(stmData[k])) + '}'
             change = 0 if base == 0 else ((base - mean(stmData[k])) / base) * -100
-            s2 += ' & ' + ("%.2f" % change) + '\%'
+            s2 += ' & \\num[group-separator={,}]{' + ("%.2f" % change) + '}\%'
         else:
             s += ' & - ' 
             isCommon = False
     outStream.write(s + '\\\\\\hline\n')
-    if isCommon:
-        outStream.write(s2 + '\\\\\\hline\n')
+#    if isCommon:
+#        outStream.write(s2 + '\\\\\\hline\n')
 
 def dumpTex(data, benchName, date):
     global Keys
