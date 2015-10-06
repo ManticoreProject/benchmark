@@ -151,13 +151,13 @@ fun start i =
     if i = 0
     then nil
     else let val ch = PrimChan.new()
-             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop(); PrimChan.send(ch, BoundedHybridPartialSTM.getStats())))
+             val _ = Threads.spawnOn(i-1, fn _ => (threadLoop(); PrimChan.send(ch, ())))
          in ch::start (i-1) end
 
 fun join chs = 
     case chs
-        of ch::chs' => (PrimChan.recv ch @ join chs')
-         | nil => nil
+        of ch::chs' => (PrimChan.recv ch; join chs')
+         | nil => ()
 
 
 val THREADS = VProc.numVProcs()
@@ -165,7 +165,7 @@ val THREADS = VProc.numVProcs()
 val _ = print ("Running with " ^ Int.toString THREADS ^ " threads\n")
 
 val startTime = Time.now()
-val stats = join(start THREADS)
+val _ = join(start THREADS)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = printStats()
@@ -174,7 +174,6 @@ val _ = print ("Could not find " ^ Int.toString (atomic(fn () => get noPathCount
 
 
 
-val _ = BoundedHybridPartialSTM.dumpStats("stats.txt", stats)
 
 
 
