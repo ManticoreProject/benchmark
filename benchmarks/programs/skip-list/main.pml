@@ -84,6 +84,7 @@ val startTime = Time.now()
 val _ = join(start l THREADS) handle Fail s => (print s; raise Fail s)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
+val _ = print ("TXs per second: " ^ Float.toString(Float.fromInt ITERS / Time.toSecsFloat (endTime - startTime)) ^ "\n")
 val _ = STM.printStats()
 
 
