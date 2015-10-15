@@ -17,7 +17,7 @@ val THREADS = VProc.numVProcs()
 
 val ITERS = getIntFlg "-iters" 300000
 val INITSIZE = getIntFlg "-size" 20000
-val MAXVAL = 100000
+val MAXVAL = 100000000
 
 fun ignore (x:'a) = ()
 
