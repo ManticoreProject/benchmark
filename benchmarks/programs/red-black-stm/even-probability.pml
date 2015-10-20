@@ -27,7 +27,12 @@ val (atomic,new,printStats) = (RBTree.atomic,RBTree.new,RBTree.printStats)
 
 val THREADS = VProc.numVProcs()
          
-val ITERS = getIntFlg "-iters" 500000
+val DFLT_ITERS = 
+    case THREADS 
+       of 32 => 100000
+        | _ => 500000
+
+val ITERS = getIntFlg "-iters" DFLT_ITERS
 val MAXVAL = 1000000
 
 fun ignore _ = ()

@@ -70,13 +70,17 @@ fun removeSingles singles (raw, tv) =
     end
     
 fun findSingles row = 
-    case row
-        of tv::row => 
-            let val raw = STM.get tv
-                val (singles, nonSingles) = findSingles row
-            in if single raw then (List.hd raw::singles, nonSingles) else (singles,(raw,tv)::nonSingles)
-            end
-         | _ => (nil, nil)
+    let fun lp(row, singles, nonSingles) = 
+            case row 
+               of nil => (singles, nonSingles)
+                | tv::row => 
+                    let val raw = STM.get tv
+                    in 
+                        if single raw 
+                        then lp(row, List.hd raw::singles, nonSingles)
+                        else lp(row, singles, (raw, tv)::nonSingles)
+                    end
+    in lp(row, nil, nil) end
 
 fun reduce (row : choices row) = 
     let val (singles, nonSingles) = findSingles row

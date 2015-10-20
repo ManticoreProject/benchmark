@@ -25,7 +25,7 @@ val READS = 1
 val WRITES = 1
 val DELETES = 1 
 
-fun threadLoop l i gen = 
+fun threadLoop l i = 
     if i = 0
     then ()
     else 
@@ -33,11 +33,13 @@ fun threadLoop l i gen =
             val r = Rand.inRangeInt(0, MAXVAL)
         in 
             if prob < READS
-            then (STM.atomic'(fn _ => SkipList.lookup l r, STM.mkTXMsg(0, r, 1)); threadLoop l (i-1) gen)
+            then (STM.atomic'(fn _ => SkipList.lookup l r, STM.mkTXMsg(0, r, 1)); threadLoop l (i-1))
             else 
                 if prob < READS + WRITES
-                then let val gen' = STM.atomic' (fn _ => SkipList.insert l r () gen, STM.mkTXMsg(0, r, 2)) in threadLoop l (i-1) gen' end
-                else (STM.atomic' (fn _ => SkipList.delete l r, STM.mkTXMsg(0, r, 3)); threadLoop l (i-1) gen)
+                then 
+                    let val lev = SkipList.chooseLevel l
+                    in (STM.atomic' (fn _ => SkipList.insert l r () lev, STM.mkTXMsg(0, r, 2)); threadLoop l (i-1))  end
+                else (STM.atomic' (fn _ => SkipList.delete l r, STM.mkTXMsg(0, r, 3)); threadLoop l (i-1))
         end
 
 datatype 'a res = Ans of 'a | Exn of exn
@@ -48,7 +50,7 @@ fun start l i =
     else 
         let val ch = PrimChan.new()
             fun threadFun() = 
-                let val _ = threadLoop l ITERS (PureRand.mkGen (Int.toLong i)) handle e => PrimChan.send(ch, Exn e)
+                let val _ = threadLoop l ITERS handle e => PrimChan.send(ch, Exn e)
                 in PrimChan.send(ch, Ans ())
                 end
              val _ = Threads.spawnOn(i-1, threadFun)

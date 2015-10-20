@@ -12,21 +12,20 @@ struct
 		in (maxLevel, p, STM.new 0, ptrs) 
 		end
 
-	fun chooseLevel (maxLevel, prob, gen) = 
-		let fun lp(i, gen) = 
-				if i = maxLevel - 1
-				then (maxLevel - 1, gen)
-				else 
-					let val (r, gen) = PureRand.nextFloat(gen, 0.0, 1.0)
-					in if r < prob
-						then (i, gen)
-						else lp(i+1, gen)
-					end
-		in lp(0, gen) end
+	fun chooseLevel(maxLevel, prob, curLevelPtr, listHead) = 
+		let fun lp i = 
+			if i = maxLevel - 1
+			then maxLevel - 1
+			else 
+				let val r = Rand.randFloat(0.0, 1.0)
+				in if r < prob
+					then i
+					else lp(i+1)
+				end
+		in lp 0 end
 
-	fun insert (maxLevel, prob, curLevelPtr, listHead) k value gen = 
-		let val (myLev, gen) = chooseLevel (maxLevel, prob, gen)
-			val curLevel = STM.get curLevelPtr
+	fun insert (maxLevel, prob, curLevelPtr, listHead) k value myLev = 
+		let val curLevel = STM.get curLevelPtr
 			val _ = if myLev > curLevel then STM.put(curLevelPtr, myLev) else ()
 			val newPtrs = Vector.tabulate(maxLevel, fn _ => STM.new Nil)
 			val newNode = Node(k, value, newPtrs)
@@ -54,7 +53,7 @@ struct
 						   		   	else lp(lev-1, fwdPtrs)
 						   		else lp(lev, ptrs)
 					end
-		in lp(curLevel, listHead); gen end
+		in lp(curLevel, listHead) end
 
 	fun unsafeChooseLevel (maxLevel, prob) = 
 		let fun lp i = 

@@ -10,8 +10,16 @@ val args = CommandLine.arguments ()
 
 val THREADS = VProc.numVProcs()
 
-val ITERS = 3000
+val DFLT_ITERS = 
+    case THREADS 
+        of 4 => 6000
+         | 32 => 1000
+         | _ => 1000
 
+val ITERS = 
+    case getArg "-iters" args
+        of SOME n => (case Int.fromString n of SOME n => n | NONE => DFLT_ITERS)
+         | NONE => DFLT_ITERS
 
 val INITSIZE = 
     case getArg "-size" args
