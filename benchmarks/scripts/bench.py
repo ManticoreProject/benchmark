@@ -15,8 +15,9 @@ parser.add_argument("-run", type=str, help="Which STM implementation to use (all
 parser.add_argument("-threads", type=int, help="Number of threads to use", default=4)
 args = parser.parse_args()
 
-stms = ["mergeWS","ffRefCount","ffnorec","orderedNoRec","pnorec","norec","orderedTL2","bounded","partial","full"]
-benchmarks = ["linked-list-stm", "red-black-stm", "sudoku-stm", "labyrinth", "skip-list", "vacation"]
+stms = ["ffMask", "ffRefCount","ffnorec","orderedNoRec","pnorec","norec","orderedTL2","bounded","partial","full"]
+#benchmarks = ["linked-list-stm", "red-black-stm", "labyrinth", "skip-list", "vacation"]
+benchmarks = ["linked-list-stm", "red-black-stm", "skip-list"]
 
 def sendErrorEmail(program, stm, errorCount, dump):
 	msg = MIMEText('Benchmark \"' + program + '\" failed ' + str(errorCount) + ' times using STM: \"' + stm + '\"\n\nDump: \n' + dump)
@@ -42,6 +43,7 @@ def runSTM(stm, file, program):
 		try:
 			errorCount = 0
 			errorDump = ''
+			print('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt')
 			res1 = subprocess.Popen('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
 			while res1 != 0:
 				errorDump = errorDump + open('currentTime.txt').read() + '\n'

@@ -12,7 +12,7 @@ args = parser.parse_args()
 
 outStream = sys.stdout if args.file is None else open(args.file, 'w')
 
-benchmarks = ["linked-list-stm", "red-black-stm", "sudoku-stm", "vacation", "labyrinth"]
+benchmarks = ["skip-list", "linked-list-stm", "red-black-stm", "sudoku-stm", "vacation", "labyrinth"]
 baseline = "full"
 
 def toValue(v):
@@ -95,7 +95,7 @@ def doBenchmark(benchName, text, date):
 def main():
     origDir = os.path.dirname(os.path.realpath(__file__))
     if not(args.figuresonly):
-        outStream.write('\\documentclass[12pt]{article}\n\\usepackage[margin=0.5in]{geometry}\n\\usepackage{adjustbox,lipsum}\n\\usepackage{float}\n\\begin{document}\n')
+        outStream.write('\\documentclass[12pt]{article}\n\\usepackage[margin=0.5in]{geometry}\n\\usepackage{adjustbox,lipsum,siunitx}\n\\usepackage{float}\n\\begin{document}\n')
     os.chdir(origDir)
     for bench in benchmarks:
         if not(os.path.isdir('../programs/' + bench + '/benchmark-times')):
