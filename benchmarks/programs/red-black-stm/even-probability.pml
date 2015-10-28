@@ -99,8 +99,8 @@ val _ = print ("Done initializing tree of depth " ^ Int.toString (RBTree.depth t
 val iters = join(start t THREADS)
 val _ = print ("Txns/sec = " ^ Float.toString (Float.fromInt iters / Float.fromLong TIME) ^ "\n")
 
-val _ = atomic(fn _ => RBTree.chkOrder intComp t)
+(*val _ = atomic(fn _ => RBTree.chkOrder intComp t)
 val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)
-
+*)
 val _ = printStats()
 

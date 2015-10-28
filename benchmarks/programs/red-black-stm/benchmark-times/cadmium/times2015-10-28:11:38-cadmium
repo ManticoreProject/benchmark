@@ -1,0 +1,870 @@
+name = ffMask
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84659.000000
+Partial-Aborts = 20471
+Full-Aborts = 1534
+Total-Aborts = 22005
+FF Matches = 845
+Fast Forward Checks = 165902
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83732.601562
+Partial-Aborts = 21145
+Full-Aborts = 1671
+Total-Aborts = 22816
+FF Matches = 843
+Fast Forward Checks = 167740
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84866.601562
+Partial-Aborts = 20977
+Full-Aborts = 1619
+Total-Aborts = 22596
+FF Matches = 856
+Fast Forward Checks = 169618
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83356.398438
+Partial-Aborts = 19982
+Full-Aborts = 1524
+Total-Aborts = 21506
+FF Matches = 796
+Fast Forward Checks = 160052
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83261.203125
+Partial-Aborts = 16182
+Full-Aborts = 1263
+Total-Aborts = 17445
+FF Matches = 750
+Fast Forward Checks = 133130
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 85707.601562
+Partial-Aborts = 19433
+Full-Aborts = 1654
+Total-Aborts = 21087
+FF Matches = 859
+Fast Forward Checks = 153020
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83677.601562
+Partial-Aborts = 20315
+Full-Aborts = 1609
+Total-Aborts = 21924
+FF Matches = 824
+Fast Forward Checks = 161534
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83726.203125
+Partial-Aborts = 20254
+Full-Aborts = 1489
+Total-Aborts = 21743
+FF Matches = 837
+Fast Forward Checks = 162726
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83513.203125
+Partial-Aborts = 17967
+Full-Aborts = 1341
+Total-Aborts = 19308
+FF Matches = 838
+Fast Forward Checks = 144751
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83471.601562
+Partial-Aborts = 17400
+Full-Aborts = 1401
+Total-Aborts = 18801
+FF Matches = 888
+Fast Forward Checks = 137946
+name = ffRefCount
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84137.398438
+Partial-Aborts = 21675
+Full-Aborts = 1570
+Total-Aborts = 23245
+FF Matches = 836
+Fast Forward Checks = 213816
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84541.601562
+Partial-Aborts = 21187
+Full-Aborts = 1650
+Total-Aborts = 22837
+FF Matches = 829
+Fast Forward Checks = 211533
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84041.203125
+Partial-Aborts = 20498
+Full-Aborts = 1563
+Total-Aborts = 22061
+FF Matches = 793
+Fast Forward Checks = 197537
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84331.398438
+Partial-Aborts = 19539
+Full-Aborts = 1537
+Total-Aborts = 21076
+FF Matches = 831
+Fast Forward Checks = 194081
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83795.601562
+Partial-Aborts = 18569
+Full-Aborts = 1549
+Total-Aborts = 20118
+FF Matches = 834
+Fast Forward Checks = 180275
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84157.203125
+Partial-Aborts = 21118
+Full-Aborts = 1643
+Total-Aborts = 22761
+FF Matches = 849
+Fast Forward Checks = 212927
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84273.000000
+Partial-Aborts = 19689
+Full-Aborts = 1554
+Total-Aborts = 21243
+FF Matches = 874
+Fast Forward Checks = 195507
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84479.398438
+Partial-Aborts = 20202
+Full-Aborts = 1603
+Total-Aborts = 21805
+FF Matches = 826
+Fast Forward Checks = 194683
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 85076.203125
+Partial-Aborts = 20617
+Full-Aborts = 1607
+Total-Aborts = 22224
+FF Matches = 818
+Fast Forward Checks = 203402
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84130.601562
+Partial-Aborts = 20739
+Full-Aborts = 1521
+Total-Aborts = 22260
+FF Matches = 780
+Fast Forward Checks = 207032
+name = ffnorec
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+Thread exiting because of uncaught exception: found double black leaf in remove:lp
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84419.796875
+Partial-Aborts = 17279
+Full-Aborts = 456
+Total-Aborts = 17735
+FF Matches = 825
+Fast Forward Checks = 1279022
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84152.796875
+Partial-Aborts = 16918
+Full-Aborts = 503
+Total-Aborts = 17421
+FF Matches = 836
+Fast Forward Checks = 1268168
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83875.203125
+Partial-Aborts = 16606
+Full-Aborts = 428
+Total-Aborts = 17034
+FF Matches = 818
+Fast Forward Checks = 1236689
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83860.796875
+Partial-Aborts = 15101
+Full-Aborts = 412
+Total-Aborts = 15513
+FF Matches = 858
+Fast Forward Checks = 1111098
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+found double black leaf in remove:lp
+ception: found double black leaf in remove:lp
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83637.601562
+Partial-Aborts = 16291
+Full-Aborts = 457
+Total-Aborts = 16748
+FF Matches = 779
+Fast Forward Checks = 1229983
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84413.203125
+Partial-Aborts = 16190
+Full-Aborts = 422
+Total-Aborts = 16612
+FF Matches = 809
+Fast Forward Checks = 1205728
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83776.000000
+Partial-Aborts = 16879
+Full-Aborts = 461
+Total-Aborts = 17340
+FF Matches = 836
+Fast Forward Checks = 1259304
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83754.796875
+Partial-Aborts = 15232
+Full-Aborts = 401
+Total-Aborts = 15633
+FF Matches = 831
+Fast Forward Checks = 1129061
+name = orderedNoRec
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83436.601562
+Partial-Aborts = 17913
+Full-Aborts = 440
+Total-Aborts = 18353
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83586.601562
+Partial-Aborts = 18483
+Full-Aborts = 404
+Total-Aborts = 18887
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83879.203125
+Partial-Aborts = 18627
+Full-Aborts = 497
+Total-Aborts = 19124
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83655.203125
+Partial-Aborts = 19803
+Full-Aborts = 496
+Total-Aborts = 20299
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+Thread exiting because of uncaught exception: found double black leaf in remove:lp
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83596.601562
+Partial-Aborts = 20376
+Full-Aborts = 502
+Total-Aborts = 20878
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+Thread exiting because of uncaught exception: found double black leaf in remove:lp
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+found double black leaf in remove:lp
+ception: found double black leaf in remove:lp
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83771.203125
+Partial-Aborts = 19421
+Full-Aborts = 446
+Total-Aborts = 19867
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+found double black leaf in remove:lp
+ception: found double black leaf in remove:lp
+name = pnorec
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+found double black leaf in remove:lp
+ception: found double black leaf in remove:lp
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84992.398438
+Partial-Aborts = 14555
+Full-Aborts = 468
+Total-Aborts = 15023
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 83701.796875
+Partial-Aborts = 12500
+Full-Aborts = 404
+Total-Aborts = 12904
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84651.796875
+Partial-Aborts = 13362
+Full-Aborts = 384
+Total-Aborts = 13746
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 85017.203125
+Partial-Aborts = 14757
+Full-Aborts = 428
+Total-Aborts = 15185
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 85243.203125
+Partial-Aborts = 14501
+Full-Aborts = 408
+Total-Aborts = 14909
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84470.796875
+Partial-Aborts = 14195
+Full-Aborts = 369
+Total-Aborts = 14564
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 84579.203125
+Partial-Aborts = 15125
+Full-Aborts = 422
+Total-Aborts = 15547
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+Thread exiting because of uncaught exception: found double black leaf in remove:lp
+name = norec
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 88693.796875
+Partial-Aborts = 0
+Full-Aborts = 19912
+Total-Aborts = 19912
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 88531.601562
+Partial-Aborts = 0
+Full-Aborts = 19079
+Total-Aborts = 19079
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 88269.796875
+Partial-Aborts = 0
+Full-Aborts = 15459
+Total-Aborts = 15459
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 88303.796875
+Partial-Aborts = 0
+Full-Aborts = 17705
+Total-Aborts = 17705
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 87778.398438
+Partial-Aborts = 0
+Full-Aborts = 19042
+Total-Aborts = 19042
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+found double black leaf in remove:lp
+ception: found double black leaf in remove:lp
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Warning: exception raised in transaction
+Thread exiting because of uncaught exception: found double black leaf in remove:lp
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 88068.000000
+Partial-Aborts = 0
+Full-Aborts = 16716
+Total-Aborts = 16716
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 87875.796875
+Partial-Aborts = 0
+Full-Aborts = 20144
+Total-Aborts = 20144
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 87531.000000
+Partial-Aborts = 0
+Full-Aborts = 21613
+Total-Aborts = 21613
+FF Matches = 0
+Fast Forward Checks = 0
+name = orderedTL2
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1364451.250000
+Partial-Aborts = 380562
+Full-Aborts = 4891
+Total-Aborts = 385453
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1364927.625000
+Partial-Aborts = 367058
+Full-Aborts = 4862
+Total-Aborts = 371920
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1359490.625000
+Partial-Aborts = 405439
+Full-Aborts = 5175
+Total-Aborts = 410614
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1358700.375000
+Partial-Aborts = 372134
+Full-Aborts = 4937
+Total-Aborts = 377071
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1362448.750000
+Partial-Aborts = 374045
+Full-Aborts = 4730
+Total-Aborts = 378775
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1363501.000000
+Partial-Aborts = 355049
+Full-Aborts = 4497
+Total-Aborts = 359546
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1354448.000000
+Partial-Aborts = 354824
+Full-Aborts = 4697
+Total-Aborts = 359521
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1368916.375000
+Partial-Aborts = 359604
+Full-Aborts = 4785
+Total-Aborts = 364389
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1384511.375000
+Partial-Aborts = 391617
+Full-Aborts = 4999
+Total-Aborts = 396616
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1370982.000000
+Partial-Aborts = 344797
+Full-Aborts = 4555
+Total-Aborts = 349352
+FF Matches = 0
+Fast Forward Checks = 0
+name = bounded
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1154212.375000
+Partial-Aborts = 271254
+Full-Aborts = 4327
+Total-Aborts = 275581
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1137415.250000
+Partial-Aborts = 345920
+Full-Aborts = 5020
+Total-Aborts = 350940
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1102277.250000
+Partial-Aborts = 303156
+Full-Aborts = 4423
+Total-Aborts = 307579
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1080150.000000
+Partial-Aborts = 271828
+Full-Aborts = 4298
+Total-Aborts = 276126
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1099012.375000
+Partial-Aborts = 266181
+Full-Aborts = 4278
+Total-Aborts = 270459
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1142848.750000
+Partial-Aborts = 273752
+Full-Aborts = 4272
+Total-Aborts = 278024
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1149502.375000
+Partial-Aborts = 291561
+Full-Aborts = 4485
+Total-Aborts = 296046
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1158190.750000
+Partial-Aborts = 303750
+Full-Aborts = 4715
+Total-Aborts = 308465
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1114951.625000
+Partial-Aborts = 261998
+Full-Aborts = 4120
+Total-Aborts = 266118
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1156946.250000
+Partial-Aborts = 276449
+Full-Aborts = 4430
+Total-Aborts = 280879
+FF Matches = 0
+Fast Forward Checks = 0
+name = partial
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1120602.625000
+Partial-Aborts = 309410
+Full-Aborts = 0
+Total-Aborts = 309410
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1119304.625000
+Partial-Aborts = 297929
+Full-Aborts = 0
+Total-Aborts = 297929
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1122043.000000
+Partial-Aborts = 305390
+Full-Aborts = 0
+Total-Aborts = 305390
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1101838.750000
+Partial-Aborts = 229724
+Full-Aborts = 0
+Total-Aborts = 229724
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1108633.750000
+Partial-Aborts = 266348
+Full-Aborts = 0
+Total-Aborts = 266348
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1101635.750000
+Partial-Aborts = 251486
+Full-Aborts = 0
+Total-Aborts = 251486
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1102210.375000
+Partial-Aborts = 268107
+Full-Aborts = 0
+Total-Aborts = 268107
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1108566.375000
+Partial-Aborts = 267508
+Full-Aborts = 0
+Total-Aborts = 267508
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1104244.375000
+Partial-Aborts = 272266
+Full-Aborts = 0
+Total-Aborts = 272266
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1002445.375000
+Partial-Aborts = 53376
+Full-Aborts = 0
+Total-Aborts = 53376
+FF Matches = 0
+Fast Forward Checks = 0
+name = full
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 993150.375000
+Partial-Aborts = 0
+Full-Aborts = 218401
+Total-Aborts = 218401
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 838734.000000
+Partial-Aborts = 0
+Full-Aborts = 670054
+Total-Aborts = 670054
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1204312.750000
+Partial-Aborts = 0
+Full-Aborts = 434912
+Total-Aborts = 434912
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 971510.000000
+Partial-Aborts = 0
+Full-Aborts = 402817
+Total-Aborts = 402817
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 839245.375000
+Partial-Aborts = 0
+Full-Aborts = 687815
+Total-Aborts = 687815
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1217843.000000
+Partial-Aborts = 0
+Full-Aborts = 428884
+Total-Aborts = 428884
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1010372.812500
+Partial-Aborts = 0
+Full-Aborts = 264744
+Total-Aborts = 264744
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 876212.187500
+Partial-Aborts = 0
+Full-Aborts = 537047
+Total-Aborts = 537047
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 1212515.250000
+Partial-Aborts = 0
+Full-Aborts = 483499
+Total-Aborts = 483499
+FF Matches = 0
+Fast Forward Checks = 0
+WithK tag is 1
+WithoutK tag is 3
+Done initializing tree of depth 22
+Txns/sec = 992074.625000
+Partial-Aborts = 0
+Full-Aborts = 558687
+Total-Aborts = 558687
+FF Matches = 0
+Fast Forward Checks = 0
