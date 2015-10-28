@@ -15,15 +15,31 @@ outStream = sys.stdout if args.file is None else open(args.file, 'w')
 benchmarks = ["skip-list", "linked-list-stm", "red-black-stm", "sudoku-stm", "vacation", "labyrinth"]
 baseline = "full"
 
-def toValue(v):
+def isfloat(x):
     try:
-        return int(v)
+        a = float(x)
     except ValueError:
-        try:
-            return float(v)
-        except ValueError:
-            return v
+        return False
+    else:
+        return True
 
+def isint(x):
+    try:
+        a = float(x)
+        b = int(a)
+    except ValueError:
+        return False
+    else:
+        return a == b
+
+def toValue(v):
+    if isfloat(v):
+        return float(v)
+    elif isint(v):
+        return int(v)
+    else:
+        return v
+        
 Keys = set()
 def processChunk(chunk):
     global iters
