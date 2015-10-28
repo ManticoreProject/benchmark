@@ -1,0 +1,1010 @@
+name = ffMask
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5788.799805
+Partial-Aborts = 139001
+Full-Aborts = 83704
+Total-Aborts = 222705
+FF Matches = 127788
+Fast Forward Checks = 127926
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5814.399902
+Partial-Aborts = 150164
+Full-Aborts = 81833
+Total-Aborts = 231997
+FF Matches = 135167
+Fast Forward Checks = 135290
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5796.399902
+Partial-Aborts = 146245
+Full-Aborts = 81174
+Total-Aborts = 227419
+FF Matches = 132982
+Fast Forward Checks = 133098
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5686.600098
+Partial-Aborts = 138819
+Full-Aborts = 79763
+Total-Aborts = 218582
+FF Matches = 126464
+Fast Forward Checks = 126603
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5785.200195
+Partial-Aborts = 122727
+Full-Aborts = 85215
+Total-Aborts = 207942
+FF Matches = 117097
+Fast Forward Checks = 117218
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5768.200195
+Partial-Aborts = 130909
+Full-Aborts = 78748
+Total-Aborts = 209657
+FF Matches = 123977
+Fast Forward Checks = 124126
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5700.600098
+Partial-Aborts = 125919
+Full-Aborts = 80118
+Total-Aborts = 206037
+FF Matches = 122649
+Fast Forward Checks = 122788
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5701.200195
+Partial-Aborts = 129810
+Full-Aborts = 77772
+Total-Aborts = 207582
+FF Matches = 122591
+Fast Forward Checks = 122757
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5734.200195
+Partial-Aborts = 124560
+Full-Aborts = 79730
+Total-Aborts = 204290
+FF Matches = 119393
+Fast Forward Checks = 119501
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5635.399902
+Partial-Aborts = 117647
+Full-Aborts = 83128
+Total-Aborts = 200775
+FF Matches = 114782
+Fast Forward Checks = 114930
+Done checking ref counts
+name = ffRefCount
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5790.000000
+Partial-Aborts = 119726
+Full-Aborts = 84974
+Total-Aborts = 204700
+FF Matches = 111894
+Fast Forward Checks = 291817
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5804.799805
+Partial-Aborts = 122275
+Full-Aborts = 83414
+Total-Aborts = 205689
+FF Matches = 116246
+Fast Forward Checks = 315718
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5706.200195
+Partial-Aborts = 126439
+Full-Aborts = 80956
+Total-Aborts = 207395
+FF Matches = 121250
+Fast Forward Checks = 339088
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5788.000000
+Partial-Aborts = 123314
+Full-Aborts = 83001
+Total-Aborts = 206315
+FF Matches = 117054
+Fast Forward Checks = 342820
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5724.799805
+Partial-Aborts = 128163
+Full-Aborts = 81222
+Total-Aborts = 209385
+FF Matches = 122117
+Fast Forward Checks = 319508
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5703.399902
+Partial-Aborts = 124920
+Full-Aborts = 80705
+Total-Aborts = 205625
+FF Matches = 121659
+Fast Forward Checks = 339710
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5775.600098
+Partial-Aborts = 127128
+Full-Aborts = 79946
+Total-Aborts = 207074
+FF Matches = 122537
+Fast Forward Checks = 307554
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5818.799805
+Partial-Aborts = 128088
+Full-Aborts = 80917
+Total-Aborts = 209005
+FF Matches = 123850
+Fast Forward Checks = 316421
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5775.200195
+Partial-Aborts = 136887
+Full-Aborts = 75363
+Total-Aborts = 212250
+FF Matches = 128582
+Fast Forward Checks = 345211
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5724.000000
+Partial-Aborts = 132227
+Full-Aborts = 77868
+Total-Aborts = 210095
+FF Matches = 124455
+Fast Forward Checks = 330500
+Done checking ref counts
+name = ffnorec
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4930.000000
+Partial-Aborts = 166082
+Full-Aborts = 21666
+Total-Aborts = 187748
+FF Matches = 96990
+Fast Forward Checks = 289993629
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5026.200195
+Partial-Aborts = 168258
+Full-Aborts = 20577
+Total-Aborts = 188835
+FF Matches = 100270
+Fast Forward Checks = 287976844
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5119.600098
+Partial-Aborts = 170054
+Full-Aborts = 19881
+Total-Aborts = 189935
+FF Matches = 101461
+Fast Forward Checks = 277472476
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5009.799805
+Partial-Aborts = 174895
+Full-Aborts = 20428
+Total-Aborts = 195323
+FF Matches = 105599
+Fast Forward Checks = 274823986
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4957.000000
+Partial-Aborts = 166165
+Full-Aborts = 20135
+Total-Aborts = 186300
+FF Matches = 100621
+Fast Forward Checks = 282970173
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5063.600098
+Partial-Aborts = 166790
+Full-Aborts = 19236
+Total-Aborts = 186026
+FF Matches = 96341
+Fast Forward Checks = 285169850
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5112.000000
+Partial-Aborts = 168448
+Full-Aborts = 19003
+Total-Aborts = 187451
+FF Matches = 99953
+Fast Forward Checks = 277283206
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5037.600098
+Partial-Aborts = 172813
+Full-Aborts = 18827
+Total-Aborts = 191640
+FF Matches = 106390
+Fast Forward Checks = 269103190
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5040.200195
+Partial-Aborts = 172511
+Full-Aborts = 18115
+Total-Aborts = 190626
+FF Matches = 105349
+Fast Forward Checks = 270333509
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5055.399902
+Partial-Aborts = 169093
+Full-Aborts = 19724
+Total-Aborts = 188817
+FF Matches = 102742
+Fast Forward Checks = 274391234
+Done checking ref counts
+name = orderedNoRec
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5324.000000
+Partial-Aborts = 189043
+Full-Aborts = 9628
+Total-Aborts = 198671
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5221.200195
+Partial-Aborts = 191969
+Full-Aborts = 10258
+Total-Aborts = 202227
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5223.600098
+Partial-Aborts = 187468
+Full-Aborts = 10666
+Total-Aborts = 198134
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5145.000000
+Partial-Aborts = 189120
+Full-Aborts = 8623
+Total-Aborts = 197743
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5321.200195
+Partial-Aborts = 192449
+Full-Aborts = 10199
+Total-Aborts = 202648
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5215.600098
+Partial-Aborts = 185475
+Full-Aborts = 10552
+Total-Aborts = 196027
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5227.600098
+Partial-Aborts = 189649
+Full-Aborts = 9731
+Total-Aborts = 199380
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5232.600098
+Partial-Aborts = 188652
+Full-Aborts = 9444
+Total-Aborts = 198096
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5256.000000
+Partial-Aborts = 194234
+Full-Aborts = 9380
+Total-Aborts = 203614
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5235.799805
+Partial-Aborts = 194310
+Full-Aborts = 9678
+Total-Aborts = 203988
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+name = pnorec
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4607.799805
+Partial-Aborts = 165811
+Full-Aborts = 9073
+Total-Aborts = 174884
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4569.799805
+Partial-Aborts = 167336
+Full-Aborts = 8838
+Total-Aborts = 176174
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4652.200195
+Partial-Aborts = 165400
+Full-Aborts = 9026
+Total-Aborts = 174426
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4584.200195
+Partial-Aborts = 166780
+Full-Aborts = 9467
+Total-Aborts = 176247
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4565.799805
+Partial-Aborts = 162916
+Full-Aborts = 8574
+Total-Aborts = 171490
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4553.399902
+Partial-Aborts = 163462
+Full-Aborts = 8504
+Total-Aborts = 171966
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4607.200195
+Partial-Aborts = 165884
+Full-Aborts = 9044
+Total-Aborts = 174928
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4584.000000
+Partial-Aborts = 164453
+Full-Aborts = 8572
+Total-Aborts = 173025
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4546.399902
+Partial-Aborts = 163847
+Full-Aborts = 7900
+Total-Aborts = 171747
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4566.000000
+Partial-Aborts = 164536
+Full-Aborts = 8659
+Total-Aborts = 173195
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+name = norec
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3989.800049
+Partial-Aborts = 0
+Full-Aborts = 132562
+Total-Aborts = 132562
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3980.600098
+Partial-Aborts = 0
+Full-Aborts = 132664
+Total-Aborts = 132664
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4038.800049
+Partial-Aborts = 0
+Full-Aborts = 132746
+Total-Aborts = 132746
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3943.199951
+Partial-Aborts = 0
+Full-Aborts = 130805
+Total-Aborts = 130805
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3941.800049
+Partial-Aborts = 0
+Full-Aborts = 132043
+Total-Aborts = 132043
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3991.199951
+Partial-Aborts = 0
+Full-Aborts = 133337
+Total-Aborts = 133337
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4025.800049
+Partial-Aborts = 0
+Full-Aborts = 131992
+Total-Aborts = 131992
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4007.399902
+Partial-Aborts = 0
+Full-Aborts = 131960
+Total-Aborts = 131960
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3967.000000
+Partial-Aborts = 0
+Full-Aborts = 131546
+Total-Aborts = 131546
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4045.000000
+Partial-Aborts = 0
+Full-Aborts = 131630
+Total-Aborts = 131630
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+name = orderedTL2
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5780.799805
+Partial-Aborts = 149359
+Full-Aborts = 15764
+Total-Aborts = 165123
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5838.600098
+Partial-Aborts = 150275
+Full-Aborts = 15272
+Total-Aborts = 165547
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5819.600098
+Partial-Aborts = 149461
+Full-Aborts = 14092
+Total-Aborts = 163553
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5766.200195
+Partial-Aborts = 150542
+Full-Aborts = 14728
+Total-Aborts = 165270
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5710.600098
+Partial-Aborts = 148404
+Full-Aborts = 14532
+Total-Aborts = 162936
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5846.000000
+Partial-Aborts = 150635
+Full-Aborts = 15106
+Total-Aborts = 165741
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5785.799805
+Partial-Aborts = 148750
+Full-Aborts = 14751
+Total-Aborts = 163501
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5877.000000
+Partial-Aborts = 151846
+Full-Aborts = 15388
+Total-Aborts = 167234
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5854.600098
+Partial-Aborts = 150859
+Full-Aborts = 14888
+Total-Aborts = 165747
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 5762.200195
+Partial-Aborts = 150961
+Full-Aborts = 15013
+Total-Aborts = 165974
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+name = bounded
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4836.000000
+Partial-Aborts = 108476
+Full-Aborts = 9506
+Total-Aborts = 117982
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4706.000000
+Partial-Aborts = 107225
+Full-Aborts = 9885
+Total-Aborts = 117110
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4715.600098
+Partial-Aborts = 107195
+Full-Aborts = 9624
+Total-Aborts = 116819
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4823.000000
+Partial-Aborts = 107476
+Full-Aborts = 9555
+Total-Aborts = 117031
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4785.799805
+Partial-Aborts = 108057
+Full-Aborts = 9967
+Total-Aborts = 118024
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4854.399902
+Partial-Aborts = 107036
+Full-Aborts = 9835
+Total-Aborts = 116871
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4776.000000
+Partial-Aborts = 106004
+Full-Aborts = 9697
+Total-Aborts = 115701
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4758.600098
+Partial-Aborts = 107398
+Full-Aborts = 9819
+Total-Aborts = 117217
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4773.000000
+Partial-Aborts = 107730
+Full-Aborts = 10160
+Total-Aborts = 117890
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 4725.200195
+Partial-Aborts = 107159
+Full-Aborts = 10187
+Total-Aborts = 117346
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+name = partial
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3813.399902
+Partial-Aborts = 90716
+Full-Aborts = 0
+Total-Aborts = 90716
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3763.600098
+Partial-Aborts = 91246
+Full-Aborts = 0
+Total-Aborts = 91246
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3795.199951
+Partial-Aborts = 91623
+Full-Aborts = 0
+Total-Aborts = 91623
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3808.399902
+Partial-Aborts = 91240
+Full-Aborts = 0
+Total-Aborts = 91240
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3813.399902
+Partial-Aborts = 90491
+Full-Aborts = 0
+Total-Aborts = 90491
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3803.199951
+Partial-Aborts = 90928
+Full-Aborts = 0
+Total-Aborts = 90928
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3822.800049
+Partial-Aborts = 90657
+Full-Aborts = 0
+Total-Aborts = 90657
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3746.000000
+Partial-Aborts = 90520
+Full-Aborts = 0
+Total-Aborts = 90520
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3822.800049
+Partial-Aborts = 91439
+Full-Aborts = 0
+Total-Aborts = 91439
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3814.800049
+Partial-Aborts = 91802
+Full-Aborts = 0
+Total-Aborts = 91802
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+name = full
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3035.600098
+Partial-Aborts = 0
+Full-Aborts = 155303
+Total-Aborts = 155303
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3036.800049
+Partial-Aborts = 0
+Full-Aborts = 155649
+Total-Aborts = 155649
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3097.199951
+Partial-Aborts = 0
+Full-Aborts = 157521
+Total-Aborts = 157521
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3062.600098
+Partial-Aborts = 0
+Full-Aborts = 155951
+Total-Aborts = 155951
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3082.800049
+Partial-Aborts = 0
+Full-Aborts = 154405
+Total-Aborts = 154405
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3046.399902
+Partial-Aborts = 0
+Full-Aborts = 155147
+Total-Aborts = 155147
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3044.600098
+Partial-Aborts = 0
+Full-Aborts = 156692
+Total-Aborts = 156692
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3080.000000
+Partial-Aborts = 0
+Full-Aborts = 156534
+Total-Aborts = 156534
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3063.199951
+Partial-Aborts = 0
+Full-Aborts = 156601
+Total-Aborts = 156601
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
+WithK tag is 1
+WithoutK tag is 3
+Done initializing, executing with 32 threads
+Txns/sec = 3042.399902
+Partial-Aborts = 0
+Full-Aborts = 155929
+Total-Aborts = 155929
+FF Matches = 0
+Fast Forward Checks = 0
+Done checking ref counts
