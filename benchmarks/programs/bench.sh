@@ -21,9 +21,9 @@ do
             cat currentTime.txt >> $filename
 	done
     done
+    dest="benchmark-times/`hostname`"
+    mv $filename $dest
     cd ../
 done
 
-dest="benchmark-times/`hostname`"
 
-mv $filename $dest
