@@ -12,6 +12,17 @@ struct
 		in (maxLevel, p, STM.new 0, ptrs) 
 		end
 
+	fun dist(maxLevel, prob, curLevelPtr, listHead) = 
+		let	
+			fun lp(node, lev, i) = 
+				case STM.unsafeGet node 
+			   	   of Nil => print(Int.toString i ^ " nodes at level " ^ Int.toString lev ^ "\n")		
+					| Node(_, _, v) => lp(Vector.sub(v, lev), lev, i+1)
+			val _ = List.tabulate(STM.unsafeGet curLevelPtr, fn i => lp(Vector.sub(listHead, i), i, 0))
+		in () end
+
+	fun numLevels(maxLevel, prob, curLevelPtr, listHead) = STM.unsafeGet curLevelPtr
+
 	fun chooseLevel(maxLevel, prob, curLevelPtr, listHead) = 
 		let fun lp i = 
 			if i = maxLevel - 1
@@ -55,18 +66,8 @@ struct
 					end
 		in lp(curLevel, listHead) end
 
-	fun unsafeChooseLevel (maxLevel, prob) = 
-		let fun lp i = 
-				if i = maxLevel - 1
-				then maxLevel - 1
-				else 
-					if Rand.randFloat(0.0, 1.0) < prob
-					then i
-					else lp(i+1)
-		in lp 0 end
-
 	fun unsafeInsert (maxLevel, prob, curLevel, listHead) k v = 
-		let val myLev = unsafeChooseLevel (maxLevel, prob)
+		let val myLev = chooseLevel(maxLevel, prob, curLevel, listHead)
 			val _ = if myLev > STM.unsafeGet curLevel then STM.unsafePut(curLevel, myLev) else ()
 			val newPtrs = Vector.tabulate(maxLevel, fn _ => STM.new Nil)
 			val newNode = Node(k, v, newPtrs)
