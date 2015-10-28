@@ -42,15 +42,15 @@ struct
     fun inc n = STM.atomic(fn () => STM.put(n, STM.get n + 1))
     
     fun unsafeAdd (l, len) (v:int) = 
-	let fun addLoop l =
-		case STM.unsafeGet l
-		 of Head n => addLoop n
-		  | Null => STM.unsafePut(l, Node(v, STM.new Null))
-		  | Node(v', n) =>
-		    if v' > v
-		    then STM.unsafePut(l, Node(v, STM.new(Node(v', n))))
-		    else addLoop n
-	in addLoop l; STM.unsafePut(len, STM.unsafeGet len + 1) end
+	    let fun addLoop l =
+	        case STM.unsafeGet l
+		       of Head n => addLoop n
+		        | Null => STM.unsafePut(l, Node(v, STM.new Null))
+		        | Node(v', n) =>
+		          if v' > v
+		          then STM.unsafePut(l, Node(v, STM.new(Node(v', n))))
+		          else addLoop n
+	    in addLoop l; STM.unsafePut(len, STM.unsafeGet len + 1) end
 
     fun add (l,len) (v:int) = 
         let fun addLoop l = 
@@ -131,7 +131,12 @@ struct
                         | Node(v, next) => lp next
                         | Head n => lp n
                 end
-        in if String.same(STM.whichSTM, "mergeWS") orelse String.same (STM.whichSTM, "ffRefCount") then lp l else (); print "Done checking ref counts\n" end
+        in if String.same(STM.whichSTM, "mergeWS") orelse 
+              String.same (STM.whichSTM, "ffRefCount") orelse
+              String.same(STM.whichSTM, "ffMask") 
+           then lp l 
+           else (); print "Done checking ref counts\n" 
+        end
 
 end
 

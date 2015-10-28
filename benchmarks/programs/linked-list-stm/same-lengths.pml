@@ -8,42 +8,35 @@ fun getArg f args =
 
 val args = CommandLine.arguments ()
 
+fun getIntFlg f dflt = 
+    case getArg f args
+        of SOME n => (case Int.fromString n of SOME n => n | NONE => dflt)
+         | NONE => dflt
+
 val THREADS = VProc.numVProcs()
 
-val DFLT_ITERS = 
-    case THREADS 
-        of 4 => 6000
-         | 32 => 1000
-         | _ => 1000
+val TIME = Int.toLong(getIntFlg "-time" 5)
 
-val ITERS = 
-    case getArg "-iters" args
-        of SOME n => (case Int.fromString n of SOME n => n | NONE => DFLT_ITERS)
-         | NONE => DFLT_ITERS
-
-val INITSIZE = 
-    case getArg "-size" args
-        of SOME n => (case Int.fromString n of SOME n => n | NONE => 4000)
-         | NONE => 4000
+val INITSIZE = getIntFlg "-size" 5000
     
-val MAXVAL = INITSIZE
+val MAXVAL = INITSIZE * 2
 
 fun ignore _ = ()
 
-val READS = 2
-val WRITES = 4
+val READS = 1
+val WRITES = 1
 val DELETES = 1
 
-fun threadLoop l i = 
-    if i = 0
-    then ()
+fun threadLoop(l, endTime, iters) = 
+    if Time.now() > endTime
+    then iters
     else let val prob = Rand.inRangeInt(0, READS+WRITES+DELETES)
              val _ = if prob < READS
                      then ignore(OrderedLinkedList.find l (Rand.inRangeInt(0, MAXVAL)))
                      else if prob < READS + WRITES
                           then ignore(OrderedLinkedList.add l (Rand.inRangeInt(0, MAXVAL)))
                           else ignore(OrderedLinkedList.delete l (Rand.inRangeInt(0, MAXVAL)))
-         in threadLoop l (i-1) end
+         in threadLoop(l, endTime, iters+1) end
          
 datatype 'a res = Ans of 'a | Exn of exn
 
@@ -53,8 +46,8 @@ fun start l i =
     else 
         let val ch = PrimChan.new()
             fun threadFun() = 
-                let val _ = threadLoop l ITERS handle e => PrimChan.send(ch, Exn e)
-                in PrimChan.send(ch, Ans ())
+                let val iters = threadLoop(l, Time.now() + (TIME *  (1000000:long)), 0) handle e => (PrimChan.send(ch, Exn e); raise e)
+                in PrimChan.send(ch, Ans iters)
                 end
              val _ = Threads.spawnOn(i-1, threadFun)
          in ch::start l (i-1) end
@@ -64,11 +57,11 @@ fun join chs =
             case chs
                 of ch::chs' => 
                     (case PrimChan.recv ch
-                        of Ans stats' => joinLoop(chs', exns)
+                        of Ans iters => iters + joinLoop(chs', exns)
                          | Exn e => joinLoop(chs', Option.SOME e))
                  | nil => 
                     (case exns
-                       of NONE => ()
+                       of NONE => 0
                         | SOME e => raise e)
     in joinLoop(chs, Option.NONE) end
 
@@ -85,10 +78,8 @@ fun initialize n =
 
 val _ = initialize INITSIZE handle Fail s => (print s; raise Fail s)
 val _ = print("Done initializing, executing with "  ^ Int.toString THREADS ^ " threads\n")
-val startTime = Time.now()
-val _ = join(start l THREADS) handle Fail s => (print s; raise Fail s)
-val endTime = Time.now()
-val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
+val iters = join(start l THREADS) handle Fail s => (print s; raise Fail s)
+val _ = print ("Txns/sec = " ^ Float.toString (Float.fromInt iters / Float.fromLong TIME) ^ "\n")
 val _ = STM.printStats()
 
 val _ = OrderedLinkedList.checkCounts l
