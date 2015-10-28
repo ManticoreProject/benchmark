@@ -19,4 +19,6 @@ do
     done
 done
 
-mv $filename benchmark-times
+dest="benchmark-times/`hostname`"
+
+mv $filename $dest
