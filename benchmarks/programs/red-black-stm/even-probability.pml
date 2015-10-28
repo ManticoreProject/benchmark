@@ -27,12 +27,6 @@ val (atomic,new,printStats) = (RBTree.atomic,RBTree.new,RBTree.printStats)
 
 val THREADS = VProc.numVProcs()
          
-val DFLT_ITERS = 
-    case THREADS 
-       of 32 => 100000
-        | _ => 500000
-
-val ITERS = getIntFlg "-iters" DFLT_ITERS
 val MAXVAL = 1000000
 
 fun ignore _ = ()
@@ -41,19 +35,25 @@ val READS = 1
 val WRITES = 1
 val DELETES = 1
 
+val TIME = (Int.toLong(getIntFlg "-time" 5))
+
 val seed = R.newSeed 0
 
-fun threadLoop(t, i, seed) = 
-    if i = 0
-    then ()
-    else let val randNum = R.inRangeInt(0, MAXVAL, seed)
-             val prob = R.inRangeInt(0, READS+WRITES+DELETES, seed)
-             val _ = if prob < READS
-                     then ignore(member randNum t)
-                     else if prob < READS + WRITES
-                          then ignore(insert randNum t)
-                          else ignore(remove randNum t)
-         in threadLoop(t, i-1, seed) end
+fun threadLoop(t, endTime, seed, iters) = 
+    if Time.now() > endTime
+    then iters
+    else 
+        let val randNum = R.inRangeInt(0, MAXVAL, seed)
+            val prob = R.inRangeInt(0, READS+WRITES+DELETES, seed)
+            val _ = 
+                if prob < READS
+                then ignore(member randNum t)
+                else 
+                    if prob < READS + WRITES
+                    then ignore(insert randNum t)
+                     else ignore(remove randNum t)
+        in threadLoop(t, endTime, seed, iters+1) end
+
 
 datatype 'a res = Ans of 'a | Exn of exn
 
@@ -64,8 +64,8 @@ fun start t i =
         let val ch = PrimChan.new()
             val seed = R.newSeed 0
             fun f() =
-                let val _ = threadLoop(t, ITERS, seed) handle e => (PrimChan.send(ch, Exn e))
-                in PrimChan.send(ch, Ans ())
+                let val iters : int = threadLoop(t, Time.now() + (TIME *  (1000000:long)), seed, 0) handle e => (PrimChan.send(ch, Exn e); raise e)
+                in PrimChan.send(ch, Ans iters)
                 end
             val _ = Threads.spawnOn(i-1, f)
         in ch::start t (i-1) end
@@ -76,10 +76,10 @@ fun join chs =
                of nil => (
                     case exns
                         of Option.SOME e => (raise e)
-                         | Option.NONE => ())
+                         | Option.NONE => 0)
                 | ch::chs' => 
                     (case PrimChan.recv ch
-                        of Ans a => joinLoop(chs', exns)
+                        of Ans a => a + joinLoop(chs', exns)
                          | Exn e => joinLoop(chs', Option.SOME e))
     in joinLoop(chs, Option.NONE) end
 
@@ -96,10 +96,8 @@ val _ = initialize 100000
 
 val _ = print ("Done initializing tree of depth " ^ Int.toString (RBTree.depth t) ^ "\n")
 
-val startTime = Time.now()
-val _ = join(start t THREADS)
-val endTime = Time.now()
-val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
+val iters = join(start t THREADS)
+val _ = print ("Txns/sec = " ^ Float.toString (Float.fromInt iters / Float.fromLong TIME) ^ "\n")
 
 val _ = atomic(fn _ => RBTree.chkOrder intComp t)
 val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)
