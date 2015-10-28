@@ -6,7 +6,7 @@ filename="times`date +%Y-%m-%d:%H:%M`-`hostname`"
 
 echo "" > filename
 
-for stm in ffMask ffRefCount ffnorec orderedNoRec pnorec norec orderedTL2 bounded partial full
+for stm in ffMask ffRefCount ffnorec orderedNoRec pnorec norec orderedTL2 bounded partial full mergeWS
 do
     echo "name = $stm" >> $filename
     for i in {1..10}
