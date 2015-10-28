@@ -4,8 +4,6 @@ trap "exit" INT
 
 filename="times`date +%Y-%m-%d:%H:%M`-`hostname`"
 
-exit 0
-
 echo "" > filename
 
 for stm in ffMask ffRefCount ffnorec orderedNoRec pnorec norec orderedTL2 bounded partial full
