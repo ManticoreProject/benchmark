@@ -2,7 +2,9 @@
 
 trap "exit" INT
 
-filename="times`date +%Y-%m-%d:%H:%M`"
+filename="times`date +%Y-%m-%d:%H:%M`-`hostname`"
+
+exit 0
 
 echo "" > filename
 
