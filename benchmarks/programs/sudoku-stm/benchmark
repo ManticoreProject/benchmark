@@ -5,7 +5,7 @@ threads=4
 while getopts ":ci:p:" options; 
 do
     case $options in
-	c ) pmlc sudoku.pml ;;
+	c ) pmlc mc.mlb ;;
 	i ) iters=$OPTARG ;;
 	p ) threads=$OPTARG ;; 
     esac

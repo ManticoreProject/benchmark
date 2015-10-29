@@ -215,8 +215,9 @@ val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = STM.printStats()
 
 val _ = print ("Search took " ^ Int.toString (STM.unsafeGet count) ^ " iterations\n")
-
+(*
 val _ = printSolution solution
+*)
 
 
                                     

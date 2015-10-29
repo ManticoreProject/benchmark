@@ -23,7 +23,14 @@ do
     for i in $(seq 1 $iters);
     do
         echo "Iteration $i"
-        ./a.out -p $j -time 10 > currentTime.txt
+        ./timeout.sh 15 ./a.out -p $j -time 10 > currentTime.txt
+	retcode=$?
+	while [ $retcode -ne "0" ]
+	do
+		echo "Process timed out, trying again..."
+		./timeout.sh 15 ./a.out -p $j -time 10 > currentTime.txt
+		retcode=$?
+	done
         cat currentTime.txt
         echo "name = Partial Abort" >> $f
         cat currentTime.txt >> $f
@@ -33,8 +40,15 @@ do
     for i in $(seq 1 $iters);
     do
         echo "Iteration $i"
-        ./a.out -p $j -stm full -time 10 > currentTime.txt
-        cat currentTime.txt
+        ./timeout.sh 15 ./a.out -stm full -p $j -time 10 > currentTime.txt
+        retcode=$?
+        while [ $retcode -ne "0" ]
+        do
+		echo "Process timed out, trying again..."
+                ./timeout.sh 15 ./a.out -stm full -p $j -time 10 > currentTime.txt
+                retcode=$?
+        done
+	cat currentTime.txt
         echo "name = Full Abort" >> $f
         cat currentTime.txt >> $f
         echo "end" >> $f

@@ -50,6 +50,8 @@ val INITSIZE = getIntFlg "-size" 4000
 val SPLIT = getDoubleFlg "-split" 0.5
 val TIME = Int.toLong (getIntFlg "-time" 5)
 
+val _ = print ("Running for " ^ Long.toString TIME ^ " seconds\n")
+
 fun ignore _ = ()
 
 val READS = 2
