@@ -3,30 +3,27 @@ struct
 
 	datatype 'a node = Node of int * 'a * ('a node STM.tvar Vector.vector) | Nil 
 
-	(*maxLevel, probability, curLevel, listHead, ordering functino*)
-	type 'a TSkipList = int * float * int STM.tvar * ('a node STM.tvar Vector.vector)
+	type 'a TSkipList = int * float * ('a node STM.tvar Vector.vector)
 
 	(*p is usually 0.5*)
 	fun new p maxLevel = 
 		let val ptrs = (Vector.tabulate(maxLevel, fn _ => STM.new Nil))
-		in (maxLevel, p, STM.new 0, ptrs) 
+		in (maxLevel, p, ptrs) 
 		end
 
-	fun dist(maxLevel, prob, curLevelPtr, listHead) = 
+	fun dist(maxLevel, prob, listHead) = 
 		let	
 			fun lp(node, lev, i) = 
 				case STM.unsafeGet node 
 			   	   of Nil => print(Int.toString i ^ " nodes at level " ^ Int.toString lev ^ "\n")		
 					| Node(_, _, v) => lp(Vector.sub(v, lev), lev, i+1)
-			val _ = List.tabulate(STM.unsafeGet curLevelPtr, fn i => lp(Vector.sub(listHead, i), i, 0))
+			val _ = List.tabulate(maxLevel-1, fn i => lp(Vector.sub(listHead, i), i, 0))
 		in () end
 
-	fun numLevels(maxLevel, prob, curLevelPtr, listHead) = STM.unsafeGet curLevelPtr
-
-	fun chooseLevel(maxLevel, prob, curLevelPtr, listHead) = 
+	fun chooseLevel(maxLevel, prob, listHead) = 
 		let fun lp i = 
 			if i = maxLevel - 1
-			then maxLevel - 1
+			then i
 			else 
 				let val r = Rand.randFloat(0.0, 1.0)
 				in if r < prob
@@ -35,68 +32,59 @@ struct
 				end
 		in lp 0 end
 
-	fun insert (maxLevel, prob, curLevelPtr, listHead) k value myLev = 
-		let val curLevel = STM.get curLevelPtr
-			val _ = if myLev > curLevel then STM.put(curLevelPtr, myLev) else ()
-			val newPtrs = Vector.tabulate(maxLevel, fn _ => STM.new Nil)
-			val newNode = Node(k, value, newPtrs)
-			fun lp(lev, fwdPtrs) = 
-				if lev < 0
+	fun insert(maxLevel, prob, listHead) k value myLev = 
+		let fun buildPrevs(nodes, lvl, prevs) = 
+				if lvl < 0
+				then prevs
+				else 
+					case STM.get (Vector.sub(nodes, lvl)) 
+					   of Nil => buildPrevs(nodes, lvl-1, nodes::prevs)
+						| Node(k', _, nodes') => 
+							if k' >= k
+							then buildPrevs(nodes, lvl-1, nodes::prevs)
+							else buildPrevs(nodes', lvl, prevs)
+			val prevs = buildPrevs(listHead, maxLevel - 1, nil)
+			val nodes = Vector.tabulate(myLev + 1, fn _ => STM.new Nil)
+			val newNode = Node(k, value, nodes)
+			fun insertNode(lvl, prevs) = 
+				if lvl > myLev
 				then ()
-				else
-					let val succNode = STM.get (Vector.sub(fwdPtrs, lev))
-					in case succNode
-						   of Nil => 
-						   		if lev <= myLev
-						   		then 
-						   			(STM.put(Vector.sub(newPtrs, lev), succNode); 
-						   			 STM.put(Vector.sub(fwdPtrs, lev), newNode); 
-						   			 lp(lev-1, fwdPtrs))
-						   		else lp(lev-1, fwdPtrs)
-						   	| Node(k', _, ptrs) =>
-						   		if k <= k'
-						   		then 
-						   			if lev <= myLev
-						   			then 
-						   		   		(STM.put(Vector.sub(newPtrs, lev), succNode); 
-						   			  	 STM.put(Vector.sub(fwdPtrs, lev), newNode); 
-						   			  	 lp(lev-1, fwdPtrs))
-						   		   	else lp(lev-1, fwdPtrs)
-						   		else lp(lev, ptrs)
-					end
-		in lp(curLevel, listHead) end
+				else 
+					case prevs 
+					   of nil => print "Impossible!!!!!!\n"
+						| p::prevs => 
+							let val _ = STM.put(Vector.sub(nodes, lvl), STM.get(Vector.sub(p, lvl)))
+								val _ = STM.put(Vector.sub(p, lvl), newNode)
+							in insertNode(lvl + 1, prevs) end
+		in insertNode(0, prevs) end
 
-	fun unsafeInsert (maxLevel, prob, curLevel, listHead) k v = 
-		let val myLev = chooseLevel(maxLevel, prob, curLevel, listHead)
-			val _ = if myLev > STM.unsafeGet curLevel then STM.unsafePut(curLevel, myLev) else ()
-			val newPtrs = Vector.tabulate(maxLevel, fn _ => STM.new Nil)
-			val newNode = Node(k, v, newPtrs)
-			fun lp(lev, fwdPtrs) = 
-				if lev < 0
+	fun unsafeInsert(maxLevel, prob,  listHead) k value myLev = 
+		let fun buildPrevs(nodes, lvl, prevs) = 
+				if lvl < 0
+				then prevs
+				else 
+					case STM.unsafeGet (Vector.sub(nodes, lvl)) 
+					   of Nil => buildPrevs(nodes, lvl-1, nodes::prevs)
+						| Node(k', _, nodes') => 
+							if k' >= k
+							then buildPrevs(nodes, lvl-1, nodes::prevs)
+							else buildPrevs(nodes', lvl, prevs)
+			val prevs = buildPrevs(listHead, maxLevel - 1, nil)
+			val nodes = Vector.tabulate(myLev + 1, fn _ => STM.new Nil)
+			val newNode = Node(k, value, nodes)
+			fun insertNode(lvl, prevs) = 
+				if lvl > myLev
 				then ()
-				else
-					let val succNode = STM.unsafeGet (Vector.sub(fwdPtrs, lev))
-					in case succNode
-						   of Nil => 
-						   		if lev <= myLev
-						   		then (STM.unsafePut(Vector.sub(newPtrs, lev), succNode); 
-						   			  STM.unsafePut(Vector.sub(fwdPtrs, lev), newNode); 
-						   			  lp(lev-1, fwdPtrs))
-						   		else lp(lev-1, fwdPtrs)
-						   	| Node(k', vPtr, ptrs) =>
-						   		if k <= k'
-						   		then 
-						   			if lev <= myLev
-						   			then 
-						   		   		(STM.unsafePut(Vector.sub(newPtrs, lev), succNode); 
-						   			  	 STM.unsafePut(Vector.sub(fwdPtrs, lev), newNode); 
-						   			  	 lp(lev-1, fwdPtrs))
-						   		   	else lp(lev-1, fwdPtrs)
-						   		else lp(lev, ptrs)
-					end
-		in lp(STM.unsafeGet curLevel, listHead) end
+				else 
+					case prevs 
+					   of nil => print "Impossible!!!!!!\n"
+						| p::prevs => 
+							let val _ = STM.unsafePut(Vector.sub(nodes, lvl), STM.unsafeGet(Vector.sub(p, lvl)))
+								val _ = STM.unsafePut(Vector.sub(p, lvl), newNode)
+							in insertNode(lvl + 1, prevs) end
+		in insertNode(0, prevs) end
 
-	fun lookup (maxLevel, prob, curLevel, listHead) k = 
+	fun lookup (maxLevel, prob, listHead) k = 
 		let fun lp(lev, fwdPtrs) = 
 			if lev < 0
 			then NONE
@@ -110,9 +98,9 @@ struct
 							if k > k'
 							then lp(lev, ptrs)
 							else SOME v
-		in lp(STM.get curLevel, listHead) end
+		in lp(maxLevel - 1, listHead) end
 
-	fun delete (maxLevel, prob, curLevel, listHead) k = 
+	fun delete (maxLevel, prob, listHead) k = 
 		let fun lp(lev, fwdPtrs, found) = 
 				if lev < 0
 				then ()
@@ -127,5 +115,5 @@ struct
 							else 
 								(STM.put(Vector.sub(fwdPtrs, lev), STM.get (Vector.sub(ptrs, lev)));
 								lp(lev-1, fwdPtrs, true))
-		in lp(STM.get curLevel, listHead, false) end
+		in lp(maxLevel - 1, listHead, false) end
 end

@@ -17,7 +17,7 @@ val THREADS = VProc.numVProcs()
 
 val TIME = Int.toLong(getIntFlg "-time" 5)
 val INITSIZE = getIntFlg "-size" 20000
-val MAXVAL = 100000000
+val MAXVAL = 1000000
 
 fun ignore (x:'a) = ()
 
@@ -75,7 +75,8 @@ fun initialize n =
     if n = 0
     then ()
     else let val randNum = Rand.inRangeInt(0, MAXVAL)
-             val _ = SkipList.unsafeInsert l randNum ()
+        val lev = SkipList.chooseLevel l
+             val _ = SkipList.unsafeInsert l randNum () lev
          in initialize (n-1) end
 
 val _ = print ("Running with " ^ Int.toString THREADS ^ " threads\n") 
@@ -86,5 +87,4 @@ val iters = join(start l THREADS) handle Fail s => (print s; raise Fail s)
 val _ = print ("Txns/sec = " ^ Float.toString (Float.fromInt iters / Float.fromLong TIME) ^ "\n")
 
 val _ = STM.printStats()
-
 
