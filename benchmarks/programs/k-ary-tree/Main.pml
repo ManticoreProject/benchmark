@@ -20,9 +20,9 @@ val INITSIZE = getIntFlg "-size" 500000
     
 val MAXVAL = INITSIZE * 2
 
-val INSERT_PCT = getIntFlg "-i" 5
-val DELETE_PCT = INSERT_PCT + getIntFlg "-d" 5
-val RANGE_PCT = DELETE_PCT + getIntFlg "-r" 40
+val INSERT_PCT = getIntFlg "-i" 30
+val DELETE_PCT = INSERT_PCT + getIntFlg "-d" 30
+val RANGE_PCT = DELETE_PCT + getIntFlg "-r" 1
 val READ_PCT = 100 - DELETE_PCT
 val RANGE_WIDTH = getIntFlg "-rs" 10000
 
