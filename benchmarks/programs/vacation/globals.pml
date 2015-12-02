@@ -19,16 +19,20 @@ struct
             of SOME n => (case Double.fromString n of SOME n => n | NONE => dflt)
              | NONE => dflt
              
-    val numRelation = getIntFlg "-r" 500
+    val numRelation = getIntFlg "-r" 16384
 
     val numClient = VProc.numVProcs()
 
     val numTransaction = getIntFlg "-t" 300000
 
+    val time = Int.toLong(getIntFlg "-time" 5)
+
     val num = getIntFlg "-n" 10
 
     val queries = getIntFlg "-q" 90
 
-    val percentUser = getIntFlg "-u" 80
+    val percentUser = getIntFlg "-u" 90
       
 end
+
+

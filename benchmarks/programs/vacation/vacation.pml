@@ -1,6 +1,6 @@
 
 structure G = Globals
-structure BT = BTreeMap
+structure BT = RBTree
 structure M = Manager
 structure UA = UnsafeIntArray
 structure C = Client
@@ -54,20 +54,21 @@ fun start i =
              val percentQuery = G.queries
              val qRange = Long.toInt(Double.round(Double.fromInt percentQuery / 100.0 * Double.fromInt numRelation + 0.5))
              val percentUser = G.percentUser
-             val _ = Threads.spawnOn(i-1, fn _ => (C.runClient(i, numTransPerClient, numQPerTrans, qRange, percentUser, manager); PrimChan.send(ch, ())))
+	     val stopTime = Time.now() + G.time * (1000000:long)
+             val _ = Threads.spawnOn(i-1, fn _ => PrimChan.send(ch, C.runClient(i, numTransPerClient, numQPerTrans, qRange, percentUser, manager, stopTime)))
          in ch::start (i-1) end
 
 fun join chs = 
     case chs
-        of ch::chs' => (PrimChan.recv ch; join chs')
-         | nil => ()
+        of ch::chs' => PrimChan.recv ch + join chs'
+         | nil => 0
 
 val _ = print "Done initializing manager\n"
-val startTime = Time.now()
-val _ = join (start G.numClient)
-val endTime = Time.now()
+val ops = join (start G.numClient)
 
-val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
+val _ = print ("Txns/sec = " ^ Float.toString (Float.fromInt ops / Float.fromLong G.time) ^ "\n")
+
+
 
 val _ = STM.printStats()
 

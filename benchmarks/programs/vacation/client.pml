@@ -61,11 +61,7 @@ struct
                         let val _ = if isFound then M.addCustomer(manager, customerId) else ()
                             val _ = if id1 > 0 then M.reserveCar(manager, customerId, id1) else ()
                             val _ = if id2 > 0 then M.reserveFlight(manager, customerId, id2) else ()
-                            val _ = if id3 > 0 then M.reserveRoom(manager, customerId, id3) else ()
-
-
-
-                            
+                            val _ = if id3 > 0 then M.reserveRoom(manager, customerId, id3) else ()                            
                         in () end   
         in STM.atomic(fn () => lp(false, maxPrices, maxIds, types, ids)) end
 
@@ -98,16 +94,15 @@ struct
             val _ = STM.atomic(fn () => List.map updateTables info)  
         in () end     
   
-    fun runClient(i, numOperation, numQPerTrans, qRange, percentUser, manager) = 
+    fun runClient(i, numOperation, numQPerTrans, qRange, percentUser, manager, stopTime) = 
         let fun lp i =
-                if i = 0
-                then ()
+                if Time.now() > stopTime
+                then i
                 else case selectAction(Rand.inRangeInt(0, 100), percentUser)
-                        of MakeRes => (makeRes(numQPerTrans, qRange, manager); lp(i-1))
-                         | DelCustomer => (deleteCustomer(qRange, manager); lp(i-1))
-                         | UpdateTables => (updateTables(numQPerTrans, qRange, manager); lp(i-1))
-            val _ = lp numOperation
-        in () end   
+                        of MakeRes => (makeRes(numQPerTrans, qRange, manager); lp(i+1))
+                         | DelCustomer => (deleteCustomer(qRange, manager); lp(i+1))
+                         | UpdateTables => (updateTables(numQPerTrans, qRange, manager); lp(i+1))
+        in lp 0 end   
 
 
 

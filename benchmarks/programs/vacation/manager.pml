@@ -1,6 +1,6 @@
 structure Manager =
 struct
-    structure BT = BTreeMap
+    structure BT = RBTree
     structure R = Reservation
     structure C = Customer
 
