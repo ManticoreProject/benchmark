@@ -36,16 +36,19 @@ fun threadLoop(l, endTime, inserts, deletes, lookups, rangeQueries) =
 	 in if prob < INSERT_PCT
 	    then (STM.atomic(fn () => KAryTree.insert intComp l r 0); 
 		  threadLoop(l, endTime, inserts+1, deletes, lookups, rangeQueries))
-	    else 
+	    else (*
 		if prob < DELETE_PCT
 		then (STM.atomic(fn () => KAryTree.delete intComp l r); 
 		      threadLoop(l, endTime, inserts, deletes+1, lookups, rangeQueries))
-		else
+		else*)
+		(STM.atomic(fn () => KAryTree.independentRange intComp l r (r + RANGE_WIDTH)); 
+		 threadLoop(l, endTime, inserts, deletes, lookups, rangeQueries+1))
+		    (*
 		    if prob < RANGE_PCT
-		    then (STM.atomic(fn () => KAryTree.range intComp l r (r + RANGE_WIDTH)); 
+		    then (STM.atomic(fn () => KAryTree.independentRange intComp l r (r + RANGE_WIDTH)); 
 			  threadLoop(l, endTime, inserts, deletes, lookups, rangeQueries+1))
 		    else (STM.atomic(fn () => KAryTree.lookup intComp l r); 
-			  threadLoop(l, endTime, inserts, deletes, lookups+1, rangeQueries))
+			  threadLoop(l, endTime, inserts, deletes, lookups+1, rangeQueries)) *)
 	 end
          
 datatype 'a res = Ans of 'a | Exn of exn

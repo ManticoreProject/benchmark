@@ -68,7 +68,7 @@ fun insert comp t x y =
 		if comp(x, Vector.sub(v, i)) = LESS
 		then i
 		else findNext(v, i+1)
-	fun lp t = 
+	fun insertLp t = 
 	    case STM.get t
 	     of Leaf v => 
 		let val n = Vector.length v 
@@ -77,8 +77,8 @@ fun insert comp t x y =
 		   then STM.put(t, sprout l)
 		   else STM.put(t, Leaf(Vector.fromListN(n+1, l)))
 		end
-	      | Node(ks, children) => lp(Vector.sub(children, findNext(ks, 0)))
-    in lp t handle Duplicate() => () end
+	      | Node(ks, children) => insertLp(Vector.sub(children, findNext(ks, 0)))
+    in insertLp t handle Duplicate() => () end
 
 exception Duplicate of unit
 fun unsafeInsert comp t x y = 
@@ -230,6 +230,51 @@ fun delete comp t x =
 	   end
     end
 
+fun independentRange comp (t : (int, int) ktree STM.tvar) low high = 
+    let fun accum(v, i, l, box) = 
+	    if i < 0
+	    then Ref.set(box, l)
+	    else 
+		let val (x, y) = Vector.sub(v, i)
+		in case (comp(x, low), comp(x, high))
+		    of (GREATER, LESS) => accum(v, i-1, (x, y)::l, box)
+		     | (EQUAL, _) => accum(v, i-1, (x, y)::l, box)
+		     | (_, EQUAL) => accum(v, i-1, (x, y)::l, box)
+		     | (_, GREATER) => accum(v, i-1, l, box)
+		     | _ => Ref.set(box, l) (*fallen below low*)
+		end
+	(*We've already trimmed the upper bound, so check that these are >= low*)
+	fun getIndices(ks, cs, i, is, n) = 
+	    if i < 0
+	    then is
+	    else 
+		if comp(Vector.sub(ks, i), low) = LESS
+		then is
+		else getIndices(ks, cs, i-1, (Ref.new [], Vector.sub(cs, i))::is, n+1)
+	fun getChildren(ks, cs, i) = 
+	    if i < 0
+	    then 
+		let val box = Ref.new []
+		    val _ = indRangeLp(box, Vector.sub(cs, 0))
+		in Ref.get box end
+	    else
+		if comp(high, Vector.sub(ks, i)) = LESS
+		then getChildren(ks, cs, i-1)
+		else 
+		    let val children = getIndices(ks, cs, i, [(Ref.new [], Vector.sub(cs, i+1))], 0)
+			val _ = List.app indRangeLp children
+		    in List.concat(List.map (fn (box, _) => Ref.get box) children) end
+	and indRangeLp(box, t : (int, int) ktree STM.tvar) = 
+	    case STM.get t
+	     of Leaf v => accum(v, Vector.length v - 1, nil, box)
+	      | Node(ks, cs) => 
+		let val res = getChildren(ks, cs, Vector.length ks - 1)
+		in Ref.set(box, res) end
+	val initBox = Ref.new []
+	val _ = indRangeLp(initBox, t)
+    in Ref.get initBox end
+
+(*
 (*this won't typecheck unless I specialize it to a ground type*)
 fun range comp (t : (int, int) ktree STM.tvar) low high = 
     let fun accum(v, i, l) = 
@@ -264,7 +309,7 @@ fun range comp (t : (int, int) ktree STM.tvar) low high =
 	     of Leaf v => accum(v, Vector.length v - 1, res)
 	      | Node(ks, cs) => trimUpper(ks, cs, Vector.length ks - 1, res)
     in lp(t, nil) end
-
+*)
 fun intComp(x, y) = if x < y then LESS else if x > y then GREATER else EQUAL
 
 end
