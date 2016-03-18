@@ -1,8 +1,0 @@
-
-type coordinate = double * double
-
-
-
-
-
-
