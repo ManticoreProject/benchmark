@@ -5,6 +5,7 @@ import argparse
 from time import gmtime, strftime
 from email.mime.text import MIMEText
 import smtplib
+import socket
 
 parser = argparse.ArgumentParser()
 
@@ -20,8 +21,12 @@ args = parser.parse_args()
 #stms = ["ffMask", "ffRefCount","ffnorec","orderedNoRec","pnorec","norec","orderedTL2","bounded","partial","full"]
 #benchmarks = ["linked-list-stm", "red-black-stm", "labyrinth", "skip-list", "vacation"]
 #benchmarks = ["linked-list-stm", "red-black-stm", "skip-list"]
-benchmarks = ["linked-list-stm",  "skip-list"]
-stms = ["full", "orderedTL2", "norec", "orderedNoRec", "tiny", "ptiny"]
+#benchmarks = ["linked-list-stm",  "skip-list"]
+#stms = ["full", "orderedTL2", "norec", "orderedNoRec", "tiny", "ptiny"]
+
+benchmarks = ["linked-list-stm"]
+stms = ["ptiny"]
+
 
 def sendErrorEmail(program, stm, errorCount, dump):
 	msg = MIMEText('Benchmark \"' + program + '\" failed ' + str(errorCount) + ' times using STM: \"' + stm + '\"\n\nDump: \n' + dump)
@@ -69,15 +74,23 @@ def runSTM(stm, file, program):
 			print("Exception raised: " + str(e))
 			return
 
-filename = None
+filename = 'times-' + strftime("%Y-%m-%d %H:%M:%S", gmtime()).replace(' ', '-') + '.txt'
+
+
+def moveToDropbox(filename, benchmark, benchType):
+	d = os.path.expanduser('~') + '/Dropbox/' + benchType + '/' + benchmark + '/' + socket.gethostname() + '/'
+	if not(os.path.isdir(d)):
+		os.mkdir(d)
+	newFile = d + filename
+	subprocess.Popen('grep -o \"benchdata.*\" ' + filename + ' > ' + newFile, shell=True).wait()
+
 
 def benchmark(program):
+	global filename
 	print('Compiling ' + program)
 	os.chdir('../programs/' + program)
 	if not(os.path.isdir("benchmark-times")):
 		os.mkdir('benchmark-times')
-	global filename
-	filename = "benchmark-times/times-" + strftime("%Y-%m-%d %H:%M:%S", gmtime()).replace(' ', '-') + '.txt'
 	if args.run == "all":
 		os.system('echo "" > ' + filename)
 		subprocess.Popen('pmlc mc.mlb', shell=True).wait()
@@ -86,6 +99,7 @@ def benchmark(program):
 				scaling(stm, filename, program)
 			else:
 				runSTM(stm, filename, program)
+		moveToDropbox(filename, program, 'scaling' if args.scale else 'benchmarks')
 	else:
 		subprocess.Popen('pmlc mc.mlb', shell=True).wait()
 		os.system('echo "" > ' + args.run + 'Times.txt')
@@ -120,7 +134,9 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+
 def main():
 	runBenchmarks()
+
 if __name__ == "__main__":
     main()    
