@@ -102,5 +102,12 @@ val _ = print ("Txns/sec = " ^ Float.toString (Float.fromInt iters / Float.fromL
 (*val _ = atomic(fn _ => RBTree.chkOrder intComp t)
 val _ = atomic(fn _ => RBTree.chkBlackPaths t handle Fail s => print s)
 *)
+
+(*output data to match format for Ryan's scalability plotting script*)
+val _ = print(String.concat["benchdata: run-time ", Long.toString TIME, " Txns/sec ",
+                            Float.toString (Float.fromInt iters / Float.fromLong TIME),
+                            " prog ", STM.whichSTM, " threads ", Int.toString(VProc.numVProcs()), "\n"])
+
+
 val _ = printStats()
 

@@ -82,6 +82,11 @@ val iters = join(start l THREADS) handle Fail s => (print s; raise Fail s)
 val _ = print ("Txns/sec = " ^ Float.toString (Float.fromInt iters / Float.fromLong TIME) ^ "\n")
 val _ = STM.printStats()
 
+(*output data to match format for Ryan's scalability plotting script*)
+val _ = print(String.concat["benchdata: run-time ", Long.toString TIME, " Txns/sec ",
+                            Float.toString (Float.fromInt iters / Float.fromLong TIME),
+                            " prog ", STM.whichSTM, " threads ", Int.toString(VProc.numVProcs()), "\n"])
+
 val _ = OrderedLinkedList.checkCounts l
 
 

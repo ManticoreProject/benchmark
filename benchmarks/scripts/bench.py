@@ -13,11 +13,15 @@ parser.add_argument("-iters", type=int, help="Number of iterations for each STM 
 parser.add_argument("-baseline", type=str, help="Baseline reference implementation", default="full")
 parser.add_argument("-run", type=str, help="Which STM implementation to use (all by default)", default="all")
 parser.add_argument("-threads", type=int, help="Number of threads to use", default=4)
+parser.add_argument("-time", type=int, help="Throughput time (seconds)", default=2)
+parser.add_argument("-scale", dest='scale',action='store_true')
 args = parser.parse_args()
 
-stms = ["ffMask", "ffRefCount","ffnorec","orderedNoRec","pnorec","norec","orderedTL2","bounded","partial","full"]
+#stms = ["ffMask", "ffRefCount","ffnorec","orderedNoRec","pnorec","norec","orderedTL2","bounded","partial","full"]
 #benchmarks = ["linked-list-stm", "red-black-stm", "labyrinth", "skip-list", "vacation"]
-benchmarks = ["linked-list-stm", "red-black-stm", "skip-list"]
+#benchmarks = ["linked-list-stm", "red-black-stm", "skip-list"]
+benchmarks = ["linked-list-stm",  "skip-list"]
+stms = ["full", "orderedTL2", "norec", "orderedNoRec", "tiny", "ptiny"]
 
 def sendErrorEmail(program, stm, errorCount, dump):
 	msg = MIMEText('Benchmark \"' + program + '\" failed ' + str(errorCount) + ' times using STM: \"' + stm + '\"\n\nDump: \n' + dump)
@@ -36,6 +40,12 @@ def sendErrorEmail(program, stm, errorCount, dump):
 	except:
 		print('Exception raised when trying to send email!')
 
+def scaling(stm, file, program):
+	for i in range(1, args.threads+1):
+		for j in range(args.iters):
+			print('./a.out -stm ' + stm + ' -time ' + str(args.time) + ' -p ' + str(i) + ' >> ' + file)
+			res1 = subprocess.Popen('./a.out -stm ' + stm + ' -time ' + str(args.time) + ' -p ' + str(i) + ' >> ' + file, shell = True).wait()
+
 def runSTM(stm, file, program):
 	subprocess.Popen('echo \"name = ' + stm + '\" >> ' + file + ';', shell=True).wait()
 	for i in range(args.iters):
@@ -44,7 +54,7 @@ def runSTM(stm, file, program):
 			errorCount = 0
 			errorDump = ''
 			print('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt')
-			res1 = subprocess.Popen('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
+			res1 = subprocess.Popen('./a.out -stm ' + stm + '-time ' + str(args.time) + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
 			while res1 != 0:
 				errorDump = errorDump + open('currentTime.txt').read() + '\n'
 				if errorCount > 2:
@@ -62,6 +72,7 @@ def runSTM(stm, file, program):
 filename = None
 
 def benchmark(program):
+	print('Compiling ' + program)
 	os.chdir('../programs/' + program)
 	if not(os.path.isdir("benchmark-times")):
 		os.mkdir('benchmark-times')
@@ -71,11 +82,17 @@ def benchmark(program):
 		os.system('echo "" > ' + filename)
 		subprocess.Popen('pmlc mc.mlb', shell=True).wait()
 		for stm in stms:
-			runSTM(stm, filename, program)
+			if args.scale:
+				scaling(stm, filename, program)
+			else:
+				runSTM(stm, filename, program)
 	else:
 		subprocess.Popen('pmlc mc.mlb', shell=True).wait()
 		os.system('echo "" > ' + args.run + 'Times.txt')
-		runSTM(args.run, args.run + 'Times.txt', program)
+		if args.scale:
+			scaling(stm, filename, program)
+		else:
+			runSTM(args.run, args.run + 'Times.txt', program)
 
 def runBenchmarks():
 	originalDirectory = os.path.dirname(os.path.realpath(__file__))
