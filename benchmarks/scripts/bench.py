@@ -24,8 +24,8 @@ args = parser.parse_args()
 #benchmarks = ["linked-list-stm",  "skip-list"]
 #stms = ["full", "orderedTL2", "norec", "orderedNoRec", "tiny", "ptiny"]
 
-benchmarks = ["linked-list-stm"]
-stms = ["ptiny"]
+benchmarks = ["linked-list-stm", "skip-list", "red-black-stm"]
+stms = ["full", "orderedTL2", "norec", "orderedNoRec", "tiny", "ptiny"]
 
 
 def sendErrorEmail(program, stm, errorCount, dump):
