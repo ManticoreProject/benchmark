@@ -58,8 +58,8 @@ def runSTM(stm, file, program):
 		try:
 			errorCount = 0
 			errorDump = ''
-			print('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt')
-			res1 = subprocess.Popen('./a.out -stm ' + stm + '-time ' + str(args.time) + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
+			print('./a.out -stm ' + stm + ' -time ' + str(args.time) + ' -p ' + str(args.threads) + ' > currentTime.txt')
+			res1 = subprocess.Popen('./a.out -stm ' + stm + ' -time ' + str(args.time) + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
 			while res1 != 0:
 				errorDump = errorDump + open('currentTime.txt').read() + '\n'
 				if errorCount > 2:
@@ -68,7 +68,7 @@ def runSTM(stm, file, program):
 					sys.exit(1)
 				errorCount = errorCount + 1
 				print('execution finished with return code: ' + str(res1))
-				res1 = subprocess.Popen('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
+				res1 = subprocess.Popen('./a.out -stm ' + stm + ' -time ' + str(args.time) + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
 			subprocess.Popen('cat currentTime.txt;  cat currentTime.txt >> ' + file + '; echo \"end\" >> ' + file, shell = True).wait()
 		except Exception as e:
 			print("Exception raised: " + str(e))
