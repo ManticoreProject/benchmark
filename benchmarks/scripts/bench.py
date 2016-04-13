@@ -13,20 +13,17 @@ parser.add_argument("-program", type=str, help="Run a specific benchmark (runs a
 parser.add_argument("-iters", type=int, help="Number of iterations for each STM implementation", default="10")
 parser.add_argument("-baseline", type=str, help="Baseline reference implementation", default="full")
 parser.add_argument("-run", type=str, help="Which STM implementation to use (all by default)", default="all")
-parser.add_argument("-threads", type=int, help="Number of threads to use", default=4)
+parser.add_argument("--threads", type=int, help="Number of threads to use")
 parser.add_argument("-time", type=int, help="Throughput time (seconds)", default=2)
 parser.add_argument("-scale", dest='scale',action='store_true')
 args = parser.parse_args()
 
-#stms = ["ffMask", "ffRefCount","ffnorec","orderedNoRec","pnorec","norec","orderedTL2","bounded","partial","full"]
-#benchmarks = ["linked-list-stm", "red-black-stm", "labyrinth", "skip-list", "vacation"]
-#benchmarks = ["linked-list-stm", "red-black-stm", "skip-list"]
-#benchmarks = ["linked-list-stm",  "skip-list"]
-#stms = ["full", "orderedTL2", "norec", "orderedNoRec", "tiny", "ptiny"]
+if args.scale and args.threads is None:
+	print('You must set number of threads for scaling option')
+	sys.exit(1)
 
 benchmarks = ["linked-list-stm", "skip-list", "red-black-stm"]
 stms = ["full", "orderedTL2", "norec", "orderedNoRec", "tiny", "ptiny"]
-
 
 def sendErrorEmail(program, stm, errorCount, dump):
 	msg = MIMEText('Benchmark \"' + program + '\" failed ' + str(errorCount) + ' times using STM: \"' + stm + '\"\n\nDump: \n' + dump)
@@ -52,14 +49,18 @@ def scaling(stm, file, program):
 			res1 = subprocess.Popen('./a.out -stm ' + stm + ' -time ' + str(args.time) + ' -p ' + str(i) + ' >> ' + file, shell = True).wait()
 
 def runSTM(stm, file, program):
+	if args.threads is not None:
+		threadsArg = ' -p ' + str(args.threads) + ' '
+	else:
+		threadsArg = ''
 	subprocess.Popen('echo \"name = ' + stm + '\" >> ' + file + ';', shell=True).wait()
 	for i in range(args.iters):
 		print('------' + stm + ' Iteration ' + str(i) + '------')
 		try:
 			errorCount = 0
 			errorDump = ''
-			print('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt')
-			res1 = subprocess.Popen('./a.out -stm ' + stm + '-time ' + str(args.time) + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
+			print('./a.out -stm ' + stm + threadsArg + ' > currentTime.txt')
+			res1 = subprocess.Popen('./a.out -stm ' + stm + ' -time ' + str(args.time) + threadsArg + ' > currentTime.txt', shell = True).wait()
 			while res1 != 0:
 				errorDump = errorDump + open('currentTime.txt').read() + '\n'
 				if errorCount > 2:
@@ -68,7 +69,7 @@ def runSTM(stm, file, program):
 					sys.exit(1)
 				errorCount = errorCount + 1
 				print('execution finished with return code: ' + str(res1))
-				res1 = subprocess.Popen('./a.out -stm ' + stm + ' -p ' + str(args.threads) + ' > currentTime.txt', shell = True).wait()
+				res1 = subprocess.Popen('./a.out -stm ' + stm + ' -time ' + str(args.time) + threadsArg + ' > currentTime.txt', shell = True).wait()
 			subprocess.Popen('cat currentTime.txt;  cat currentTime.txt >> ' + file + '; echo \"end\" >> ' + file, shell = True).wait()
 		except Exception as e:
 			print("Exception raised: " + str(e))
@@ -80,7 +81,7 @@ filename = 'times-' + strftime("%Y-%m-%d %H:%M:%S", gmtime()).replace(' ', '-') 
 def moveToDropbox(filename, benchmark, benchType):
 	d = os.path.expanduser('~') + '/Dropbox/' + benchType + '/' + benchmark + '/' + socket.gethostname() + '/'
 	if not(os.path.isdir(d)):
-		os.mkdir(d)
+		os.makedirs(d)
 	newFile = d + filename
 	subprocess.Popen('grep -o \"benchdata.*\" ' + filename + ' > ' + newFile, shell=True).wait()
 
@@ -118,7 +119,7 @@ def runBenchmarks():
 	else:
 		benchmark(args.program)
 		os.chdir(originalDirectory)
-    
+
 def signal_handler(signal, frame):
 	print("Handling Ctrl+C")
 	if os.path.exists(filename):
@@ -139,4 +140,4 @@ def main():
 	runBenchmarks()
 
 if __name__ == "__main__":
-    main()    
+	main()    

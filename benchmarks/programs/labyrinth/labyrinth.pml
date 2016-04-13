@@ -10,23 +10,19 @@ structure S = IntRBSet
 structure V = Vector 
 structure Q = RBQueue   
 
-type 'a tvar = 'a PartialSTM.tvar       
-
 fun getArg(f, args) = 
     case args 
-        of arg::arg'::args => 
-            if String.same(f, arg) then SOME arg'
-            else getArg(f, arg'::args)
-         |_ => NONE
-
+     of arg::arg'::args => 
+        if String.same(f, arg) then SOME arg'
+        else getArg(f, arg'::args)
+       |_ => NONE
+		 
 val args = CommandLine.arguments ()
-
-val (get,put,atomic,new,printStats) = (STM.get, STM.put, STM.atomic, STM.new, STM.printStats)
 
 type 'a vector = 'a V.vector
 
 (*0 for open space, nonzero for taken*)
-type maze = int tvar vector vector
+type maze = int STM.tvar vector vector
 
 fun mkMaze(m, n, o) = V.tabulate(m, fn _ => V.tabulate(n, fn _ => V.tabulate(o, fn _ => new 0)))
 
@@ -77,7 +73,7 @@ val removeMin = RBMultiset.removeMin
 
 fun addNeighborXYZ(i, j, k, q, seen, x, path) = 
     if i >= 0 andalso j >= 0 andalso i < height andalso j < width andalso k >= 0 andalso k < depth
-    then let val z = get(sub(i, j, k))
+    then let val z = STM.get(sub(i, j, k))
          in if z = 0
             then (Q.enqueue((i,j,k,path), q), S.insert(toInd(i,j,k), seen))
             else (q, S.insert(toInd(i,j,k), seen))
@@ -97,7 +93,7 @@ fun same((i,j,k), (i',j',k')) = i = i' andalso j = j' andalso k = k'
 
 fun writePath(p, n) = 
     case p
-        of (i,j,k)::p' => (put(sub(i, j, k), n); writePath(p', n))
+        of (i,j,k)::p' => (STM.put(sub(i, j, k), n); writePath(p', n))
          | nil => ()
 
 datatype res = NoPath | FoundPath 
@@ -119,15 +115,15 @@ fun route(src, dest, seen, q, path, x) =
 
 fun pop() = 
     atomic(fn () => 
-        let val l = get ptsPtr
+        let val l = STM.get ptsPtr
         in case l
-            of x::xs => (put(ptsPtr, xs); SOME x)
+            of x::xs => (STM.put(ptsPtr, xs); SOME x)
              | nil => NONE
         end
     )
 
 val noPathCount = new 0
-fun bump() = atomic(fn () => put(noPathCount, get noPathCount + 1))
+fun bump() = atomic(fn () => STM.put(noPathCount, STM.get noPathCount + 1))
 
 
 fun threadLoop() = 
@@ -169,7 +165,7 @@ val _ = join(start THREADS)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 val _ = printStats()
-val _ = print ("Could not find " ^ Int.toString (atomic(fn () => get noPathCount)) ^ " paths\n")
+val _ = print ("Could not find " ^ Int.toString (STM.unsafeGet noPathCount) ^ " paths\n")
 
 
 
