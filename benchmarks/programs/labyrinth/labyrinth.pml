@@ -8,7 +8,7 @@
 
 structure S = IntRBSet
 structure V = Vector 
-structure Q = RBQueue   
+structure Q = PureQueue
 
 fun getArg(f, args) = 
     case args 
@@ -22,9 +22,9 @@ val args = CommandLine.arguments ()
 type 'a vector = 'a V.vector
 
 (*0 for open space, nonzero for taken*)
-type maze = int STM.tvar vector vector
+type maze = int STM.tvar vector vector vector
 
-fun mkMaze(m, n, o) = V.tabulate(m, fn _ => V.tabulate(n, fn _ => V.tabulate(o, fn _ => new 0)))
+fun mkMaze(m, n, o) = V.tabulate(m, fn _ => V.tabulate(n, fn _ => V.tabulate(o, fn _ => STM.new 0)))
 
 val routes = case getArg("-routes", args)
         of SOME n => (case Int.fromString n of SOME n => n | NONE => 200)
@@ -35,35 +35,38 @@ fun map(f, xs) =
         of x::xs => f x::map(f, xs)
          | nil => nil
 
-fun readData pts = 
-    let val stream = TextIO.openIn("data/3ddata.txt")
-        fun nextLine() = 
-            case TextIO.inputLine stream
-                of SOME s => 
-                    let val nums = String.tokenize " " s
-                        val x1::x2::x3::nil = map(fn x => Option.valOf(Int.fromString x), nums) 
-                    in SOME (x1, x2, x3) end
-                 | NONE => NONE
-        val SOME (n,m,p) = nextLine()         
-        fun lp i =
-            if i = 0 
-            then nil
-            else case (nextLine(), nextLine())
-                    of (SOME p1, SOME p2) => (i, p1, p2)::lp (i-1)
-                     | _ => nil
-    in (n, m, p, lp pts) end
+val routeQ = STMQueue.new()
 
-val (height, width, depth, pts) = readData routes handle e => (print "EXN\n"; raise e)
-        
+fun readData q = 
+    let val stream = TextIO.openIn("data/random-x256-y256-z3-n256.txt")
+	val dimensions : (int*int*int) option Ref.ref = Ref.new NONE
+	fun lp i = 
+	    case Option.map (String.tokenize " ") (TextIO.inputLine stream)
+	     of SOME("d"::rest) =>
+		(case List.map (fn x => Option.valOf (Int.fromString x)) rest
+		  of d1::d2::d3::nil => 
+		     (Ref.set(dimensions, SOME(d1, d2, d3)); lp(i+1))
+		   | _ => raise Fail "Invalid input\n")
+	      | SOME("p"::rest) =>
+		    (case List.map (fn x => Option.valOf(Int.fromString x)) rest
+		      of x1::y1::z1::x2::y2::z2::nil => 
+			 (STM.atomic(fn() => STMQueue.enqueue(q, (i, (x1,y1,z1),(x2,y2,z2))));
+			  lp(i+1))
+		       | _ => raise Fail "Invalid input\n")
+	      | NONE => ()
+	      | _ => lp i
+	val _ = lp 1
+    in Option.valOf(Ref.get dimensions) end
+
+val (height, width, depth) = readData routeQ handle e => (print "EXN\n"; raise e)
+
 fun pntToStr (i, j, k) = "(" ^ Int.toString i ^ ", " ^ Int.toString j ^ ", " ^ Int.toString k ^ ")"
 
 val _ = print ("Dimensions of grid are " ^ pntToStr(height, width, depth) ^ ", finding " ^ Int.toString routes ^ " routes\n")
 
-val maze = mkMaze(height, width, depth)
+val maze : maze = mkMaze(height, width, depth)
 
 fun sub(i, j, k) = V.sub(V.sub(V.sub(maze, i), j), k)
-
-val ptsPtr = new pts
 
 fun toInd(i,j,k) = k + depth * j + depth * width * i
 
@@ -113,36 +116,17 @@ fun route(src, dest, seen, q, path, x) =
                  | NONE => NoPath
          end
 
-fun pop() = 
-    atomic(fn () => 
-        let val l = STM.get ptsPtr
-        in case l
-            of x::xs => (STM.put(ptsPtr, xs); SOME x)
-             | nil => NONE
-        end
-    )
-
-val noPathCount = new 0
-fun bump() = atomic(fn () => STM.put(noPathCount, STM.get noPathCount + 1))
-
+val noPathCount = STM.new 0
+fun bump() = STM.atomic(fn () => STM.put(noPathCount, STM.get noPathCount + 1))
 
 fun threadLoop() = 
-    case pop()
+    case STM.atomic(fn () => STMQueue.dequeue routeQ)
         of NONE => ()
          | SOME(x, src, dest) => 
-            case atomic(fn () => route(src, dest, S.empty, RBQueue.empty, [src], x))
+            case STM.atomic(fn () => route(src, dest, S.empty, Q.empty, [src], x))
                 of FoundPath => threadLoop()
                  | NoPath =>  (bump(); threadLoop())
 
-(*)
-fun threadLoop routes = 
-    case routes
-        of nil => ()
-         | (x, src, dest)::routes =>
-            case atomic(fn () => route(src, dest, S.empty, RBQueue.empty, [src], x))
-                of FoundPath => threadLoop routes
-                 | NoPath =>  threadLoop routes
-*)
 fun start i =
     if i = 0
     then nil
@@ -164,7 +148,7 @@ val startTime = Time.now()
 val _ = join(start THREADS)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
-val _ = printStats()
+val _ = STM.printStats()
 val _ = print ("Could not find " ^ Int.toString (STM.unsafeGet noPathCount) ^ " paths\n")
 
 
@@ -173,9 +157,6 @@ val _ = print ("Could not find " ^ Int.toString (STM.unsafeGet noPathCount) ^ " 
 
 
 
-
-
-(*val _ = threadLoop pts*)
 
 
 

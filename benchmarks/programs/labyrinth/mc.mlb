@@ -1,5 +1,6 @@
 STMQueue.pml
+PureQueue.pml
 IntRBSet.pml
 RBMultiset.pml
 RBQueue.pml
-labyrinth-throughput.pml
+labyrinth.pml
