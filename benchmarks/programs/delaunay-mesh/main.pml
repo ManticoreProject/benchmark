@@ -125,9 +125,10 @@ val _ = join (startThreads G.threads)
 val endTime = Time.now()
 val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
 
-
+(*
 val _ = print "Checking mesh\n"
 val _ = mesh_check mesh
+*)
 
 val _ = STM.printStats()
 

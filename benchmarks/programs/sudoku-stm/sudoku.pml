@@ -1,4 +1,3 @@
-
 structure P = Puzzles
 
 type value  = string
@@ -6,7 +5,6 @@ type 'a row  = 'a STM.tvar list
 type 'a matrix = 'a row list
 type grid = value matrix
 type choices = value list
-
 
 fun empty (v : value) : bool = String.same(v, ".")
 
@@ -38,7 +36,6 @@ fun transpose l =
         of nil => nil
          | (nil::xss) => transpose xss
          | (x::xs)::xss => (x::List.map List.hd xss)::transpose (xs::List.map List.tl xss)
-
 
 fun chop n l = 
     case l
@@ -196,7 +193,6 @@ fun search m = (STM.atomic(fn () => STM.put(count, STM.unsafeGet count + 1));
 fun solve (grid : value list list)  = 
     let val matrix : choices matrix = choices grid
         val _ = prune matrix
-        
         val res = Option.valOf(search matrix) handle e => (print "No solution\n"; raise e)
         (*shut down pruning threads*)
         val _ = MVar.put(rowMVar, NONE)
@@ -221,3 +217,13 @@ val _ = printSolution solution
 
 
                                     
+val paborts = STM.getPartialAborts()
+val faborts = STM.getFullAborts()
+
+val _ = print(String.concat["benchdata: run-time ", Time.toString (endTime - startTime), 
+                            " prog ", STM.whichSTM, " threads ", Int.toString(VProc.numVProcs()), 
+			    " Full-Aborts ", Int.toString(faborts), " Partial-Aborts ", Int.toString(paborts), "\n"])
+
+
+
+

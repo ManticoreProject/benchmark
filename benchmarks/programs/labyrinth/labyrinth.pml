@@ -38,23 +38,26 @@ fun map(f, xs) =
 val routeQ = STMQueue.new()
 
 fun readData q = 
-    let val stream = TextIO.openIn("data/random-x256-y256-z3-n256.txt")
+    let val stream = TextIO.openIn("data/random-x60-y60-z60-n1000.txt")
 	val dimensions : (int*int*int) option Ref.ref = Ref.new NONE
 	fun lp i = 
-	    case Option.map (String.tokenize " ") (TextIO.inputLine stream)
-	     of SOME("d"::rest) =>
-		(case List.map (fn x => Option.valOf (Int.fromString x)) rest
-		  of d1::d2::d3::nil => 
-		     (Ref.set(dimensions, SOME(d1, d2, d3)); lp(i+1))
-		   | _ => raise Fail "Invalid input\n")
-	      | SOME("p"::rest) =>
+	    if i > routes
+	    then ()
+	    else 
+		case Option.map (String.tokenize " ") (TextIO.inputLine stream)
+		 of SOME("d"::rest) =>
+		    (case List.map (fn x => Option.valOf (Int.fromString x)) rest
+		      of d1::d2::d3::nil => 
+			 (Ref.set(dimensions, SOME(d1, d2, d3)); lp(i+1))
+		       | _ => raise Fail "Invalid input\n")
+		  | SOME("p"::rest) =>
 		    (case List.map (fn x => Option.valOf(Int.fromString x)) rest
 		      of x1::y1::z1::x2::y2::z2::nil => 
 			 (STM.atomic(fn() => STMQueue.enqueue(q, (i, (x1,y1,z1),(x2,y2,z2))));
 			  lp(i+1))
 		       | _ => raise Fail "Invalid input\n")
-	      | NONE => ()
-	      | _ => lp i
+		  | NONE => ()
+		  | _ => lp i
 	val _ = lp 1
     in Option.valOf(Ref.get dimensions) end
 
@@ -155,7 +158,12 @@ val _ = print ("Could not find " ^ Int.toString (STM.unsafeGet noPathCount) ^ " 
 
 
 
+val paborts = STM.getPartialAborts()
+val faborts = STM.getFullAborts()
 
+val _ = print(String.concat["benchdata: run-time ", Time.toString (endTime - startTime), 
+                            " prog ", STM.whichSTM, " threads ", Int.toString(VProc.numVProcs()), 
+			    " Full-Aborts ", Int.toString(faborts), " Partial-Aborts ", Int.toString(paborts), "\n"])
 
 
 

@@ -9,7 +9,7 @@ fun procArgs (argList) =
 	        case args
 	            of x::y::args => if String.same(f, x) then k y else getArg f (y::args) dflt k
 	             | _ => dflt
-		val filePath = getArg "-file" argList "input/color100" (fn x => x)
+		val filePath = getArg "-file" argList "input/random-n16384-d24-c16.txt" (fn x => x)
 		val minClusters = getArg "-clusters" argList 15 toInt
 		val maxClusters = minClusters
 		val nThreads = getArg "-threads" argList 4 toInt
@@ -22,3 +22,8 @@ fun procArgs (argList) =
 	
 val args = CommandLine.arguments()
 val _ = procArgs args
+
+
+
+
+

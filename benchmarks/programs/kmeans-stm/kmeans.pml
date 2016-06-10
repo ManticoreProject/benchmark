@@ -35,15 +35,18 @@ struct
 
     fun KMeans (filePath, minClusters, maxClusters, nThreads, threshold, debug) = 
         let 
-		    val dataSet = Parser.fileToPoints filePath
-		    val _ = print "done reading file\n"
-		    val startTime = Time.now()
+	    val dataSet = Parser.fileToPoints filePath
+	    val _ = print "done reading file\n"
+	    val startTime = Time.now()
             val _ = Cluster.execute (dataSet, minClusters, maxClusters, 1.0, debug)
-		    val endTime = Time.now()
-            val _ = print ("Execution-Time = " ^ Time.toString (endTime - startTime) ^ "\n")
-            val _ = STM.printStats()
+	    val endTime = Time.now()
+	    val paborts = STM.getPartialAborts()
+	    val faborts = STM.getFullAborts()
+	    val _ = print(String.concat["benchdata: run-time ", Time.toString (endTime - startTime), 
+					" prog ", STM.whichSTM, " threads ", Int.toString(VProc.numVProcs()), 
+					" Full-Aborts ", Int.toString(faborts), " Partial-Aborts ", Int.toString(paborts), "\n"])
         in 
-		    ()
+	    ()
         end
 
 end
