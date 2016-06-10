@@ -5,20 +5,6 @@ from pymongo import MongoClient
 import getpass, pdb, argparse, subprocess, os, re, sys, multiprocessing
 import socket, pymongo
 
-while True:
-    username = input('Enter database username: ')
-    password = getpass.getpass('Enter password for ' + username + ': ')
-    try:
-        client = MongoClient('mongodb://' + username + ':' + password + '@ds031812.mlab.com:31812/manticorebenchdata',
-                             serverSelectionTimeoutMS=2)
-        client.server_info()
-        break
-    except Exception as err:
-        print('Invalid username/password')
-        
-db = client.manticorebenchdata
-bench_data = db.bench_data
-
 parser = argparse.ArgumentParser()
 
 benchmarks = ["linked-list-stm", "red-black-stm", "skip-list"]
@@ -31,7 +17,20 @@ parser.add_argument("-iters", type=int, help="Number of iterations for each STM 
 parser.add_argument("-threads", type=int, help="Number of threads to use", default=multiprocessing.cpu_count())
 parser.add_argument("-time", type=int, help="Throughput time (seconds)", default=2)
 parser.add_argument("-scale", dest='scale',action='store_true')
+parser.add_argument("-scaleIters", type=int, help="Number of iterations for scaling experiment", default=4)
 args = parser.parse_args()
+
+while True:
+    username = input('Enter database username: ')
+    password = getpass.getpass('Enter password for ' + username + ': ')
+    try:
+        client = MongoClient('mongodb://' + username + ':' + password + '@ds031812.mlab.com:31812/manticorebenchdata')
+        db = client.manticorebenchdata
+        bench_data = db.bench_data
+        bench_data.find().count() #test connection
+        break
+    except Exception as err:
+        print('Invalid username/password')
 
 if len(args.benchs) == 1 and args.benchs[0] == 'all':
     args.benchs = bench_data.find({}, {"prog" : 1}).distinct('prog')
@@ -73,20 +72,21 @@ def scale(stm, program, prog_dir):
     subprocess.Popen('echo \"name = ' + stm + '\"', shell=True).wait()
     data = BenchData(program, stm, args.threads, socket.gethostname(), True)
     for i in range(1, args.threads+1):
-        print('------' + program + ' - ' + stm + ' - Threads: ' + str(i) + '------')
-        j = 0
-        err = ''
-        while err is not None and j < 2:
-            p = subprocess.Popen(['./a.out', '-stm', stm, '-time', str(args.time), '-p', str(i)],
-                                  stdout=subprocess.PIPE, cwd=prog_dir)
-            out, err = p.communicate()
-            j = j+1
-        if j == 2:
-            print('Failed too many times, exiting...')
-            sys.exit(1)
-        out = str(out)
-        res = re.findall('benchdata.*', out)[0]
-        data.parse(res, i)
+        for j in range(args.scaleIters):
+            print('------' + program + ' - ' + stm + ' - Threads: ' + str(i) + '------')
+            j = 0
+            err = ''
+            while err is not None and j < 2:
+                p = subprocess.Popen(['./a.out', '-stm', stm, '-time', str(args.time), '-p', str(i)],
+                                    stdout=subprocess.PIPE, cwd=prog_dir)
+                out, err = p.communicate()
+                j = j+1
+            if j == 2:
+                print('Failed too many times, exiting...')
+                sys.exit(1)
+            out = str(out)
+            res = re.findall('benchdata.*', out)[0]
+            data.parse(res, i)
     insert(data)
 
     
