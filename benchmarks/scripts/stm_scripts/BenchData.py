@@ -17,6 +17,7 @@ class BenchData:
         self.exec_time = 0.0
         self.scale = scale
         self.thread_vec = []
+        self.throughput = True
 
     def addEntry(self, data, full_aborts, partial_aborts):
         self.data.append(data)
@@ -41,7 +42,7 @@ class BenchData:
                 'partial_aborts' : self.partial_aborts, 'machine' : self.machine,
                 'prog' : self.prog, 'threads' : self.threads, 'stm' : self.stm,
                 'date' : self.date, 'data' : self.data, 'exec_time' : self.exec_time,
-                'scale' : self.scale, 'thread_vec' : self.thread_vec}
+                'scale' : self.scale, 'thread_vec' : self.thread_vec, 'throughput' : self.throughput}
 
     def get_val(self, output, key):
         res = re.findall('(' + key + ' [0-9]+\.[0-9]+|' + key + ' [0-9]+)', output)
@@ -53,6 +54,7 @@ class BenchData:
         data = self.get_val(output, 'Txns/sec')
         if data is None:
             data = self.get_val(output, 'run-time')
+            self.throughput = false
         full_aborts = self.get_val(output, 'Full-Aborts')
         partial_aborts = self.get_val(output, 'Partial-Aborts')
 
@@ -72,5 +74,6 @@ class BenchData:
         data['exec_time'] = self.exec_time
         data['data'] = self.data
         data['date'] = self.date
+        data['throughput'] = self.throughput
 
         

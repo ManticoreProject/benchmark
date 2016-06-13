@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from BenchData import BenchData
 from pymongo import MongoClient
@@ -41,7 +41,8 @@ def insert(data):
     if cursor.count() == 1:
         entry = cursor[0]
         data.updateFields(entry)
-        result = bench_data.replace_one({'_id' : entry['_id']}, data.serialize())
+        pdb.set_trace()
+        result = bench_data.replace_one({'_id' : entry['_id']}, entry)
     elif cursor.count() == 0:
         bench_data.insert_one(data.serialize())
     else:
@@ -76,12 +77,14 @@ def scale(stm, program, prog_dir):
             print('------' + program + ' - ' + stm + ' - Threads: ' + str(i) + '------')
             j = 0
             err = ''
-            while err is not None and j < 2:
+            retCode = -1
+            while retCode != 0 and j < 10:
                 p = subprocess.Popen(['./a.out', '-stm', stm, '-time', str(args.time), '-p', str(i)],
                                     stdout=subprocess.PIPE, cwd=prog_dir)
                 out, err = p.communicate()
+                retCode = p.returncode
                 j = j+1
-            if j == 2:
+            if j == 10:
                 print('Failed too many times, exiting...')
                 sys.exit(1)
             out = str(out)
