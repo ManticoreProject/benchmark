@@ -41,7 +41,6 @@ def insert(data):
     if cursor.count() == 1:
         entry = cursor[0]
         data.updateFields(entry)
-        pdb.set_trace()
         result = bench_data.replace_one({'_id' : entry['_id']}, entry)
     elif cursor.count() == 0:
         bench_data.insert_one(data.serialize())
