@@ -7,8 +7,8 @@ import socket, pymongo
 
 parser = argparse.ArgumentParser()
 
-benchmarks = ["linked-list-stm", "red-black-stm", "skip-list"]
-stms = ["orderedFull", "orderedTL2", "norec", "orderedNoRec", "tiny", "ptiny"]
+benchmarks = ["linked-list-stm", "red-black-stm", "skip-list", "labyrinth"]
+stms = ["orderedTL2", "orderedFull", "orderedNoRec", "fullOrderedNOrec", "ptiny", "tinyOrdered"]
     
 parser.add_argument("-stms", type=str, nargs='+', help='specify which STMs to run', default=stms)
 parser.add_argument("-benchs", type=str, nargs = '+', default=benchmarks,
