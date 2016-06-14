@@ -54,7 +54,7 @@ class BenchData:
         data = self.get_val(output, 'Txns/sec')
         if data is None:
             data = self.get_val(output, 'run-time')
-            self.throughput = false
+            self.throughput = False
         full_aborts = self.get_val(output, 'Full-Aborts')
         partial_aborts = self.get_val(output, 'Partial-Aborts')
 
