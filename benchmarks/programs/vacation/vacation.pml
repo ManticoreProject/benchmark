@@ -1,6 +1,6 @@
 
 structure G = Globals
-structure BT = RBTree
+structure BT = RBMap
 structure M = Manager
 structure UA = UnsafeIntArray
 structure C = Client
