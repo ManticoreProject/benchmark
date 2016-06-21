@@ -66,7 +66,15 @@ fun join chs =
 val _ = print "Done initializing manager\n"
 val ops = join (start G.numClient)
 
-val _ = print ("Txns/sec = " ^ Float.toString (Float.fromInt ops / Float.fromLong G.time) ^ "\n")
+
+val paborts = STM.getPartialAborts()
+val faborts = STM.getFullAborts()
+
+val _ = print(String.concat["benchdata: run-time ", Long.toString G.time, " Txns/sec ",
+                            Float.toString (Float.fromInt ops / Float.fromLong G.time),
+                            " prog ", STM.whichSTM, " threads ", Int.toString(VProc.numVProcs()), 
+			    " Full-Aborts ", Int.toString(faborts), " Partial-Aborts ", Int.toString(paborts), "\n"])
+
 
 
 
