@@ -18,6 +18,8 @@ parser.add_argument("-threads", type=int, help="Number of threads to use", defau
 parser.add_argument("-time", type=int, help="Throughput time (seconds)", default=2)
 parser.add_argument("-scale", dest='scale',action='store_true')
 parser.add_argument("-scaleIters", type=int, help="Number of iterations for scaling experiment", default=4)
+parser.add_argument('-showDefault', dest='showDefault', action='store_true')
+parser.add_argument('-stride', type=int, help="thread stride", default=1)
 args = parser.parse_args()
 
 while True:
@@ -32,6 +34,15 @@ while True:
     except Exception as err:
         print('Invalid username/password')
 
+if args.showDefault:
+    #Get the last configuration executed
+    lastConfig = bench_data.find_one({'plot_config' : {'$exists' : True}})
+    if lastConfig is None:
+        sys.exit(1)
+    else:
+        print(lastConfig['plot_config'])
+        sys.exit(0)
+    
 if len(args.benchs) == 1 and args.benchs[0] == 'all':
     args.benchs = bench_data.find({}, {"prog" : 1}).distinct('prog')
 
@@ -71,7 +82,7 @@ def runSTM(stm, program, prog_dir):
 def scale(stm, program, prog_dir):
     subprocess.Popen('echo \"name = ' + stm + '\"', shell=True).wait()
     data = BenchData(program, stm, args.threads, socket.gethostname(), True)
-    for i in range(1, args.threads+1):
+    for i in range(args.stride, args.threads+1, args.stride):
         for j in range(args.scaleIters):
             print('------' + program + ' - ' + stm + ' - Threads: ' + str(i) + '------')
             j = 0
