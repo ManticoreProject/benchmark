@@ -28,25 +28,9 @@ fun getDoubleFlg f dflt =
         of SOME n => (case Double.fromString n of SOME n => n | NONE => dflt)
          | NONE => dflt
 
-val whichSTM = case getArg "-stm" args of SOME s => s | NONE => "bounded"
-
-type 'a tvar = 'a PartialSTM.tvar 
-
-val (get,put,atomic,new,printStats) = 
-    if String.same(whichSTM, "bounded")
-    then (BoundedHybridPartialSTM.get,BoundedHybridPartialSTM.put,      
-          BoundedHybridPartialSTM.atomic,BoundedHybridPartialSTM.new,
-          BoundedHybridPartialSTM.printStats)
-    else if String.same(whichSTM, "full")
-         then (FullAbortSTM.get,FullAbortSTM.put,FullAbortSTM.atomic,FullAbortSTM.new,FullAbortSTM.printStats)
-         else (PartialSTM.get,PartialSTM.put,PartialSTM.atomic,PartialSTM.new,PartialSTM.printStats)
-
-val atomic : (unit -> 'a) -> 'a = atomic
-
 val THREADS = VProc.numVProcs()
-val ITERS = getIntFlg "-iters" 3000 
-val MAXVAL = 100000
-val INITSIZE = getIntFlg "-size" 4000
+val INITSIZE = getIntFlg "-size" 1000
+val MAXVAL = INITSIZE (*100000*)
 val SPLIT = getDoubleFlg "-split" 0.5
 val TIME = Int.toLong (getIntFlg "-time" 5)
 
@@ -54,8 +38,8 @@ val _ = print ("Running for " ^ Long.toString TIME ^ " seconds\n")
 
 fun ignore _ = ()
 
-val READS = 2
-val WRITES = 4
+val READS = 1
+val WRITES = 1
 val DELETES = 1
 
 fun computeSplit n = Long.toInt(Double.round(Double.fromInt n * SPLIT))
@@ -120,7 +104,15 @@ val ops = join(start (Time.toSecs startTime) l THREADS)
 val endTime = Time.now()
 
 val _ = print ("Total throughput = " ^ Int.toString ops ^ "\n")
-val _ = printStats()
+val _ = STM.printStats()
+
+val paborts = STM.getPartialAborts()
+val faborts = STM.getFullAborts()
+
+val _ = print(String.concat["benchdata: run-time ", Long.toString TIME, " Txns/sec ",
+                            Float.toString (Float.fromInt ops / Float.fromLong TIME),
+                            " prog ", STM.whichSTM, " threads ", Int.toString(VProc.numVProcs()), 
+			    " Full-Aborts ", Int.toString(faborts), " Partial-Aborts ", Int.toString(paborts), "\n"])
 
 
 
