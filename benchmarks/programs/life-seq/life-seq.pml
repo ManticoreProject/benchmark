@@ -192,7 +192,7 @@ structure Main =
     (* LifeSeq.show print *) (LifeSeq.nthgen(LifeSeq.nonSteady, n))
 
   in
-      RunPar.run doit
+      RunSeq.run doit
   end
 
   end
