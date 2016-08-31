@@ -189,7 +189,7 @@ structure Main =
            | _ => dfltN)
       fun doit () =
     (* uncomment "show print" below if you wish to see the output *)
-    LifeSeq.show print (LifeSeq.nthgen(LifeSeq.nonSteady, n))
+    (* LifeSeq.show print *) (LifeSeq.nthgen(LifeSeq.nonSteady, n))
 
   in
       RunPar.run doit
