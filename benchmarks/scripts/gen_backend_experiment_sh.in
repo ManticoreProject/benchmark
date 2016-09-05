@@ -11,6 +11,8 @@ if [ "$NAME" == "" ]; then
     echo "error: provide the name of the benchmark as first argument"
     exit
 fi
+INPUT=$2
+
 DESCRIPTION="BACKEND TEST"
 NUM_TRIALS=10
 SCRIPT_FILE="backend-test.sh"
@@ -22,15 +24,8 @@ touch $SCRIPT_FILE
 
 (
 cat <<EOF
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt0"
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt1"
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt2"
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt3"
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt4"
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt5"
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt6"
-
+#!/bin/bash
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "$INPUT"
 EOF
 ) >> $SCRIPT_FILE
 
