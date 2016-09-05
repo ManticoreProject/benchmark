@@ -26,34 +26,41 @@ touch $SCRIPT_FILE
 cat <<EOF
 #!/bin/bash
 
-make mc-seq BACKEND=""
+BACKEND="" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
+make clean
+make mc-seq
 $MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "mlrisc" -t $NUM_TRIALS -s "$INPUT"
-make clean
 
-make mc-seq BACKEND="-llopt0"
+BACKEND="-llopt0" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
+make clean
+make mc-seq
 $MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "llvm 0" -t $NUM_TRIALS -s "$INPUT"
+
+
+BACKEND="-llopt1" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
-
-
-make mc-seq BACKEND="-llopt1"
+make mc-seq
 $MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "llvm 1" -t $NUM_TRIALS -s "$INPUT"
-make clean
 
-make mc-seq BACKEND="-llopt2"
+BACKEND="-llopt2" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
+make clean
+make mc-seq
 $MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "llvm 2" -t $NUM_TRIALS -s "$INPUT"
-make clean
 
-make mc-seq BACKEND="-llopt3"
+BACKEND="-llopt3" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
+make clean
+make mc-seq
 $MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "llvm 3" -t $NUM_TRIALS -s "$INPUT"
-make clean
 
-make mc-seq BACKEND="-llopt4"
+BACKEND="-llopt4" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
+make clean
+make mc-seq
 $MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "llvm 4" -t $NUM_TRIALS -s "$INPUT"
-make clean
 
-make mc-seq BACKEND="-llopt5"
-$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "llvm 5" -t $NUM_TRIALS -s "$INPUT"
+BACKEND="-llopt5" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
+make mc-seq
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "llvm 5" -t $NUM_TRIALS -s "$INPUT"
 
 
 EOF
