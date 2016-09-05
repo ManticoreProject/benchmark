@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# COPYRIGHT (c) 2010 The Manticore Project (http://manticore.cs.uchicago.edu)
+# All rights reserved.
+#
+# Argument is benchmark name.
+#
+
+NAME=$1
+if [ "$NAME" == "" ]; then
+    echo "error: provide the name of the benchmark as first argument"
+    exit
+fi
+DESCRIPTION="BACKEND TEST"
+NUM_TRIALS=10
+SCRIPT_FILE="backend-test.sh"
+
+MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
+
+rm -rf $SCRIPT_FILE
+touch $SCRIPT_FILE
+
+(
+cat <<EOF
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt0"
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt1"
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt2"
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt3"
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt4"
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt5"
+$MANTI_BENCH_ROOT/scripts/experiment.sh -f mc-seq -e -n $NAME -d "$DESCRIPTION" -t $NUM_TRIALS -s "-llopt6"
+
+EOF
+) >> $SCRIPT_FILE
+
+chmod +x $SCRIPT_FILE

@@ -136,6 +136,9 @@ AC_CONFIG_FILES(
   [scripts/gen-leaf-size-experiment.sh:scripts/gen_leaf_size_experiment_sh.in],
   [chmod +x scripts/gen-leaf-size-experiment.sh])
 AC_CONFIG_FILES(
+  [scripts/gen-backend-experiment.sh:scripts/gen_backend_experiment_sh.in],
+  [chmod +x scripts/gen-backend-experiment.sh])
+AC_CONFIG_FILES(
   [scripts/gen-speedup-experiment.sh:scripts/gen_speedup_experiment_sh.in],
   [chmod +x scripts/gen-speedup-experiment.sh])
 AC_CONFIG_FILES(
