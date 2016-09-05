@@ -130,6 +130,9 @@ AC_CONFIG_FILES(
   [scripts/experiment.sh:scripts/experiment_sh.in],
   [chmod +x scripts/experiment.sh])
 AC_CONFIG_FILES(
+  [scripts/experiment-git.sh:scripts/experiment-git_sh.in],
+  [chmod +x scripts/experiment-git.sh])  
+AC_CONFIG_FILES(
   [scripts/gen-rope-split-experiment.sh:scripts/gen_rope_split_experiment_sh.in],
   [chmod +x scripts/gen-rope-split-experiment.sh])
 AC_CONFIG_FILES(

@@ -12,7 +12,6 @@ SMLNJ="@SMLNJ_CMD@"
 MLTON="@MLTON@"
 PMLC="@PMLC@"
 PMLCFLAGS="@PMLCFLAGS@"
-BACKEND=""
 
 PML_FILES=""
 for f in $( ls *.pml ); do
