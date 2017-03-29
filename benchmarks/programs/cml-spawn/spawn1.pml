@@ -25,17 +25,30 @@ structure Spawn : sig
 
 structure Main = struct
 
+	val dfltN = 300000
+
     fun timeit n = let
 	  val t0 = Time.now()
 	  val () = Spawn.repeat n
 	  val t = (Time.now() - t0)
 	  in
+	  	Print.print(Time.toString t ^ "\n")
+	  	(*
 	    Print.print(String.concat[
 		Int.toString n, " threads spawned in ",
 		Time.toString t, " seconds\n"
 	      ])
+*)
 	  end
+
+	fun main (_, args) = let
+		val n = (case args
+          of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
+           | _ => dfltN)
+	in
+		timeit n
+	end
 
   end
 
-val _ = Main.timeit 10000000
+val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
