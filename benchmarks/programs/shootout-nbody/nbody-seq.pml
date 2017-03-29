@@ -102,7 +102,7 @@ structure Main =
   struct
 
 
-    val dfltN = 1
+    val dfltN = 2500000
   
     fun main (_, args) =
   let

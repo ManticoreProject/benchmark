@@ -180,7 +180,7 @@ structure Main =
   struct
 
 
-    val dfltN = 1000
+    val dfltN = 10000
   
     fun main (_, args) =
   let
