@@ -200,8 +200,9 @@ if [ $SEQUENTIAL_BINARY == "true" ]; then
 	    if [ $GEN_GC_STATS == "false" ]; then
 		echo -n -e "\"gc\" : []" >> $LOG_FILE
 	    else
-		echo -n -e "\"gc\" :" >> $LOG_FILE
+		echo -n -e "\"gc\" : \"" >> $LOG_FILE
 		cat stats.json >> $LOG_FILE
+		echo -n -e "\"" >> $LOG_FILE
 		rm -rf stats.json
 	    fi
 	else
