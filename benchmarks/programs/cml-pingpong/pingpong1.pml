@@ -42,10 +42,12 @@ structure Main = struct
 	  val () = PingPong.run n
 	  val t = (Time.now() - t0)
 	  in
+	  	Print.print(Time.toString t ^ "\n")
+	  	(*
 	    Print.print (String.concat[
 		Int.toString n, " messages in ",
 		Time.toString t, " seconds\n"
-	      ])
+	      ]) *)
 	  end
 
   end
