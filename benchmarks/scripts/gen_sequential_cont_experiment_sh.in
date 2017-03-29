@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+# COPYRIGHT (c) 2010 The Manticore Project (http://manticore.cs.uchicago.edu)
+# All rights reserved.
+#
+# Argument is benchmark name.
+#
+
+NAME=$1
+if [ "$NAME" == "" ]; then
+    echo "error: provide the name of the benchmark as first argument"
+    exit
+fi
+INPUT=$2
+
+# DESCRIPTION="BACKEND TEST"
+NUM_TRIALS=20
+SCRIPT_FILE="seq-cont-test.sh"
+
+MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
+
+rm -rf $SCRIPT_FILE
+touch $SCRIPT_FILE
+
+(
+cat <<EOF
+#!/bin/bash
+
+BACKEND="-llvm" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
+make clean
+make mc-seq
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "cps" -t $NUM_TRIALS -s "$INPUT"
+
+BACKEND="-llvm -direct" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
+make clean
+make mc-seq
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "contig" -t $NUM_TRIALS -s "$INPUT"
+
+
+BACKEND="-llvm -segstack" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
+make clean
+make mc-seq
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "segstack" -t $NUM_TRIALS -s "$INPUT"
+
+EOF
+) >> $SCRIPT_FILE
+
+chmod +x $SCRIPT_FILE

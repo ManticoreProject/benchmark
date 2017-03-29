@@ -142,6 +142,9 @@ AC_CONFIG_FILES(
   [scripts/gen-backend-experiment.sh:scripts/gen_backend_experiment_sh.in],
   [chmod +x scripts/gen-backend-experiment.sh])
 AC_CONFIG_FILES(
+  [scripts/gen-sequential-cont-experiment.sh:scripts/gen_sequential_cont_experiment_sh.in],
+  [chmod +x scripts/gen-sequential-cont-experiment.sh])
+AC_CONFIG_FILES(
   [scripts/gen-speedup-experiment.sh:scripts/gen_speedup_experiment_sh.in],
   [chmod +x scripts/gen-speedup-experiment.sh])
 AC_CONFIG_FILES(

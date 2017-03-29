@@ -204,8 +204,8 @@ structure Main =
 	    fun doit () = T.minimax T.X T.empty
 	    fun doit2 () = T.minimaxTrans T.X T.empty
 	in
-	    RunSeq.run doit;
-	    RunSeq.run doit2
+	    RunSeq.run doit (* ;
+	    RunSeq.run doit2 *)
 	end
 
   end
