@@ -16,6 +16,8 @@ INPUT=$2
 # DESCRIPTION="BACKEND TEST"
 NUM_TRIALS=20
 SCRIPT_FILE="backend-test.sh"
+#KIND="mc-seq"
+KIND="mc-par"
 
 MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
 
@@ -28,39 +30,39 @@ cat <<EOF
 
 BACKEND="" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "mlrisc" -t $NUM_TRIALS -s "$INPUT"
+make $KIND
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $KIND -e -n $NAME -d "mlrisc" -t $NUM_TRIALS -s "$INPUT"
 
 BACKEND="-llopt0" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "llvm 0" -t $NUM_TRIALS -s "$INPUT"
+make $KIND
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $KIND -e -n $NAME -d "llvm 0" -t $NUM_TRIALS -s "$INPUT"
 
 
 BACKEND="-llopt1" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "llvm 1" -t $NUM_TRIALS -s "$INPUT"
+make $KIND
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $KIND -e -n $NAME -d "llvm 1" -t $NUM_TRIALS -s "$INPUT"
 
 BACKEND="-llopt2" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "llvm 2" -t $NUM_TRIALS -s "$INPUT"
+make $KIND
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $KIND -e -n $NAME -d "llvm 2" -t $NUM_TRIALS -s "$INPUT"
 
 BACKEND="-llopt3" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "llvm 3" -t $NUM_TRIALS -s "$INPUT"
+make $KIND
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $KIND -e -n $NAME -d "llvm 3" -t $NUM_TRIALS -s "$INPUT"
 
 BACKEND="-llopt4" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "llvm 4" -t $NUM_TRIALS -s "$INPUT"
+make $KIND
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $KIND -e -n $NAME -d "llvm 4" -t $NUM_TRIALS -s "$INPUT"
 
 BACKEND="-llopt5" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
 make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "llvm 5" -t $NUM_TRIALS -s "$INPUT"
+make $KIND
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $KIND -e -n $NAME -d "llvm 5" -t $NUM_TRIALS -s "$INPUT"
 
 
 EOF
