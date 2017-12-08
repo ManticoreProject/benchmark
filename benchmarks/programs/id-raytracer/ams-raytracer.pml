@@ -232,7 +232,7 @@ structure IdRaytracer =
     % compute camera parameters
     *)
     fun dtor x = x * pi / 180.0;
-    fun tand x = x;
+    fun tand x = Double.tan x;
     fun camparams (lookfrom, lookat, vup, fov, winsize) = let
 	val initfirstray = vecsub lookat lookfrom;   (* pre-normalized! *)
 	val (lookdir, dist) = vecnorm initfirstray;
