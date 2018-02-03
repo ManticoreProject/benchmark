@@ -1,1 +1,1 @@
-shootout-nbody/nbody.pml
+../shootout-nbody/nbody.pml
