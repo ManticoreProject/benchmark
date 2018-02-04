@@ -1,0 +1,7 @@
+I think this program hits a segfault because it tries to allocate too much in the local heap (aka, a lot of allocation within one function). In particular, take a look at how huge the list literals are in this program.
+
+I see two solutions:
+
+(1) Try adding a test to see how much allocation is checked for by add-alloc-checks in CFG. If the value is too high, maybe we should split the block or insert an additional heap test.
+
+(2) [preferred] move the data stored in the list constant into a file, and read it in line-by-line to build the list up.
