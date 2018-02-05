@@ -1,4 +1,8 @@
-(* adapted from the GHC nofib benchmark: spectral/scc *)
+(* adapted from the GHC nofib benchmark: spectral/scc
+
+"strongly-connected components of a graph (courtesy mainly of John Launchbury)"
+
+ *)
 
 structure Benchmark = struct
 
