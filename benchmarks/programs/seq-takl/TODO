@@ -1,0 +1,4 @@
+
+Right now, this benchmark is being miscompiled by Manticore...
+it's raising an exception somewhere when it should never raise
+an exception (MLton and SML/NJ confirm this).
