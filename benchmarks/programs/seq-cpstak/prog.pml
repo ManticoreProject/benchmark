@@ -35,6 +35,8 @@ structure Main =
 
   	val iterations = 1
 
+    (* Larceny uses 1000 iterations, run on (18, 12, 6) *)
+
     val dfltX = 33
     val dfltY = 22
     val dfltZ = 12
