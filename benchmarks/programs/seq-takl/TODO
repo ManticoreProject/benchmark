@@ -2,3 +2,11 @@
 Right now, this benchmark is being miscompiled by Manticore...
 it's raising an exception somewhere when it should never raise
 an exception (MLton and SML/NJ confirm this).
+
+- fun shorterp (x, y) =
+  (not (List.null y))
+  andalso (((List.null x) orelse (shorterp (List.tl x, List.tl y))) handle _ => (Print.print "tl failed" ; true))
+
+  this handler gets fired, so i think the issue is with compiling an expression like:
+
+  x andalso (y orelse z)
