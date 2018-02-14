@@ -17,43 +17,44 @@ INPUT=$2
 NUM_TRIALS=20
 SCRIPT_FILE="seq-cont-test.sh"
 
+RUN_ONE="run-test.sh"
+
 MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
 
-rm -rf $SCRIPT_FILE
-touch $SCRIPT_FILE
+rm -rf $SCRIPT_FILE $RUN_ONE
+touch $SCRIPT_FILE $RUN_ONE
+
+# because the multi-line strings below want to do substitutions,
+# we wrap the intended string so it's substituted.
+HACK1='$1'
+HACK2='$2'
+
+(
+cat <<EOF
+
+BACKEND=$HACK1 $MANTI_BENCH_ROOT/scripts/gen-makefile.sh 
+make clean
+make mc-seq
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d $HACK2 -t $NUM_TRIALS -s "$INPUT"
+
+EOF
+) >> $RUN_ONE
 
 (
 cat <<EOF
 #!/bin/bash
 
-BACKEND="-llvm" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
-make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "cps" -t $NUM_TRIALS -s "$INPUT"
+./run-test.sh "-O2" "cps"
 
-BACKEND="-llvm -direct" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
-make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "contig" -t $NUM_TRIALS -s "$INPUT"
+./run-test.sh "-O2 -contigstack" "contig"
+./run-test.sh "-O2 -contigstack -noras" "contig-noras"
 
+./run-test.sh "-O2 -segstack" "segstack"
+./run-test.sh "-O2 -segstack -noras" "segstack-noras"
 
-BACKEND="-llvm -direct -noras" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
-make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "contig-noras" -t $NUM_TRIALS -s "$INPUT"
-
-
-BACKEND="-llvm -segstack" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
-make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "segstack" -t $NUM_TRIALS -s "$INPUT"
-
-BACKEND="-llvm -segstack -noras" @MANTI_BENCH_ROOT@/scripts/gen-makefile.sh 
-make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d "segstack-noras" -t $NUM_TRIALS -s "$INPUT"
 
 EOF
 ) >> $SCRIPT_FILE
 
 chmod +x $SCRIPT_FILE
+chmod +x $RUN_ONE
