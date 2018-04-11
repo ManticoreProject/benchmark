@@ -3,6 +3,8 @@ structure TicTacToe = struct
   fun compose (f, g) x = f(g x)
   val hd = List.hd
   val tl = List.tl
+  
+  fun snd (_, y) = y
 
   datatype player = X | O
 
