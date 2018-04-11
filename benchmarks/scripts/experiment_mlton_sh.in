@@ -78,10 +78,8 @@ LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.json"
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
-SCRIPT_SVN_REVISION=$( svn info | grep Revision )
-SCRIPT_SVN_REVISION=${SCRIPT_SVN_REVISION:10}
-SCRIPT_SVN_URL=$( svn info | grep URL )
-SCRIPT_SVN_URL=${SCRIPT_SVN_URL:5}
+SCRIPT_SVN_REVISION=$( git log -n 1 --pretty=oneline | cut -d " " -f 1 )
+SCRIPT_SVN_URL=$( git log -n 1 --pretty=oneline | cut -d " " -f 1 )
 
 CURRENT_DIR=`pwd`
 BENCHMARK_PATH="$CURRENT_DIR/$BENCHMARK_EXE"
@@ -89,14 +87,9 @@ BENCHMARK_DIR=$( dirname $BENCHMARK_PATH )
 
 pushd $BENCHMARK_DIR > /dev/null
 
-BENCHMARK_SVN_REVISION=$( svn info | grep Revision )
-BENCHMARK_SVN_REVISION=${BENCHMARK_SVN_REVISION:10}
-BENCHMARK_SVN_URL=$( svn info | grep URL )
-BENCHMARK_SVN_URL=${BENCHMARK_SVN_URL:5}
-BENCHMARK_SVN_STATUS=$( svn st -q | grep -v Fetching | wc -l )
-if [ $BENCHMARK_SVN_STATUS != "0" ]; then
-    echo "WARNING: not all changes have been committed to the benchmark directory"
-fi
+BENCHMARK_SVN_REVISION=$( git log -n 1 --pretty=oneline | cut -d " " -f 1 )
+BENCHMARK_SVN_URL=$( git log -n 1 --pretty=oneline | cut -d " " -f 1 )
+
 EXPERIMENTOR=$( whoami )
 MACHINE=$( uname -n )
 
