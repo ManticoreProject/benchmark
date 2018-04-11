@@ -32,11 +32,10 @@ structure String = struct
     
     open String
     
-    fun tokenize delim line = let
-        val SOME delim = Char.fromString delim
-    in
-        String.tokens (fn x => x = delim) line
-    end
+    fun tokenize delim line = (case Char.fromString delim
+        of SOME delim => String.tokens (fn x => x = delim) line
+         | NONE => raise Fail "delim is not a single char!"
+        (* end case *))
 
 
 end
