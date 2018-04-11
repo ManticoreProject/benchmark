@@ -101,7 +101,7 @@ metadata "problem_name" "\"$EXPERIMENT_NAME\""
 metadata "compiler_src_url" "\"$COMPILER_SVN_URL\""
 metadata "compiler_svn" "0"
 metadata "script_url" "\"$SCRIPT_SVN_URL\""
-metadata "script_svn" "$SCRIPT_SVN_REVISION"
+metadata "script_svn" "\"$SCRIPT_SVN_REVISION\""
 metadata "seq_compilation" "true"
 
 metadata "max_leaf_size" "0"
@@ -113,7 +113,7 @@ MLTON_VERSION=$( $MLTON )
 metadata "version" "\"$MLTON_VERSION\""
 
 metadata "bench_url" "\"$BENCHMARK_SVN_URL\""
-metadata "bench_svn" "$BENCHMARK_SVN_REVISION"
+metadata "bench_svn" "\"$BENCHMARK_SVN_REVISION\""
 metadata "input" "\"$INPUT\""
 metadata "username" "\"$EXPERIMENTOR\""
 metadata "datetime" "\"$DATETIME_MD\""

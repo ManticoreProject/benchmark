@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # inputs: 
-# 1: <absolute path to the manticore executable>
+# 1: <absolute path to the root of the manticore project>
 # 2: <absolute path to the results directory>
 
 if [ $# -ne 2 ]
@@ -10,8 +10,8 @@ if [ $# -ne 2 ]
     exit 1
 fi
 
-MC=$1
-RES=$2
+MC=$1    # e.g., /Users/kavon/research/manticore/gh-pmlc/
+RES=$2   # e.g., /Users/kavon/research/results
 
 # assumption: this script should be run from the same
 # directory in which it resides.
@@ -25,14 +25,14 @@ autoconf -Iconfig
 scripts/gen-input-data.sh
 
 seq_tests=(
-    "seq-ack",
-    "seq-cpstak",
-    "seq-divrec",
-    "seq-evenodd",
-    "seq-life",
-    "seq-minimax",
-    "seq-nqueens",
-    "seq-scc",
+    "seq-ack"
+    "seq-cpstak"
+    "seq-divrec"
+    "seq-evenodd"
+    "seq-life"
+    "seq-minimax"
+    "seq-nqueens"
+    "seq-scc"
     "seq-tak"
 )
 

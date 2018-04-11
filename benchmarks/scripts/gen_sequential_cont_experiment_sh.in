@@ -28,9 +28,11 @@ touch $SCRIPT_FILE $RUN_ONE
 # we wrap the intended string so it's substituted.
 HACK1='$1'
 HACK2='$2'
+HACK_OPT_LVL='$OPT_LVL'
 
 (
 cat <<EOF
+#!/bin/bash
 
 BACKEND=$HACK1 $MANTI_BENCH_ROOT/scripts/gen-makefile.sh 
 make clean
@@ -44,14 +46,23 @@ EOF
 cat <<EOF
 #!/bin/bash
 
-./run-test.sh "-O2" "cps"
+OPT_LVL="-O4"
 
-./run-test.sh "-O2 -contigstack" "contig"
-./run-test.sh "-O2 -contigstack -noras" "contig-noras"
+./run-test.sh "$HACK_OPT_LVL" "cps"
 
-./run-test.sh "-O2 -segstack" "segstack"
-./run-test.sh "-O2 -segstack -noras" "segstack-noras"
+./run-test.sh "$HACK_OPT_LVL -contigstack" "contig"
+#### ./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
 
+./run-test.sh "$HACK_OPT_LVL -segstack" "segstack"
+#### ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
+
+./run-test.sh "$HACK_OPT_LVL -linkstack" "linkstack"
+
+################
+# test mlton
+make clean
+make mlton
+$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
 
 EOF
 ) >> $SCRIPT_FILE
