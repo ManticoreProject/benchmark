@@ -22,4 +22,8 @@ pushd $MANTI_BENCH_ROOT/input-data/black-scholes
 gzip -cd 500K.gz > in_500K.txt
 popd
 
+pushd $MANTI_BENCH_ROOT/programs/seq-scc
+./gen-graph.sh > ../../input-data/scc-graph.txt
+popd
+
 # $MANTI_BENCH_ROOT/programs/smvm/gen-mtx.sh

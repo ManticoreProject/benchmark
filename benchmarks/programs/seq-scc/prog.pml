@@ -64,10 +64,69 @@ fun go (edges, vertices) = stronglyConnComp edges vertices
 end
 
 
+structure GraphLoader = struct
+
+    (* a set of integers implemented as a sorted list *)
+    (* insertInt : int -> int list -> int list *)
+    fun insertInt elm = let
+       fun lp ([]) = [elm]
+         | lp (x::xs) =
+            if elm < x then
+                elm :: x :: xs
+            else if elm = x then
+                x :: xs
+            else
+                x :: (lp xs)
+       in lp end
+            
+         
+
+       (*
+       file format: src vertex, space, dest vertex:
+       
+       2 1
+       3 2
+       3 4
+       3 7
+       4 3
+       5 1
+       5 6
+       5 7
+       6 5
+       7 6
+       
+       *)
+    fun readFromFile () =
+    let
+        val f = TextIO.openIn "../../input-data/scc-graph.txt"
+        fun rd d = Option.valOf (Int.fromString d)
+        fun cut line = List.map rd (String.tokenize " " line)
+        
+        (* reads in lines that contain edges *)
+        fun lp (edges, verts) =
+            (case TextIO.inputLine f
+               of NONE => (edges, verts)
+                | SOME line => (case cut line
+                    of src :: dest :: nil => let
+                            val v1 = insertInt src verts
+                            val v2 = insertInt dest v1
+                        in
+                            lp ( (src, dest) :: edges, v2 )
+                        end
+                     | _ => raise Fail "parse error!"
+                    (* end case *))
+               (* end case *))
+    in
+      lp ([], [])
+    end 
+
+end
+  
+
 structure Main =
   struct
 
-  	val iterations = 200000
+      val iterations = 100
 
     (* Figure 6.4 from SLPJ 87 
       answer should be:
@@ -114,20 +173,23 @@ structure Main =
 
       val printer = (printListOf (printListOf (fn x => Print.print (Int.toString x))))
 
-      (*fun withPrint res = (printer res ; Print.print "\n")*)
+      (* fun withPrint res = (printer res ; Print.print "\n") *)
 
       fun withPrint _ = ()
 
-      fun doit () =  withPrint (Benchmark.go test_graph)
+      (* val input_graph = test_graph *)
+      val input_graph = GraphLoader.readFromFile ()
+
+      fun doit () =  withPrint (Benchmark.go input_graph)
 
       fun lp 0 = ()
-      	| lp n = (doit(); lp (n-1))
+          | lp n = (doit(); lp (n-1))
 
       fun start () = lp iterations
 
-  	in
-      	RunSeq.run start
-  	end
+      in
+          RunSeq.run start
+      end
 
 end
 

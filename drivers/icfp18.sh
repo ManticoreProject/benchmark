@@ -22,10 +22,11 @@ RES=$2
 pushd ../benchmarks
 autoconf -Iconfig
 ./configure --with-manticore=$MC --with-resultsdir=$RES
-# scripts/gen-input-data.sh
+scripts/gen-input-data.sh
 
 seq_tests=(
-    "seq-cpstak"
+    "seq-cpstak",
+    "seq-scc"
 )
 
 # run sequential tests
