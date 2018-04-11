@@ -24,6 +24,8 @@ structure RunSeq (* sig
 structure Print = struct
 
     val print = print
+    
+    fun printLn s = (print s; print "\n")
 
 end
 
