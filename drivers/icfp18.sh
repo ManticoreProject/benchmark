@@ -25,8 +25,15 @@ autoconf -Iconfig
 scripts/gen-input-data.sh
 
 seq_tests=(
+    "seq-ack",
     "seq-cpstak",
-    "seq-scc"
+    "seq-divrec",
+    "seq-evenodd",
+    "seq-life",
+    "seq-minimax",
+    "seq-nqueens",
+    "seq-scc",
+    "seq-tak"
 )
 
 # run sequential tests
