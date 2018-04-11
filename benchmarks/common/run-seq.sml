@@ -19,3 +19,24 @@ structure RunSeq (* sig
 	end
 
   end
+
+
+structure Print = struct
+
+    val print = print
+
+end
+
+
+structure String = struct
+    
+    open String
+    
+    fun tokenize delim line = let
+        val SOME delim = Char.fromString delim
+    in
+        String.tokens (fn x => x = delim) line
+    end
+
+
+end
