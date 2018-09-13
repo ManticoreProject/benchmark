@@ -1,4 +1,0 @@
-
-(1) port to MLton and SML/NJ
-
-(2) generate a non-trivial graph to compute the SCC for.
