@@ -17,8 +17,36 @@ structure Benchmark = struct
   val concat = List.concat
   val length = List.length
   val null = List.null
-
   val foldr = List.foldr
+
+  fun tup1 (x, _) = x
+  fun tup2 (_, x) = x
+
+  (* operations on maze elms *)
+  fun fst e = (case e
+    of Pt (x, _) => x
+     | _ => raise Fail "not a point"
+     (* end case *))
+
+  fun snd e = (case e
+    of Pt (_, x) => x
+     | _ => raise Fail "not a point"
+     (* end case *))
+
+  fun mazeElmEqual p = (case p
+    of (Pt (x, y), Pt (a, b)) => x = a andalso y = b
+     | (Empty, Empty) => true
+     | _ => false
+     (* end case *))
+
+  fun mazeElmToString p = (case p
+    of Pt _ => " _"
+     | Empty => " *"
+    (* end case *))
+
+  fun printStringMat mat =
+    app (fn lst => (app print lst; print "\n")) mat
+(***********)
 
   (* the args to f are flipped,
      i.e. acc is on the left in Scheme *)
@@ -40,7 +68,10 @@ structure Benchmark = struct
       lp lo
     end
 
-  fun listRead lst i = List.nth (lst, i)
+  fun listRead lst i =
+    if i = 0
+      then hd lst
+      else listRead (tl lst) (i-1)
 
   fun listWrite lst i new =
     if i = 0
@@ -52,7 +83,7 @@ structure Benchmark = struct
       then tl lst
       else hd lst :: listRemovePos (tl lst) (i-1)
 
-  fun member x = List.exists (fn y => x = y)
+  fun member x = List.exists (fn y => mazeElmEqual (x, y))
 
   fun hasDuplicates lst = (case lst
     of nil => false
@@ -96,11 +127,69 @@ structure Benchmark = struct
   fun odd n = n mod 2 = 1
   fun even n = n mod 2 = 0
 
-  fun caveToMaze cave = raise Fail "cave2maze"
+  fun caveToMaze cave = matrixMap mazeElmToString cave
 
-  fun tryToPierce pos cave = raise Fail "todo"
+  fun pierce pos cave = matrixWrite cave (fst pos) (snd pos) pos
 
-  fun pierceRandomly possibleHoles cave = (case possibleHoles
+  fun neighboringCavities pos cave = let
+      val size = matrixSize cave
+      val n = tup1 size
+      val m = tup2 size
+      val i = fst pos
+      val j = snd pos
+
+      fun notEmpty (i, j) = (case matrixRead cave i j
+        of Empty => false
+         | _ => true
+         (* end case *))
+    in
+      concat [
+        if i > 0 andalso notEmpty (i-1, j)
+          then [Pt (i-1, j)]
+          else nil,
+        if i < n-1 andalso notEmpty (i+1, j)
+          then [Pt (i+1, j)]
+          else nil,
+        if j > 0 andalso notEmpty (i, j-1)
+          then [Pt (i, j-1)]
+          else nil,
+        if j < m-1 andalso notEmpty (i, j+1)
+          then [Pt (i, j+1)]
+          else nil
+      ]
+    end
+
+  and changeCavity cave pos newID = let
+      fun change cave pos newID oldID = let
+        val i = fst pos
+        val j = snd pos
+        val cavityID = matrixRead cave i j
+      in
+        if mazeElmEqual (cavityID, oldID)
+          then foldl (fn (c, nc) =>
+                        change c nc newID oldID)
+                     (matrixWrite cave i j newID)
+                     (neighboringCavities pos cave)
+          else cave
+      end
+    in
+      change cave pos newID (matrixRead cave (fst pos) (snd pos))
+    end
+
+  and tryToPierce pos cave = let
+    val ncs = neighboringCavities pos cave
+  in
+    if hasDuplicates
+        (map (fn nc => matrixRead cave (fst nc) (snd nc)) ncs)
+      then cave
+      else pierce
+              pos
+              (foldl (fn (c, nc) => changeCavity c nc pos)
+                     cave
+                     ncs)
+  end
+
+  and pierceRandomly possibleHoles cave = (case possibleHoles
     of nil => cave
      | hole :: rest => pierceRandomly rest (tryToPierce hole cave)
     (* end case *))
@@ -128,7 +217,8 @@ structure Benchmark = struct
     end
 
 
-  fun go (n, m) = makeMaze n m
+  fun go (n, m) =
+    printStringMat (makeMaze n m)
 
 end
 
@@ -136,7 +226,23 @@ end
 structure Main =
   struct
 
-    val iterations = 10000
+    val iterations = 1
+
+    (*
+    The 11 x 11 version should look like this:
+
+      _ * _ _ _ _ _ _ _ _ _
+      _ * * * * * * * _ * *
+      _ _ _ * _ _ _ * _ _ _
+      _ * _ * _ * _ * _ * _
+      _ * _ _ _ * _ * _ * _
+      * * _ * * * * * _ * _
+      _ * _ _ _ _ _ _ _ * _
+      _ * _ * _ * * * * * *
+      _ _ _ * _ _ _ _ _ _ _
+      _ * * * * * * * _ * *
+      _ * _ _ _ _ _ _ _ _ _
+    *)
 
     val n = 11
     val m = 11
