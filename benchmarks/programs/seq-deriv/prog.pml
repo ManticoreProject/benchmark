@@ -17,11 +17,8 @@ datatype expr
 
 structure Benchmark = struct
 
-val hd = List.hd
-val tl = List.tl
 val map = List.map
 val app = List.app
-val foldl = List.foldl
 
 fun prnt p = (case p
   of X => print "x"
