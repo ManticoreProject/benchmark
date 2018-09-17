@@ -7,8 +7,8 @@
 *)
 
 datatype maze_elm
-  = Pt of int * int
-  | Empty
+  = Pt of int * int  (* originally  (cons i j) *)
+  | Empty            (* originally  #f *)
 
 structure Benchmark = struct
 
@@ -19,8 +19,15 @@ structure Benchmark = struct
   val null = List.null
   val foldr = List.foldr
 
+  (* workarounds for Manticore compatibility *)
   fun tup1 (x, _) = x
   fun tup2 (_, x) = x
+  fun boolEq x = (case x
+    of (true, true)   => true
+     | (false, false) => true
+     | _              => false
+    (* end case *))
+    
 
   (* operations on maze elms *)
   fun fst e = (case e
@@ -206,7 +213,7 @@ structure Benchmark = struct
       val possibleHoles = concat (
             for 0 n (fn i => concat (
               for 0 m (fn j =>
-                if even i andalso even j
+                if boolEq (even i, even j)
                   then nil
                   else [Pt (i, j)]
               ))
