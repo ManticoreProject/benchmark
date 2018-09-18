@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# inputs: 
+# inputs:
 # 1: <absolute path to the root of the manticore project>
 # 2: <absolute path to the results directory>
 
@@ -19,10 +19,12 @@ RES=$2   # e.g., /Users/kavon/research/results
 ########
 # prepare benchmarks
 
+set -e
 pushd ../benchmarks
 autoconf -Iconfig
 ./configure --with-manticore=$MC --with-resultsdir=$RES
 scripts/gen-input-data.sh
+set +e
 
 seq_tests=(
     "seq-ack"
@@ -40,9 +42,9 @@ seq_tests=(
 
 for test in "${seq_tests[@]}"; do
     pushd programs/$test
-    
+
     ../../scripts/gen-sequential-cont-experiment.sh $test
     ./seq-cont-test.sh
-    
+
     popd
 done

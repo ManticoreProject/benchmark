@@ -101,6 +101,21 @@ MANTICORE_BINDIR=$MANTICORE_ROOT/bin
 PMLC=$MANTICORE_BINDIR/pmlc
 LOG_WORK_STEALING=$MANTICORE_ROOT/src/tools/log-work-stealing/log-work-stealing
 
+
+#### check for valgrind in the user's PATH
+AC_CHECK_PROG(VALGRIND_CHECK,valgrind,yes)
+if test x"$VALGRIND_CHECK" != x"yes" ; then
+    AC_MSG_ERROR([Please install valgrind before continuing.])
+fi
+
+#### check for bloaty in the user's PATH
+# https://github.com/google/bloaty
+AC_CHECK_PROG(BLOATY_CHECK,bloaty,yes)
+if test x"$BLOATY_CHECK" != x"yes" ; then
+    AC_MSG_ERROR([Please install bloaty before continuing.])
+fi
+
+
 AC_SUBST(MANTICORE_ROOT)
 AC_SUBST(PMLC)
 AC_SUBST(LOG_WORK_STEALING)
@@ -131,7 +146,7 @@ AC_CONFIG_FILES(
   [chmod +x scripts/experiment.sh])
 AC_CONFIG_FILES(
   [scripts/experiment-git.sh:scripts/experiment-git_sh.in],
-  [chmod +x scripts/experiment-git.sh])  
+  [chmod +x scripts/experiment-git.sh])
 AC_CONFIG_FILES(
   [scripts/gen-rope-split-experiment.sh:scripts/gen_rope_split_experiment_sh.in],
   [chmod +x scripts/gen-rope-split-experiment.sh])
