@@ -17,17 +17,17 @@ NUM_TRIALS="1"
 
 usage="See the README file for instructions"
 
-while getopts ":s:f:n:d:t:" options; 
+while getopts ":s:f:n:d:t:" options;
 do
     case $options in
-	s ) INPUT="$OPTARG";;
-	f ) BENCHMARK_EXE="$OPTARG";;
-	n ) EXPERIMENT_NAME="$OPTARG";;
-	d ) DESCRIPTION="$OPTARG";;
-	t ) NUM_TRIALS="$OPTARG";;
-	\? ) echo $usage
+        s ) INPUT="$OPTARG";;
+        f ) BENCHMARK_EXE="$OPTARG";;
+        n ) EXPERIMENT_NAME="$OPTARG";;
+        d ) DESCRIPTION="$OPTARG";;
+        t ) NUM_TRIALS="$OPTARG";;
+        \? ) echo $usage
             exit 1;;
-	* ) echo $usage
+        * ) echo $usage
             exit 1;;
     esac
 done
@@ -54,17 +54,17 @@ function metadata_list {
     n=0
     for x in $1
     do
-	n=$(( n + 1 ))
+        n=$(( n + 1 ))
     done
     cnt=0
     for x in $1
     do
-	if [ $cnt -lt $(( n - 1 )) ]; then
-	    echo -n -e " $x, " >> $LOG_FILE
-	else 
-	    echo -n -e " $x " >> $LOG_FILE
-	fi
-	cnt=$(( cnt + 1 ))
+        if [ $cnt -lt $(( n - 1 )) ]; then
+            echo -n -e " $x, " >> $LOG_FILE
+        else
+            echo -n -e " $x " >> $LOG_FILE
+        fi
+        cnt=$(( cnt + 1 ))
     done
     echo -e "]," >> $LOG_FILE
 }
@@ -74,7 +74,9 @@ EXPERIMENT_RESULTS_DIR="$RESULTS_DIR/$EXPERIMENT_NAME"
 if [ ! -e $EXPERIMENT_RESULTS_DIR ]; then
     mkdir $EXPERIMENT_RESULTS_DIR
 fi
-LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME.json"
+LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.json"
+GRIND_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.cg"
+SIZE_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-size-$DATETIME.csv"
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -125,6 +127,13 @@ metadata "nTrials" "$NUM_TRIALS"
 
 # Build and run the benchmarks
 
+# gather size info with bloaty
+echo "running bloaty..."
+bloaty --csv "./$BENCHMARK_EXE" > $SIZE_FILE
+# run the executable with cachegrind once
+echo "running cachegrind..."
+valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" "./$BENCHMARK_EXE" $INPUT
+
 echo "Logging performance results to $LOG_FILE"
 
 cnt=0
@@ -133,13 +142,13 @@ for ((i=1;i<=NUM_TRIALS;i+=1)); do
     echo "./$BENCHMARK_EXE $INPUT"
     RES=$( ./$BENCHMARK_EXE $INPUT )
     if [ $? == "0" ]; then
-	echo -n -e "\t\t{ \"n_procs\" : 0,\t\t\"time_sec\" : " >> $LOG_FILE
-	echo -n -e "$RES" >> $LOG_FILE
-	echo -n -e ",\t\t" >> $LOG_FILE
-	echo -n -e "\"gc\" : []" >> $LOG_FILE
+        echo -n -e "\t\t{ \"n_procs\" : 0,\t\t\"time_sec\" : " >> $LOG_FILE
+        echo -n -e "$RES" >> $LOG_FILE
+        echo -n -e ",\t\t" >> $LOG_FILE
+        echo -n -e "\"gc\" : []" >> $LOG_FILE
     else
-	echo "Benchmark failed unexpectedly with nonzero return code"
-	exit 1
+        echo "Benchmark failed unexpectedly with nonzero return code"
+        exit 1
     fi
     echo -n -e "}" >> $LOG_FILE
     if [ $cnt -lt $(( $NUM_TRIALS - 1 )) ]; then
