@@ -40,7 +40,7 @@ structure Main =
     val dfltX = 33
     val dfltY = 22
     val dfltZ = 12
-  
+
     fun main (_, args) = let
 
       val n = (case args

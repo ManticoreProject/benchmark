@@ -31,11 +31,14 @@ seq_tests=(
     "seq-cpstak"
     "seq-divrec"
     "seq-evenodd"
+    "seq-fib"
     "seq-life"
     "seq-minimax"
     "seq-nqueens"
     "seq-scc"
+    "seq-tailfib"
     "seq-tak"
+    "seq-takl"
 )
 
 # run sequential tests

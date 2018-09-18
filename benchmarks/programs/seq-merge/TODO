@@ -1,1 +1,4 @@
 this benchmark currently segfaults when using stacks
+
+for linkstacks, an exception is raised in the GC about
+the frame being in the local heap.
