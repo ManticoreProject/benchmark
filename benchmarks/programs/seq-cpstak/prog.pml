@@ -33,13 +33,13 @@ end
 structure Main =
   struct
 
-  	val iterations = 1
+  	val iterations = 1000
 
     (* Larceny uses 1000 iterations, run on (18, 12, 6) *)
 
-    val dfltX = 33
-    val dfltY = 22
-    val dfltZ = 12
+    val dfltX = 18
+    val dfltY = 12
+    val dfltZ = 6
 
     fun main (_, args) = let
 
