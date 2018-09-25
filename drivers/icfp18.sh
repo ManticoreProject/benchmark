@@ -29,11 +29,11 @@ set +e
 seq_tests=(
     "seq-ack"
     "seq-cpstak"
+    "seq-deriv"
     "seq-divrec"
     "seq-evenodd"
     "seq-fib"
     "seq-life"
-    "seq-minimax"
     "seq-nqueens"
     "seq-scc"
     "seq-tailfib"

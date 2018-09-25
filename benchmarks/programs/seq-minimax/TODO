@@ -1,0 +1,8 @@
+- for all stack-based versions, this program no longer works (as of 9/25/2018)
+
+- linkstack fails to compile because a missing "ASM_Callec1"
+
+- contig and segmented are now segfaulting during a run inside an
+  uncurried function, isWinFor_uncurried. This might be related to John's
+  recent uncurrying fix in trunk (and cherry-picked to stacks). See
+  https://github.com/ManticoreProject/manticore/commit/82014c7bb165b51669335060f687bc602070e020
