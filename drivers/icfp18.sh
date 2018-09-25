@@ -34,6 +34,7 @@ seq_tests=(
     "seq-evenodd"
     "seq-fib"
     "seq-life"
+    "seq-mandelbrot"
     "seq-nqueens"
     "seq-scc"
     "seq-tailfib"
