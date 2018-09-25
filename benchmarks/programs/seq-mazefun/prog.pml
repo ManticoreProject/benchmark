@@ -27,7 +27,7 @@ structure Benchmark = struct
      | (false, false) => true
      | _              => false
     (* end case *))
-    
+
 
   (* operations on maze elms *)
   fun fst e = (case e
@@ -225,7 +225,9 @@ structure Benchmark = struct
 
 
   fun go (n, m) =
-    printStringMat (makeMaze n m)
+    (* printStringMat ( *)
+      makeMaze n m
+      (* ) *)
 
 end
 
@@ -233,7 +235,7 @@ end
 structure Main =
   struct
 
-    val iterations = 1
+    val iterations = 3
 
     (*
     The 11 x 11 version should look like this:
@@ -251,8 +253,9 @@ structure Main =
       _ * _ _ _ _ _ _ _ _ _
     *)
 
-    val n = 11
-    val m = 11
+    (* NOTE: must both be odd numbers! *)
+    val n = 75
+    val m = 75
 
     fun main _ = let
 
