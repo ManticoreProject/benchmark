@@ -35,6 +35,7 @@ seq_tests=(
     "seq-fib"
     "seq-life"
     "seq-mandelbrot"
+    "seq-mazefun"
     "seq-nqueens"
     "seq-scc"
     "seq-tailfib"
