@@ -33,16 +33,19 @@ end
 structure Main =
   struct
 
-  	val iterations = 1
+    (* larceny uses 10000 iters of n = 1000 *)
+
+    val iterations = 150
+    val n = 15000  (* directly controls the max depth of the stack *)
 
     fun main _ = let
 
       fun compose f g x = f (g x)
 
-      fun doit () = (
-        app (compose (fn n => (print n; print " ")) Int.toString)
-          (Benchmark.go 1000)
-          ; print ("\n"))
+      fun doit () =
+        (* (app (compose (fn n => (print n; print " ")) Int.toString) *)
+          (Benchmark.go n)
+          (* ; print ("\n")) *)
 
       fun lp 0 = ()
       	| lp n = (doit(); lp (n-1))

@@ -37,6 +37,7 @@ seq_tests=(
     "seq-mandelbrot"
     "seq-mazefun"
     "seq-nqueens"
+    "seq-primes"
     "seq-scc"
     "seq-tailfib"
     "seq-tak"
