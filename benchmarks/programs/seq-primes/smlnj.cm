@@ -1,0 +1,12 @@
+Library
+
+  structure Main
+
+is
+
+  $cml/basis.cm
+  $cml/cml.cm
+
+  ../../common/run-seq.sml
+
+  prog.sml
