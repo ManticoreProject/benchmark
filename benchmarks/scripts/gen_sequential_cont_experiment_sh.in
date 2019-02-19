@@ -14,7 +14,7 @@ fi
 INPUT=$2
 
 # DESCRIPTION="BACKEND TEST"
-NUM_TRIALS=50
+NUM_TRIALS=5
 SCRIPT_FILE="seq-cont-test.sh"
 
 RUN_ONE="run-test.sh"
@@ -34,7 +34,7 @@ HACK_OPT_LVL='$OPT_LVL'
 cat <<EOF
 #!/bin/bash
 
-BACKEND=$HACK1 $MANTI_BENCH_ROOT/scripts/gen-makefile.sh 
+BACKEND=$HACK1 $MANTI_BENCH_ROOT/scripts/gen-makefile.sh
 make clean
 make mc-seq
 $MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d $HACK2 -t $NUM_TRIALS -s "$INPUT"
@@ -46,17 +46,23 @@ EOF
 cat <<EOF
 #!/bin/bash
 
-OPT_LVL="-O4"
+OPT_LVL="-O3"
 
 ./run-test.sh "$HACK_OPT_LVL" "cps"
 
+./run-test.sh "$HACK_OPT_LVL -linkstack" "linkstack"
+./run-test.sh "$HACK_OPT_LVL -linkstack -noras" "linkstack-noras"
+
 ./run-test.sh "$HACK_OPT_LVL -contigstack" "contig"
-#### ./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
+./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
 
 ./run-test.sh "$HACK_OPT_LVL -segstack" "segstack"
-#### ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
+./run-test.sh "$HACK_OPT_LVL -segstack -nocopyoverflow" "segstack-nocopyoverflow"
+./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
 
-./run-test.sh "$HACK_OPT_LVL -linkstack" "linkstack"
+./run-test.sh "$HACK_OPT_LVL -resizestack" "resizestack"
+./run-test.sh "$HACK_OPT_LVL -resizestack -nocopyoverflow" "resizestack-nocopyoverflow"
+./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
 
 ################
 # test mlton
