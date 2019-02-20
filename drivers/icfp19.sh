@@ -39,6 +39,7 @@ seq_tests=(
     "seq-merge"
     "seq-minimax"
     "seq-nqueens"
+    "seq-perm"
     "seq-primes"
     "seq-quicksort"
     "seq-scc"
