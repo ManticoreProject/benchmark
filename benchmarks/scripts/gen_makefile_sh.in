@@ -38,12 +38,14 @@ mc-seq-elision-log:	mc.mlb $PML_FILES
 	$PMLC $PMLCFLAGS $BACKEND -log -sequential -o mc-seq-elision mc.mlb
 mlton:	mlton.mlb $SML_FILES
 	$MLTON -codegen amd64 -output mlton mlton.mlb
+mlton-profile:	mlton.mlb $SML_FILES
+	$MLTON -codegen amd64 -profile alloc -profile-stack true -output mlton-profile mlton.mlb
 smlnj:	smlnj.cm $SML_FILES
 	echo "SMLofNJ.exportFn(\"smlnj\", Main.main);" | $SMLNJ smlnj.cm
 
 .PHONY: clean
 clean:
-	rm -rf mc-par mc-seq mc-seq-elision mlton smlnj.x86.* *.s .cm *.ll *.bc
+	rm -rf mc-par mc-seq mc-seq-elision mlton mlton-profile mlmon.out smlnj.x86.* *.s .cm *.ll *.bc
 
 EOF
 ) >> Makefile

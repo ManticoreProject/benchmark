@@ -67,7 +67,7 @@ OPT_LVL="-O3"
 ################
 # test mlton
 make clean
-make mlton
+make mlton mlton-profile
 $MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
 
 EOF

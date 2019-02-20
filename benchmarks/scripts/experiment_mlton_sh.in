@@ -77,6 +77,8 @@ fi
 LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.json"
 GRIND_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.cg"
 SIZE_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-size-$DATETIME.csv"
+MLMON_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME-mlmon.out"
+PROF_EXE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME-mlton-profile.exe"
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -133,6 +135,14 @@ bloaty --csv "./$BENCHMARK_EXE" > $SIZE_FILE
 # run the executable with cachegrind once
 echo "running cachegrind..."
 valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" "./$BENCHMARK_EXE" $INPUT
+
+# run the profiled version of the executable, if available
+if [ -e $"./${BENCHMARK_EXE}-profile" ]; then
+    echo "running profiled version..."
+    ./${BENCHMARK_EXE}-profile
+    mv ./mlmon.out $MLMON_FILE
+    cp ./${BENCHMARK_EXE}-profile $PROF_EXE
+fi
 
 echo "Logging performance results to $LOG_FILE"
 
