@@ -147,7 +147,11 @@ fun perm9_benchmark (m, n : int) =
                         = Int.quot ((n * (n + 1) * factorial (n)), 2))
   end
 
-fun doit () = perm9_benchmark (5, 10)
+val iters = 10
+
+fun doit () = perm9_benchmark (5, 9)
+
+fun loop n = if n = 0 then () else (doit() ; loop(n-1))
 
 
-val _ = RunSeq.run doit
+val _ = RunSeq.run (fn () => loop iters)
