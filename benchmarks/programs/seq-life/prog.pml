@@ -128,8 +128,8 @@ structure LifeSeq (* : sig
                                       in map move coordlist end
     val rotate = map (fn (x:int,y:int) => (y,~x))
 
-    val glider = (0,0)::(0,2)::(1,1)::(1,2)::(2,1)::nil
-    val bail = (0,0)::(0,1)::(1,0)::(1,1)::nil
+    val glider = [(0,0),(0,2),(1,1),(1,2),(2,1)]
+    val bail = [(0,0),(0,1),(1,0),(1,1)]
     fun barberpole n =
        let fun f i = if i=n then (n+n-1,n+n)::(n+n,n+n)::nil
                        else (i+i,i+i+1)::(i+i+2,i+i+1)::f(i+1)
@@ -145,11 +145,11 @@ structure LifeSeq (* : sig
     (* end case *))
 
     val gun = mkgen
-     ((2,20)::(3,19)::(3,21)::(4,18)::(4,22)::(4,23)::(4,32)::(5,7)::(5,8)::(5,18)::
-      (5,22)::(5,23)::(5,29)::(5,30)::(5,31)::(5,32)::(5,36)::(6,7)::(6,8)::(6,18)::
-      (6,22)::(6,23)::(6,28)::(6,29)::(6,30)::(6,31)::(6,36)::(7,19)::(7,21)::(7,28)::
-      (7,31)::(7,40)::(7,41)::(8,20)::(8,28)::(8,29)::(8,30)::(8,31)::(8,40)::(8,41)::
-      (9,29)::(9,30)::(9,31)::(9,32)::nil)
+     [(2,20),(3,19),(3,21),(4,18),(4,22),(4,23),(4,32),(5,7),(5,8),(5,18),
+      (5,22),(5,23),(5,29),(5,30),(5,31),(5,32),(5,36),(6,7),(6,8),(6,18),
+      (6,22),(6,23),(6,28),(6,29),(6,30),(6,31),(6,36),(7,19),(7,21),(7,28),
+      (7,31),(7,40),(7,41),(8,20),(8,28),(8,29),(8,30),(8,31),(8,40),(8,41),
+      (9,29),(9,30),(9,31),(9,32)]
 
 
     val centerLine = 5
@@ -173,6 +173,21 @@ structure LifeSeq (* : sig
 
     fun show pr = compose (compose (app (fn s => (pr s; pr "\n"))) plot) alive
 
+    (* the original version uses this gun. *)
+    fun goGun n = (fn _ => ()) (nthgen(gun, n))
+
+    (* Kavon's alternative grid that never reaches steady-state. *)
+    fun goShuttle n = (fn _ => ()) (nthgen(nonSteady, n))
+
+    fun test config iters steps = let
+          fun loop n =
+             if n = 0
+                then ()
+             else (config steps;
+                   loop(n-1))
+       in loop iters
+       end
+
   end (* Life *)
 
 
@@ -180,16 +195,19 @@ structure Main =
   struct
 
 
-    val dfltN = 20000
+    val dfltSteps = 25000
+    val iters = 2
 
     fun main (_, args) =
   let
-      val n = (case args
-          of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
-           | _ => dfltN)
+      val steps = (case args
+          of arg :: _ => Option.getOpt (Int.fromString arg, dfltSteps)
+           | _ => dfltSteps)
+
       fun doit () =
-    (* uncomment "show print" below if you wish to see the output *)
-    (* LifeSeq.show print *) (LifeSeq.nthgen(LifeSeq.nonSteady, n))
+        (* we test both versions! *)
+        (LifeSeq.test LifeSeq.goGun iters steps ;
+         LifeSeq.test LifeSeq.goShuttle iters steps)
 
   in
       RunSeq.run doit
