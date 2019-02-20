@@ -13,16 +13,24 @@ end (* end struct *)
 structure Main =
   struct
 
-    (* mlton's bench uses 41 *)
+    (* match larceny *)
 
     fun main (_, _) =
   let
-      val n = 41
-      val correct = 165580141
+      val iters = 5
+      val n = 40
+      val correct = 102334155
 
-      fun doit () = if correct <> Fib.go n
+      fun run () = if correct <> Fib.go n
                       then raise Fail "bug"
                       else ()
+
+      fun lp n =
+        if n = 0
+        then ()
+        else (run () ; lp (n-1))
+
+      fun doit () = lp iters
 
   in
       RunSeq.run doit
