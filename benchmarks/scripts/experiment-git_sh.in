@@ -19,6 +19,7 @@ GEN_GC_STATS="@GEN_GC_STATS@"
 PMLC_FLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
 PRETTY_INPUT=""
+RUN_CACHEGRIND="false"  # to enable, use "true"
 
 usage="See the README file for instructions"
 
@@ -194,9 +195,11 @@ if [ $SEQUENTIAL_BINARY == "true" ]; then
     # gather size info with bloaty
     echo "running bloaty..."
     bloaty --csv -d compileunits $SEQUENTIAL_EXE > $SIZE_FILE
-    # run the executable with cachegrind once
-    echo "running cachegrind..."
-    valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $SEQUENTIAL_EXE $ARGS
+    if [ $RUN_CACHEGRIND == "true" ]; then
+      # run the executable with cachegrind once
+      echo "running cachegrind..."
+      valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $SEQUENTIAL_EXE $ARGS
+    fi
     echo "\"runs\" : [" >> $LOG_FILE
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
         echo "$SEQUENTIAL_EXE $ARGS"
