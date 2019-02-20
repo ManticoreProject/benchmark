@@ -9,8 +9,7 @@ structure Benchmark = struct
   val y_base = 1.25
   val side = 2.5
 
-  (* MLton uses sz = 32768, but that takes like 5+ seconds *)
-  val sz = 16384
+  val sz = 32768
   val maxCount = 2048
 
   val delta = side / (toDouble sz)
