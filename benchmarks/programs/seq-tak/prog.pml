@@ -38,30 +38,22 @@ end (* end struct *)
 structure Main =
   struct
 
-    (* somewhere online uses: 30, 22, 12 *)
-    (* larcenry uses 10 iterations of: 32, 16, 8 *)
+    val iters = 1
 
-    (* 33 22 12 seems to be enough work for today's machines. *)
-
-    val iters = 10
-
-    val dfltX = 32
-    val dfltY = 16
-    val dfltZ = 8
+    val dfltX = 40
+    val dfltY = 20
+    val dfltZ = 11
+    val ans = 12
 
     fun main (_, args) =
   let
-      val input = (case args
-          of x :: y :: z :: _ => (
-              Option.getOpt (Int.fromString x, dfltX),
-              Option.getOpt (Int.fromString y, dfltY),
-              Option.getOpt (Int.fromString z, dfltZ)
-              )
-           | _ => (dfltX, dfltY, dfltZ))
+      val input = (dfltX, dfltY, dfltZ)
 
       fun lp n = (case n
        of 0 => ()
-        | n => (Takeuchi.tak input ; lp (n-1))
+        | n => if ans <> Takeuchi.tak input
+                 then raise Fail "bug"
+                 else lp (n-1)
        (* end case *))
 
       fun doit () = lp iters
