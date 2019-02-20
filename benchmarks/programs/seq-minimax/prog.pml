@@ -3,7 +3,7 @@ structure TicTacToe = struct
   fun compose (f, g) x = f(g x)
   val hd = List.hd
   val tl = List.tl
-  
+
   fun snd (_, y) = y
 
   datatype player = X | O
@@ -58,7 +58,7 @@ structure TicTacToe = struct
 	 | _ => false)
 
   (* playerOccupies : player -> board -> int -> bool *)
-  fun playerOccupies p b i = 
+  fun playerOccupies p b i =
         (case find (b, i)
 	   of SOME(p') => playerEq (p, p')
 	    | NONE => false)
@@ -73,7 +73,7 @@ structure TicTacToe = struct
 	    raise Fail "subscript"
 
   (* moveTo : (board * player) -> int -> board *)
-  fun moveTo (b : board, p : player) (i:int) = 
+  fun moveTo (b : board, p : player) (i:int) =
         if isOccupied(b,i) then
 	  raise Fail "illegal move"
 	else
@@ -105,7 +105,7 @@ structure TicTacToe = struct
   fun isWin b = isWinFor b X orelse isWinFor b O
 
   (* isCat : board -> bool *)
-  fun isCat b = isFull b andalso not (isWinFor b X) 
+  fun isCat b = isFull b andalso not (isWinFor b X)
                          andalso not (isWinFor b O) (* X moves last *)
 
   (* score : board -> int *)
@@ -122,7 +122,7 @@ structure TicTacToe = struct
   type game_tree = (board * int) rose_tree
 
   (* allMoves : board -> int list *)
-  fun allMoves b = 
+  fun allMoves b =
       let fun f (n, m, acc) =
 	      (case m
 		of nil => rev acc
@@ -133,7 +133,7 @@ structure TicTacToe = struct
       end
 
   (* other : player -> player *)
-  fun other p = (case p 
+  fun other p = (case p
 		  of X => O
 		   | O => X)
 
@@ -144,11 +144,11 @@ structure TicTacToe = struct
   fun size (Rose (x, ts)) = 1 + (foldl (fn (x,y) => x+y) 0 (map size ts))
 
   (* listExtreme : (('a * 'a) -> 'a) -> 'a list -> 'a *)
-  fun listExtreme e ns = 
+  fun listExtreme e ns =
       (case ns
 	of nil => (raise Fail "undefined on empty lists")
 	 | (n::ns) => foldl e n ns)
-      
+
   (* listmax : int list -> int *)
   val listmax = listExtreme (fn (a:int, b) => if (a>b) then a else b)
 
@@ -161,7 +161,7 @@ structure TicTacToe = struct
   (* successors : board * player -> board list *)
   (* A list of all possible successor states given a board and a player to move. *)
   fun successors (b : board, p : player) : board list = map (moveTo (b, p)) (allMoves b)
-    
+
   (* minimax : player -> board -> game_tree *)
   (* Build the tree and score it at the same time. *)
   (* p is the player to move *)
@@ -169,10 +169,10 @@ structure TicTacToe = struct
   fun minimax (p : player) (b : board) : game_tree =
         if gameOver(b) then
 	  mkLeaf (b, score b)
-	else let 
+	else let
           val trees = map (minimax (other p)) (successors (b, p))
 	  val scores = map (compose (snd, top)) trees
-	  in 
+	  in
              case p
 	      of X => Rose ((b, listmax scores), trees)
 	       | Y => Rose ((b, listmin scores), trees)
@@ -183,7 +183,7 @@ structure TicTacToe = struct
 	  mkLeaf (b, score b)
 	else (case lookupTrans (p,b)
                of SOME x => Rose ((b, x), [])
-                | NONE => (let 
+                | NONE => (let
                                val trees = map (minimaxTrans (other p)) (successors (b, p))
 	                       val scores = map (compose (snd, top)) trees
                                val final = (case p
@@ -201,13 +201,19 @@ structure Main =
 
   structure T = TicTacToe
 
+    val iters = 10
+
     fun main (_, args) =
 	let
-	    fun doit () = T.minimax T.X T.empty
-	    fun doit2 () = T.minimaxTrans T.X T.empty
+	    fun doit () = ( T.minimax T.X T.empty ;
+  	                  T.minimaxTrans T.X T.empty )
+
+      fun loop n =
+        if n = 0
+          then ()
+          else (doit () ; loop (n-1))
 	in
-	    RunSeq.run doit (* ;
-	    RunSeq.run doit2 *)
+	    RunSeq.run (fn () => loop iters)
 	end
 
   end
