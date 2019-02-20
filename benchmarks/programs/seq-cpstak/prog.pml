@@ -33,25 +33,20 @@ end
 structure Main =
   struct
 
-  	val iterations = 1000
-
-    (* Larceny uses 1000 iterations, run on (18, 12, 6) *)
-
-    val dfltX = 18
-    val dfltY = 12
-    val dfltZ = 6
+  (* this configuration matches larceny's *)
+  	val iterations = 1
+    val dfltX = 40
+    val dfltY = 20
+    val dfltZ = 11
+    val ans = 12
 
     fun main (_, args) = let
 
-      val n = (case args
-          of x :: y :: z :: _ => (
-              Option.getOpt (Int.fromString x, dfltX),
-              Option.getOpt (Int.fromString y, dfltY),
-              Option.getOpt (Int.fromString z, dfltZ)
-              )
-           | _ => (dfltX, dfltY, dfltZ))
+      val n = (dfltX, dfltY, dfltZ)
 
-      fun doit () = Benchmark.go n
+      fun doit () = if Benchmark.go n <> ans
+                     then raise Fail "error!"
+                     else ()
 
       fun lp 0 = ()
       	| lp n = (doit(); lp (n-1))
