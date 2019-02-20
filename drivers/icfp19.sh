@@ -22,7 +22,7 @@ RES=$2   # e.g., /Users/kavon/research/results
 set -e
 pushd ../benchmarks
 autoconf -Iconfig
-./configure --with-manticore=$MC --with-resultsdir=$RES
+./configure --with-manticore="$MC" --with-resultsdir="$RES"
 scripts/gen-input-data.sh
 set +e
 
@@ -51,9 +51,9 @@ seq_tests=(
 # run sequential tests
 
 for test in "${seq_tests[@]}"; do
-    pushd programs/$test
+    pushd "programs/$test"
 
-    ../../scripts/gen-sequential-cont-experiment.sh $test
+    ../../scripts/gen-sequential-cont-experiment.sh "$test"
     ./seq-cont-test.sh
 
     popd
