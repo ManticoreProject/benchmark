@@ -75,7 +75,7 @@ end
 structure Main =
   struct
 
-  	val iterations = 2000000
+  	val iterations = 10000000
 
     fun main _ = let
 
