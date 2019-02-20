@@ -3,7 +3,7 @@
 structure Benchmark = struct
 
 (* TAKL -- The TAKeuchi function using lists as counters. *)
- 
+
 fun list_n n =
   let fun loop (n, a) =
         if n = 0
@@ -12,17 +12,17 @@ fun list_n n =
   in loop (n, [])
   end
 
-val l18 = list_n 18
-val l12 = list_n 12
-val l6  = list_n  6
+val l18 = list_n 40
+val l12 = list_n 20
+val l6  = list_n 12
 
 (* Part of the fun of this benchmark is seeing how well the compiler
    can understand this ridiculous code, which dates back to the original
    Common Lisp.  So it probably isn't a good idea to improve upon it. *)
 
-(* To be compatible with Manticore, I've had to change two expressions below, 
-   from (y = []) to (List.null y). This perhaps makes it even more ridiculous :) 
-      ~kavon 
+(* To be compatible with Manticore, I've had to change two expressions below,
+   from (y = []) to (List.null y). This perhaps makes it even more ridiculous :)
+      ~kavon
 *)
 
 fun shorterp (x, y) =
@@ -46,11 +46,14 @@ end
 structure Main =
   struct
 
-  	val iterations = 600
-  
+    val iterations = 1
+    val ans = 13
+
     fun main _ = let
 
-      fun doit () = Benchmark.go ()
+      fun doit () = if ans <> Benchmark.go ()
+                      then raise Fail "bug"
+                      else ()
 
       fun lp 0 = ()
       	| lp n = (doit(); lp (n-1))
