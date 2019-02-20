@@ -235,7 +235,7 @@ end
 structure Main =
   struct
 
-    val iterations = 3
+    val iterations = 10000
 
     (*
     The 11 x 11 version should look like this:
@@ -254,8 +254,8 @@ structure Main =
     *)
 
     (* NOTE: must both be odd numbers! *)
-    val n = 75
-    val m = 75
+    val n = 11
+    val m = 11
 
     fun main _ = let
 
