@@ -14,7 +14,7 @@ structure Benchmark = struct
 * Language:     Standard ML
 * Status:       Public Domain
 ******************************************************************************)
- 
+
 (*  DIV2 -- Benchmark which recursively divides by 2 using lists of n ()'s.              *)
 
 fun create_n n =
@@ -25,17 +25,13 @@ fun create_n n =
   in loop (n, [])
   end
 
-(* Larceny uses 200. Wanted to add a bit more work.
-   Also, changed the element type to unit since MLton warns
-   about the type of ll being unknown locally.
-*)
-val ll : unit list = create_n 250
+val ll : unit list = create_n 1000
 
 fun recursive_div2 ([]) = []
   | recursive_div2 (x::y::z) = x :: (recursive_div2 z)
 
 
-fun go _ = if List.length (recursive_div2 ll) = 125
+fun go _ = if List.length (recursive_div2 ll) = 500
            then ()
            else raise Fail "bug"
 
@@ -46,7 +42,7 @@ structure Main =
   struct
 
   	val iterations = 1000000
-  
+
     fun main _ = let
 
       fun doit () = Benchmark.go ()
