@@ -1,7 +1,7 @@
 
 (*
    A version of Ackermann function from Larcenry benchmarks: http://www.larcenists.org/benchmarksAboutR6.html
-   though we use (3, 11) instead of (3, 12) because that's long enough.
+   we use the same (3, 12) input with 2 iterations as they do.
 *)
 
 fun ack (m,n) =
@@ -14,13 +14,19 @@ fun ack (m,n) =
 
 
 val iterations = 2
-val input = (3, 10)  (* TODO was 3, 11. changed due to linkstack GC issue. *)
+val input = (3, 12)
+val output = 32765
 
 (* val _ = Print.printLn (Int.toString (ack input)) *)
 
 fun lp n = (case n
   of 0 => ()
-   | n => (ack input ; lp (n-1))
+   | n => (
+      if ack input <> output
+        then raise Fail "error!"
+        else () ;
+      lp (n-1)
+      )
   (* end case *))
 
 fun doIt () = lp iterations
