@@ -12,9 +12,9 @@ if [ "$NAME" == "" ]; then
     exit
 fi
 INPUT=$2
+NUM_TRIALS=$3
 
 # DESCRIPTION="BACKEND TEST"
-NUM_TRIALS=5
 SCRIPT_FILE="seq-cont-test.sh"
 
 RUN_ONE="run-test.sh"

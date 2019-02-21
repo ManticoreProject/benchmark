@@ -4,14 +4,24 @@
 # 1: <absolute path to the root of the manticore project>
 # 2: <absolute path to the results directory>
 
-if [ $# -ne 2 ]
+if [ $# -ne 3 ]
   then
-    echo "error: two arguments are required: manticore-path & results-path."
+    echo "error: 3 arguments are required: manticore-path, results-path, num trials."
     exit 1
 fi
 
 MC=$1    # e.g., /Users/kavon/research/manticore/gh-pmlc/
 RES=$2   # e.g., /Users/kavon/research/results
+NUM_TRIALS=$3   # an integer
+INPUT=""
+
+re='^[0-9]+$'
+if ! [[ $NUM_TRIALS =~ $re ]] ; then
+   echo "error: num trials must be a number"
+   exit 1
+fi
+
+
 
 # assumption: this script should be run from the same
 # directory in which it resides.
@@ -53,7 +63,7 @@ seq_tests=(
 for test in "${seq_tests[@]}"; do
     pushd "programs/$test"
 
-    ../../scripts/gen-sequential-cont-experiment.sh "$test"
+    ../../scripts/gen-sequential-cont-experiment.sh "$test" "$INPUT" "$NUM_TRIALS"
     ./seq-cont-test.sh
 
     popd
