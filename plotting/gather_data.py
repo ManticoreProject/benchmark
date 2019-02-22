@@ -58,7 +58,7 @@ def _collectMantiBenchData(kind, dataDir):
 def _collectSizeData(prog, kind, dataDir):
     ''' collects binary size info from bloaty '''
     pattern = re.compile(r'.*-' + kind + r'-size.*\.csv')
-    bloatyFile = _checkForOne(_getFile(dataDir, pattern)))
+    bloatyFile = _checkForOne(_getFile(dataDir, pattern))
 
     df = pd.read_csv(bloatyFile)
 
@@ -72,7 +72,7 @@ def _collectSizeData(prog, kind, dataDir):
 def _collectCacheData(prog, kind, dataDir):
     ''' collects cachegrind data '''
     pattern = re.compile(r'.*-' + kind + r'-.*\.cg')
-    cgFile = _checkForOne(_getFile(dataDir, pattern)))
+    cgFile = _checkForOne(_getFile(dataDir, pattern))
 
     df = parse_cachegrind.to_dataframe(cgFile)
 
