@@ -19,7 +19,7 @@ GEN_GC_STATS="@GEN_GC_STATS@"
 PMLC_FLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
 PRETTY_INPUT=""
-RUN_CACHEGRIND="false"  # to enable, use "true"
+RUN_CACHEGRIND="true"  # to enable, use "true"
 
 usage="See the README file for instructions"
 
