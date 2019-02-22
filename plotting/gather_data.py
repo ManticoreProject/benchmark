@@ -108,6 +108,17 @@ def load(dir, progs, kinds):
             sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, dataDir))
             cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, dataDir))
 
+    obsDataSet.reset_index(inplace=True)
+    sizeDataSet.reset_index(inplace=True)
+    cacheDataSet.reset_index(inplace=True)
+
+    # DEBUG
     obsDataSet.to_csv("./observations.csv", index=False)
     sizeDataSet.to_csv("./sizes.csv", index=False)
     cacheDataSet.to_csv("./cache.csv", index=False)
+
+    data = {}
+    data['obs'] = obsDataSet
+    data['size'] = sizeDataSet
+    data['cache'] = cacheDataSet
+    return data
