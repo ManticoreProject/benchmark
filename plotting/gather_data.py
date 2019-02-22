@@ -4,6 +4,7 @@ import re
 import json
 import pandas as pd
 
+import parse_cachegrind
 
 def _checkForOne(files):
     if len(files) != 1:
@@ -47,25 +48,46 @@ def _loadRunningTimes(filePath):
     return df
 
 
-def _collectDataFor(kind, dataDir):
+def _collectMantiBenchData(kind, dataDir):
     ''' returns a dataframe where each row is an observation '''
-    pattern = re.compile(r'.*-' + kind + '-.*\.json')
+    pattern = re.compile(r'.*-' + kind + r'-.*\.json')
     runningTimes = _checkForOne(_getFile(dataDir, pattern))
     return _loadRunningTimes(runningTimes)
 
 
 def _collectSizeData(prog, kind, dataDir):
     ''' collects binary size info from bloaty '''
-    pattern = re.compile(r'.*-' + kind + '-size.*\.csv')
-    bloatyFile = _checkForOne(_getFile(dataDir, pattern))
+    pattern = re.compile(r'.*-' + kind + r'-size.*\.csv')
+    bloatyFile = _checkForOne(_getFile(dataDir, pattern)))
 
     df = pd.read_csv(bloatyFile)
 
-    # tag these sizes
+    # tag the info
     df["problem_name"] = prog
     df["description"] = kind
 
     return df
+
+
+def _collectCacheData(prog, kind, dataDir):
+    ''' collects cachegrind data '''
+    pattern = re.compile(r'.*-' + kind + r'-.*\.cg')
+    cgFile = _checkForOne(_getFile(dataDir, pattern)))
+
+    df = parse_cachegrind.to_dataframe(cgFile)
+
+    # tag the info
+    df["problem_name"] = prog
+    df["description"] = kind
+
+    return df
+
+
+def _addTo(cur, new):
+    ''' extend a pandas dataframe with more rows '''
+    if cur is None:
+        return new
+    return cur.append(new)
 
 
 def load(dir, progs, kinds):
@@ -76,18 +98,16 @@ def load(dir, progs, kinds):
     '''
     assert(os.path.isdir(dir))
 
-
     obsDataSet = None
     sizeDataSet = None
+    cacheDataSet = None
     for prog in progs:
         dataDir = os.path.join(dir, prog)
-
         for kind in kinds:
-            obs = _collectDataFor(kind, dataDir)
-            size = _collectSizeData(prog, kind, dataDir)
-
-            obsDataSet = obs if obsDataSet is None else obsDataSet.append(obs)
-            sizeDataSet = size if sizeDataSet is None else sizeDataSet.append(size)
+            obsDataSet = _addTo(obsDataSet, _collectMantiBenchData(kind, dataDir))
+            sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, dataDir))
+            cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, dataDir))
 
     obsDataSet.to_csv("./observations.csv", index=False)
     sizeDataSet.to_csv("./sizes.csv", index=False)
+    cacheDataSet.to_csv("./cache.csv", index=False)
