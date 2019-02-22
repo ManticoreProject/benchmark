@@ -21,6 +21,8 @@ def _getFile(dataDir, pat):
             matches.append(os.path.join(dataDir, filename))
     return matches
 
+
+# TODO: add handling for the GC stats field, if found.
 def _loadRunningTimes(filePath):
     ''' loads the JSON formatted running times into a dataframe '''
     with open(filePath) as data_file:
@@ -45,49 +47,47 @@ def _loadRunningTimes(filePath):
     return df
 
 
-
-
 def _collectDataFor(kind, dataDir):
     ''' returns a dataframe where each row is an observation '''
+    pattern = re.compile(r'.*-' + kind + '-.*\.json')
+    runningTimes = _checkForOne(_getFile(dataDir, pattern))
+    return _loadRunningTimes(runningTimes)
 
-    ####################
-    # get running times
-    runtimeFile = re.compile(r'.*-' + kind + '-.*\.json')
-    files = _getFile(dataDir, runtimeFile)
-    runningTimes = _checkForOne(files)
 
-    df = _loadRunningTimes(runningTimes)
+def _collectSizeData(prog, kind, dataDir):
+    ''' collects binary size info from bloaty '''
+    pattern = re.compile(r'.*-' + kind + '-size.*\.csv')
+    bloatyFile = _checkForOne(_getFile(dataDir, pattern))
 
-    ###################
-    # get size information
-    
+    df = pd.read_csv(bloatyFile)
 
+    # tag these sizes
+    df["problem_name"] = prog
+    df["description"] = kind
 
     return df
-
-
-
 
 
 def load(dir, progs, kinds):
     '''
     given a path to a directory, and a list of
     program names, loads the available data
-    into a pandas dataframe.
+    into a pandas dataframes.
     '''
     assert(os.path.isdir(dir))
 
 
-
+    obsDataSet = None
+    sizeDataSet = None
     for prog in progs:
         dataDir = os.path.join(dir, prog)
 
-        dataSet = None
         for kind in kinds:
-            df = _collectDataFor(kind, dataDir)
-            if dataSet is None:
-                dataSet = df
-            else:
-                dataSet = dataSet.append(df)
+            obs = _collectDataFor(kind, dataDir)
+            size = _collectSizeData(prog, kind, dataDir)
 
-        dataSet.to_csv("./data.csv", index=False)
+            obsDataSet = obs if obsDataSet is None else obsDataSet.append(obs)
+            sizeDataSet = size if sizeDataSet is None else sizeDataSet.append(size)
+
+    obsDataSet.to_csv("./observations.csv", index=False)
+    sizeDataSet.to_csv("./sizes.csv", index=False)
