@@ -58,6 +58,10 @@ def _collectDataFor(kind, dataDir):
 
     df = _loadRunningTimes(runningTimes)
 
+    ###################
+    # get size information
+    
+
 
     return df
 
@@ -86,4 +90,4 @@ def load(dir, progs, kinds):
             else:
                 dataSet = dataSet.append(df)
 
-        print(dataSet)
+        dataSet.to_csv("./data.csv", index=False)
