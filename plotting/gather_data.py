@@ -28,7 +28,11 @@ def _loadRunningTimes(filePath):
     ''' loads the JSON formatted running times into a dataframe '''
     with open(filePath) as data_file:
         jsonStr = data_file.read().replace('\n', ' ')
-        j = json.loads(jsonStr)
+        try:
+            j = json.loads(jsonStr)
+        except Exception as ex:
+            print("parsing error loading " + filePath)
+            raise ex
 
     commonCol = ["problem_name", "compiler", "input", "machine", "description"]
     commonRow = [ j[x] for x in commonCol ]
@@ -50,7 +54,7 @@ def _loadRunningTimes(filePath):
 
 def _collectMantiBenchData(kind, dataDir):
     ''' returns a dataframe where each row is an observation '''
-    pattern = re.compile(r'.*-' + kind + r'-.*\.json')
+    pattern = re.compile(r'.*' + kind + r'-[0-9].*\.json')
     runningTimes = _checkForOne(_getFile(dataDir, pattern))
     return _loadRunningTimes(runningTimes)
 
@@ -71,7 +75,7 @@ def _collectSizeData(prog, kind, dataDir):
 
 def _collectCacheData(prog, kind, dataDir):
     ''' collects cachegrind data '''
-    pattern = re.compile(r'.*-' + kind + r'-.*\.cg')
+    pattern = re.compile(r'.*-' + kind + r'-[0-9].*\.cg')
     cgFile = _checkForOne(_getFile(dataDir, pattern))
 
     df = parse_cachegrind.to_dataframe(cgFile)
@@ -90,32 +94,43 @@ def _addTo(cur, new):
     return cur.append(new)
 
 
-def load(dir, progs, kinds):
+def load(dir, progs, kinds, cached):
     '''
     given a path to a directory, and a list of
     program names, loads the available data
     into a pandas dataframes.
     '''
     assert(os.path.isdir(dir))
+    obsFile = os.path.join(dir, "observations.csv")
+    sizeFile = os.path.join(dir, "sizes.csv")
+    cacheGrindFile = os.path.join(dir, "cachegrind.csv")
 
     obsDataSet = None
     sizeDataSet = None
     cacheDataSet = None
-    for prog in progs:
-        dataDir = os.path.join(dir, prog)
-        for kind in kinds:
-            obsDataSet = _addTo(obsDataSet, _collectMantiBenchData(kind, dataDir))
-            sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, dataDir))
-            cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, dataDir))
 
-    obsDataSet.reset_index(inplace=True)
-    sizeDataSet.reset_index(inplace=True)
-    cacheDataSet.reset_index(inplace=True)
+    if not cached:
+        for prog in progs:
+            dataDir = os.path.join(dir, prog)
+            for kind in kinds:
+                obsDataSet = _addTo(obsDataSet, _collectMantiBenchData(kind, dataDir))
+                sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, dataDir))
+                cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, dataDir))
 
-    # DEBUG
-    obsDataSet.to_csv("./observations.csv", index=False)
-    sizeDataSet.to_csv("./sizes.csv", index=False)
-    cacheDataSet.to_csv("./cache.csv", index=False)
+        obsDataSet.reset_index(inplace=True)
+        sizeDataSet.reset_index(inplace=True)
+        cacheDataSet.reset_index(inplace=True)
+
+        # create cache
+        obsDataSet.to_csv(obsFile, index=False)
+        sizeDataSet.to_csv(sizeFile, index=False)
+        cacheDataSet.to_csv(cacheGrindFile, index=False)
+
+    else:
+        # load cache
+        obsDataSet = pd.read_csv(obsFile)
+        sizeDataSet = pd.read_csv(sizeFile)
+        cacheDataSet = pd.read_csv(cacheGrindFile)
 
     data = {}
     data['obs'] = obsDataSet
