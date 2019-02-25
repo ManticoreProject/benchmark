@@ -19,9 +19,9 @@ structure Main =
 
     fun main (_, _) =
   let
-      val iters = 5
-      val n = 40
-      val correct = 102334155
+      val iters = 3
+      val n = 35
+      val correct = 9227465
 
       fun run () = if correct <> Cont.callec(Fib.go n)
                       then raise Fail "bug"
