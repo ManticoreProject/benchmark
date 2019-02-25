@@ -38,12 +38,12 @@ end (* end struct *)
 structure Main =
   struct
 
-    val iters = 1
+    val iters = 3
 
-    val dfltX = 40
-    val dfltY = 20
-    val dfltZ = 11
-    val ans = 12
+    val dfltX = 32
+    val dfltY = 16
+    val dfltZ = 8
+    val ans = 9
 
     fun main (_, args) =
   let
