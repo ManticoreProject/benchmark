@@ -14,8 +14,8 @@ fun ack (m, n) k =
 
 
 val iterations = 2
-val input = (3, 12)
-val output = 32765
+val input = (3, 8)   (* (3, n) => 2^(n+3) - 3 *)
+val output = 2045
 
 (* val _ = Print.printLn (Int.toString (ack input)) *)
 
