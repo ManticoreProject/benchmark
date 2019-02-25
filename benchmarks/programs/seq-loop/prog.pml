@@ -15,7 +15,7 @@ in
 end
 
 
-val iterations = 10
+val iterations = 1000
 val input = 1000000
 val output = input
 
