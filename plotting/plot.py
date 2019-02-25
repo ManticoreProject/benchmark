@@ -45,8 +45,47 @@ def size_plot(sizeData, dir):
     # plt.show()
     g.fig.savefig(os.path.join(dir, "code_size.pdf"))
 
-def relative_speedup(obsData, dir):
-    pass
+
+def relative_time(df, baseline, dir):
+    # process
+    for prog in df['problem_name'].unique():
+        obs = df[df['problem_name'] == prog]
+        baselineAvg = obs[obs['description'] == baseline]['time_sec'].mean()
+        assert(baselineAvg > 0)
+
+        def f(row):
+            if row['problem_name'] == prog:
+                return row['time_sec'] / baselineAvg
+            else:
+                return row['time_sec']
+
+        df['time_sec'] = df.apply(f, axis=1)
+
+    # cap the max TODO modify the figure so it maxes out the value, not modifying the data!
+    maxVal = 2
+    df['time_sec'] = df['time_sec'].apply(lambda t: min(t, maxVal))
+
+    # make prog names nicer to read
+    df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+
+    # stack kind ordering. baseline in front, then the rest sorted alphabetically
+    order = list(df['description'].unique())
+    order.sort()
+    order.remove(baseline)
+    order = [baseline] + order
+
+    # plot
+    g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
+                kind="bar", height=9, aspect=(11/8.5), palette="colorblind", orient="h")
+    g.set_ylabels("Benchmark Program")
+    g.set_xlabels("Relative Running Time (baseline = {}). Lower is better.".format(baseline))
+    g._legend.set_title('Stack Kind')
+
+    # plt.show()
+    g.fig.savefig(os.path.join(dir, "running_time.pdf"))
+
+
+
 
 
 @click.command()
@@ -78,8 +117,8 @@ def main(dir, progs, kinds, cached):
 
     data = gather_data.load(dir, progs, kinds, cached)
 
-    size_plot(data['size'], dir)
-    relative_speedup(data['obs'], dir)
+    # size_plot(data['size'], dir)
+    relative_time(data['obs'], "contig", dir)
 
 
 if __name__ == '__main__':
