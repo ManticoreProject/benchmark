@@ -61,9 +61,8 @@ def relative_time(df, baseline, dir):
 
         df['time_sec'] = df.apply(f, axis=1)
 
-    # cap the max TODO modify the figure so it maxes out the value, not modifying the data!
-    maxVal = 2
-    df['time_sec'] = df['time_sec'].apply(lambda t: min(t, maxVal))
+    # cap the max
+    xBounds = (0, 2.0)
 
     # make prog names nicer to read
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
@@ -75,11 +74,17 @@ def relative_time(df, baseline, dir):
     order = [baseline] + order
 
     # plot
+    sns.set_context("paper") ## style of plot, also can do talk, notebook, poster
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=9, aspect=(11/8.5), palette="colorblind", orient="h")
+                kind="bar", height=9, aspect=(11/8.5), palette="colorblind", orient="h",
+                errwidth=1.5)
     g.set_ylabels("Benchmark Program")
     g.set_xlabels("Relative Running Time (baseline = {}). Lower is better.".format(baseline))
     g._legend.set_title('Stack Kind')
+
+    plt.xlim(xBounds)
+    plt.axvline(x=1, color='black')
+
 
     # plt.show()
     g.fig.savefig(os.path.join(dir, "running_time.pdf"))
