@@ -13,6 +13,7 @@ if [ "$NAME" == "" ]; then
 fi
 INPUT=$2
 NUM_TRIALS=$3
+USE_MLTON=$4
 
 # DESCRIPTION="BACKEND TEST"
 SCRIPT_FILE="seq-cont-test.sh"
@@ -64,11 +65,13 @@ OPT_LVL="-O3"
 ./run-test.sh "$HACK_OPT_LVL -resizestack -nocopyoverflow" "resizestack-nocopyoverflow"
 ./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
 
-################
-# test mlton
-make clean
-make mlton mlton-profile
-$MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
+if [ "$USE_MLTON" == "true" ]; then
+  ################
+  # test mlton
+  make clean
+  make mlton mlton-profile
+  $MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
+fi
 
 EOF
 ) >> $SCRIPT_FILE

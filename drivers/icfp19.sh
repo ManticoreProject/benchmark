@@ -44,6 +44,7 @@ seq_tests=(
     "seq-evenodd"
     "seq-fib"
     "seq-life"
+    "seq-loop"
     "seq-mandelbrot"
     "seq-mazefun"
     "seq-merge"
@@ -58,13 +59,26 @@ seq_tests=(
     "seq-takl"
 )
 
-# run sequential tests
+ec_tests=(
+    "ec-ack"
+    "ec-fib"
+    "ec-loop"
+    "ec-tak"
+)
 
+# run sequential tests that do not use callec.
 for test in "${seq_tests[@]}"; do
     pushd "programs/$test"
-
-    ../../scripts/gen-sequential-cont-experiment.sh "$test" "$INPUT" "$NUM_TRIALS"
+    ../../scripts/gen-sequential-cont-experiment.sh "$test" "$INPUT" "$NUM_TRIALS" "true"
     ./seq-cont-test.sh
+    popd
+done
 
+
+# run sequential tests that use callec. we must disable MLton here since its too slow.
+for test in "${ec_tests[@]}"; do
+    pushd "programs/$test"
+    ../../scripts/gen-sequential-cont-experiment.sh "$test" "$INPUT" "$NUM_TRIALS" "false"
+    ./seq-cont-test.sh
     popd
 done
