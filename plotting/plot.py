@@ -46,7 +46,13 @@ def size_plot(sizeData, dir):
     g.fig.savefig(os.path.join(dir, "code_size.pdf"))
 
 
-def relative_time(df, baseline, dir):
+
+
+################### RELATIVE TIME PLOT
+def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf"):
+    if subset:
+        df = df[df['problem_name'].isin(subset)]
+
     # process
     for prog in df['problem_name'].unique():
         obs = df[df['problem_name'] == prog]
@@ -76,8 +82,8 @@ def relative_time(df, baseline, dir):
     # plot
     sns.set_context("paper") ## style of plot, also can do talk, notebook, poster
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=9, aspect=(11/8.5), palette="colorblind", orient="h",
-                errwidth=1.5)
+                kind="bar", height=9.5, aspect=(11/8.5), palette="colorblind", orient="h",
+                errwidth=1.125, capsize=0.0625)
     g.set_ylabels("Benchmark Program")
     g.set_xlabels("Relative Running Time (baseline = {}). Lower is better.".format(baseline))
     g._legend.set_title('Stack Kind')
@@ -85,9 +91,8 @@ def relative_time(df, baseline, dir):
     plt.xlim(xBounds)
     plt.axvline(x=1, color='black')
 
-
     # plt.show()
-    g.fig.savefig(os.path.join(dir, "running_time.pdf"))
+    g.fig.savefig(os.path.join(dir, filename))
 
 
 
@@ -123,7 +128,10 @@ def main(dir, progs, kinds, cached):
     data = gather_data.load(dir, progs, kinds, cached)
 
     # size_plot(data['size'], dir)
-    relative_time(data['obs'], "contig", dir)
+
+    relative_time(data['obs'], "contig", dir, ["ec-ack", "ec-tak", "ec-fib", "ec-loop"], "ec_times.pdf")
+
+    # relative_time(data['obs'], "contig", dir, ["ec-ack", "ec-tak", "ec-fib", "ec-loop"], "ec_times.pdf")
 
 
 if __name__ == '__main__':
