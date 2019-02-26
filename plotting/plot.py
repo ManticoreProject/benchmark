@@ -8,6 +8,48 @@ import matplotlib.pyplot as plt
 
 import gather_data
 
+ec_programs = set([ "ec-ack",
+                    "ec-fib",
+                    "ec-loop",
+                    "ec-tak" ])
+
+seq_programs = set([
+                "seq-ack",
+                "seq-cpstak",
+                "seq-deriv",
+                "seq-divrec",
+                "seq-evenodd",
+                "seq-fib",
+                "seq-life",
+                "seq-loop",
+                "seq-mandelbrot",
+                "seq-mazefun",
+                "seq-merge",
+                "seq-minimax",
+                "seq-nqueens",
+                "seq-perm",
+                "seq-primes",
+                "seq-quicksort",
+                "seq-scc",
+                "seq-tailfib",
+                "seq-tak",
+                "seq-takl"
+                ])
+
+simpl_seq = set([
+             "seq-ack",
+             "seq-cpstak",
+             "seq-divrec",
+             "seq-evenodd",
+             "seq-fib",
+             "seq-loop",
+             "seq-tailfib",
+             "seq-tak",
+             "seq-takl"
+            ])
+
+other_seq = seq_programs - simpl_seq
+
 # pattern-matching object to categorize files contributing to the compile unit.
 # NOTE: this is for manticore
 mantiCategorize = [
@@ -30,17 +72,26 @@ def case (matcher):
     return inner
 
 
-def size_plot(sizeData, dir):
+def size_plot(sizeData, dir, height=9, aspect=1.2941):
+    sizeData = sizeData.copy()
 
     sizeData["compileunits"] = sizeData["compileunits"].map(case(mantiCategorize))
-    # print (sizeData)
     filtered = sizeData[sizeData["compileunits"] == "code"]
-    # TODO: reduce / combine rows by adding them together if they in same category
 
-    g = sns.catplot(x="problem_name", y="vmsize", hue="description", data=filtered,
-                height=6, kind="bar", palette="muted")
-    g.despine(left=True)
-    g.set_ylabels("In-Memory Code Size (bytes)")
+    # add together all rows with the same problem & description. and convert to KiB
+    summed = filtered.groupby(['problem_name', 'description']).sum().div(1024)
+    summed = summed.reset_index() # basically "undos" the groupby
+
+    # make prog names nicer to read
+    summed['problem_name'] = summed['problem_name'].apply(lambda s: s.replace('seq-', ''))
+
+    sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    g = sns.catplot(x="vmsize", y="problem_name", hue="description", data=summed,
+                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h")
+
+    g.set_xlabels("In-Memory Code Size (KiB)")
+    g.set_ylabels("Benchmark Program")
+    g._legend.set_title('Stack Kind')
 
     # plt.show()
     g.fig.savefig(os.path.join(dir, "code_size.pdf"))
@@ -49,7 +100,9 @@ def size_plot(sizeData, dir):
 
 
 ################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf"):
+def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", height=9, aspect=1.2941):
+    df = df.copy()
+
     if subset:
         df = df[df['problem_name'].isin(subset)]
 
@@ -80,12 +133,12 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf"):
     order = [baseline] + order
 
     # plot
-    sns.set_context("paper") ## style of plot, also can do talk, notebook, poster
+    sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=9.5, aspect=(11/8.5), palette="colorblind", orient="h",
+                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
                 errwidth=1.125, capsize=0.0625)
     g.set_ylabels("Benchmark Program")
-    g.set_xlabels("Relative Running Time (baseline = {}). Lower is better.".format(baseline))
+    g.set_xlabels("Relative Running Time (Lower is better)".format(baseline))
     g._legend.set_title('Stack Kind')
 
     plt.xlim(xBounds)
@@ -127,11 +180,13 @@ def main(dir, progs, kinds, cached):
 
     data = gather_data.load(dir, progs, kinds, cached)
 
-    # size_plot(data['size'], dir)
+    size_plot(data['size'], dir)
 
-    relative_time(data['obs'], "contig", dir, ["ec-ack", "ec-tak", "ec-fib", "ec-loop"], "ec_times.pdf")
+    relative_time(data['obs'], "contig", dir, ec_programs, "ec_times.pdf")
+    relative_time(data['obs'], "contig", dir, simpl_seq, "simpl_times.pdf")
+    relative_time(data['obs'], "contig", dir, other_seq, "other_times.pdf")
 
-    # relative_time(data['obs'], "contig", dir, ["ec-ack", "ec-tak", "ec-fib", "ec-loop"], "ec_times.pdf")
+    # TODO: cachegrind plot, and GC info plot
 
 
 if __name__ == '__main__':

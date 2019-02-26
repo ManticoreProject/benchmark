@@ -52,7 +52,7 @@ seq_tests=(
     "seq-nqueens"
     "seq-perm"
     "seq-primes"
-    "seq-quicksort"
+    # "seq-quicksort"
     "seq-scc"
     "seq-tailfib"
     "seq-tak"
@@ -61,7 +61,7 @@ seq_tests=(
 
 ec_tests=(
     "ec-ack"
-    "ec-fib"
+    # "ec-fib"
     "ec-loop"
     "ec-tak"
 )
