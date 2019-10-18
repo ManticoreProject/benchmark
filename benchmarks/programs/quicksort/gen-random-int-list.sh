@@ -2,7 +2,7 @@
 
 LIST_LEN=$1
 if [ "$LIST_LEN" == "" ]; then
-    LIST_LEN="800000"
+    LIST_LEN="2000000"
 fi
 SMLNJ="sml"
 

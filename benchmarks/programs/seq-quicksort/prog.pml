@@ -31,7 +31,7 @@ end  (* structure Quicksort *)
 structure Main =
   struct
 
-    val dfltN = 1000000
+    val dfltN = 2000000
 
     fun getSizeArg args =
 	(case args
@@ -52,19 +52,23 @@ structure Main =
 	    lp nil
 	end
 
+  (* fun genRandom n = List.tabulate (n, fn _ => Rand.inRangeInt (0, 10000)) *)
+  fun genRandom n = (print "WARNING: Rand signature doesn't exist in SML basis, so it was disabled.\n"; [])
+
     fun main (_, args) =
 	let
-	    val x = RunSeq.runSilent (fn _ => 
+	    val x = RunSeq.runSilent (fn _ =>
 		 let
 		     val x = (case getSizeArg args
 				   of NONE => readFromFile ()
-				    | SOME n =>
-				      List.tabulate (n, fn _ => Rand.inRangeInt (0, 10000)))
+				    | SOME n => genRandom n
+            )
+
 		 in
 		     x
 		 end)
 	    fun doit () = Quicksort.sort x
-		
+
 	in
 	    RunSeq.run doit
 	end
@@ -72,4 +76,3 @@ structure Main =
   end
 
 val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
-

@@ -52,7 +52,7 @@ seq_tests=(
     "seq-nqueens"
     "seq-perm"
     "seq-primes"
-    # "seq-quicksort"
+    "seq-quicksort"
     "seq-scc"
     "seq-tailfib"
     "seq-tak"
