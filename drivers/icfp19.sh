@@ -61,7 +61,7 @@ seq_tests=(
 
 ec_tests=(
     "ec-ack"
-    # "ec-fib"
+    "ec-fib"
     "ec-loop"
     "ec-tak"
 )
