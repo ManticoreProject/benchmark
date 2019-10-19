@@ -3,6 +3,7 @@
 # inputs:
 # 1: <absolute path to the root of the manticore project>
 # 2: <absolute path to the results directory>
+# 3: <number of trials to execute each program per configuration.
 
 if [ $# -ne 3 ]
   then
@@ -10,8 +11,8 @@ if [ $# -ne 3 ]
     exit 1
 fi
 
-MC=$1    # e.g., /Users/kavon/research/manticore/gh-pmlc/
-RES=$2   # e.g., /Users/kavon/research/results
+MC=$1    # e.g., /home/kavon/research/manticore/gh-pmlc
+RES=$2   # e.g., /Users/kavon/tmp
 NUM_TRIALS=$3   # an integer
 INPUT=""
 
