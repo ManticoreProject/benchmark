@@ -1,11 +1,13 @@
 
 structure Fib = struct
 
+  val pi = 3.14159265358979323846
   val epsilon = 0.001
-  fun one () = Math.tan(Math.pi / 4.0)
+
+  fun one () = Double.tan (pi / 4.0)
   fun two () = one () + one ()
-  fun zero () = Math.sin Math.pi
-  fun eq (x, y) = abs(x - y) < epsilon
+  fun zero () = Double.sin pi
+  fun eq (x, y) = Double.abs(x - y) < epsilon
 
   fun go n =
     if eq (n, 0.0)
