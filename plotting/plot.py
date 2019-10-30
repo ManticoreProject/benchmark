@@ -110,7 +110,10 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     for prog in df['problem_name'].unique():
         obs = df[df['problem_name'] == prog]
         baselineAvg = obs[obs['description'] == baseline]['time_sec'].mean()
-        assert(baselineAvg > 0)
+
+        if baselineAvg is None or baselineAvg <= 0:
+            print("invalid baseline average found in data for ", prog)
+            assert false
 
         def f(row):
             if row['problem_name'] == prog:
@@ -158,21 +161,27 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
                help="Comma-seperated list of programs to analyze")
 @click.option("--kinds", default="", type=str,
                help="Comma-seperated list of kinds to analyze (cps, segstack, etc)")
+@click.option("--baseline", default="contig", type=str,
+               help="The baseline kind to compare with in relative plots.")
 @click.option("--cached", is_flag=True, default=False, type=bool,
                 help="Uses data from the CSV cache dumped by an earlier run.")
-def main(dir, progs, kinds, cached):
+def main(dir, progs, kinds, baseline, cached):
     dir = os.path.abspath(dir)
+    print("looking in dir ", dir)
 
     if progs == "":
         # assume all dirs in the data dir are the prog names.
         progs = []
         for item in os.listdir(dir):
-            if os.path.isdir(os.path.join(dir, item)):
+            if os.path.isdir(os.path.join(dir, item)) and not item.startswith('.'):
                 progs.append(item)
     else:
         progs = progs.split(",")
 
     progs.sort()
+    print("processing for progs: ", progs)
+
+    assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
 
     if not cached:
         assert kinds != "", "must provide --kinds when not using a cached dataset"
@@ -182,9 +191,9 @@ def main(dir, progs, kinds, cached):
 
     size_plot(data['size'], dir)
 
-    relative_time(data['obs'], "contig", dir, ec_programs, "ec_times.pdf")
-    relative_time(data['obs'], "contig", dir, simpl_seq, "simpl_times.pdf")
-    relative_time(data['obs'], "contig", dir, other_seq, "other_times.pdf")
+    relative_time(data['obs'], baseline, dir, ec_programs, "ec_times.pdf")
+    relative_time(data['obs'], baseline, dir, simpl_seq, "simpl_times.pdf")
+    relative_time(data['obs'], baseline, dir, other_seq, "other_times.pdf")
 
     # TODO: cachegrind plot, and GC info plot
 
