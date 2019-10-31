@@ -5,6 +5,7 @@ import os
 
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import gather_data
 
@@ -103,6 +104,8 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", height=9, aspect=1.2941):
     df = df.copy()
 
+    # TODO: perhaps computing a geomean would be useful.
+
     if subset:
         df = df[df['problem_name'].isin(subset)]
 
@@ -152,13 +155,63 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
 
 
+def cachegrind_event_pct(df, event_name, numerator, denom, dir, filename="cg_event_rate.pdf", height=9, aspect=1.2941):
+    # simple ones for now
+    assert type(numerator) == str
+    assert type(denom) == str
+
+    df = df.copy()
+
+    plotData = {'problem_name' : [], 'description' : [], 'rate' : []}
+
+    # process
+    for prog in df['problem_name'].unique():
+        for kind in df['description'].unique():
+            obs = df[(df['problem_name'] == prog) & (df['description'] == kind)]
+
+            rate = 100.0 * (obs[numerator].sum() / obs[denom].sum())
+
+            plotData['problem_name'].append(prog)
+            plotData['description'].append(kind)
+            plotData['rate'].append(rate)
+
+
+
+
+    # prepare to plot
+    df = pd.DataFrame.from_dict(plotData)
+
+    # cap the max
+    xBounds = (0, 100.0)
+
+    df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+
+    # list alphabetically
+    order = list(df['description'].unique())
+    order.sort()
+
+    # plot
+    sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
+                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                errwidth=1.125, capsize=0.0625)
+    g.set_ylabels("Benchmark Program")
+    g.set_xlabels(event_name)
+    g._legend.set_title('Stack Kind')
+
+    plt.xlim(xBounds)
+
+    # plt.show()
+    g.fig.savefig(os.path.join(dir, filename))
+
+
 
 
 @click.command()
 @click.option("--dir", default=True, type=str,
                help="Root of directory containing data to analyze")
 @click.option("--progs", default="", type=str,
-               help="Comma-seperated list of programs to analyze")
+               help="Comma-seperated list of programs to analyze. PREFIX* is specially recognized as a pattern.")
 @click.option("--kinds", default="", type=str,
                help="Comma-seperated list of kinds to analyze (cps, segstack, etc)")
 @click.option("--baseline", default="contig", type=str,
@@ -169,11 +222,15 @@ def main(dir, progs, kinds, baseline, cached):
     dir = os.path.abspath(dir)
     print("looking in dir ", dir)
 
-    if progs == "":
+    if progs == "" or '*' in progs:
+        s = progs.split('*')
+        prefix = "" if len(s) == 0 else s[0].strip()
+        print ("directory search prefix = \'", prefix, "\'")
+
         # assume all dirs in the data dir are the prog names.
         progs = []
         for item in os.listdir(dir):
-            if os.path.isdir(os.path.join(dir, item)) and not item.startswith('.'):
+            if os.path.isdir(os.path.join(dir, item)) and not item.startswith('.') and item.startswith(prefix):
                 progs.append(item)
     else:
         progs = progs.split(",")
@@ -184,18 +241,35 @@ def main(dir, progs, kinds, baseline, cached):
     if not cached:
         assert kinds != "", "must provide --kinds when not using a cached dataset"
         kinds = kinds.split(",")
-
-    assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
+        assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
 
     data = gather_data.load(dir, progs, kinds, cached)
 
+    ###################
+    # PLOTS!!
+
+    # CODE SIZE
     size_plot(data['size'], dir)
 
+    # RUNNING TIMES
     relative_time(data['obs'], baseline, dir, ec_programs, "ec_times.pdf")
     relative_time(data['obs'], baseline, dir, simpl_seq, "simpl_times.pdf")
     relative_time(data['obs'], baseline, dir, other_seq, "other_times.pdf")
 
-    # TODO: cachegrind plot, and GC info plot
+    # TODO: GC info plot
+
+    # CACHEGRIND
+    cachegrind_event_pct(data['cache'], "L1 I-cache read miss rate %", 'I1mr', 'Ir', dir, "L1Ir_miss.pdf")
+    cachegrind_event_pct(data['cache'], "LL I-cache read miss rate %", 'ILmr', 'Ir', dir, "LLIr_miss.pdf")
+
+    cachegrind_event_pct(data['cache'], "L1 D-cache read miss rate %", 'D1mr', 'Dr', dir, "L1Dr_miss.pdf")
+    cachegrind_event_pct(data['cache'], "LL D-cache read miss rate %", 'DLmr', 'Dr', dir, "LLDr_miss.pdf")
+
+    cachegrind_event_pct(data['cache'], "L1 D-cache write miss rate %", 'D1mw', 'Dw', dir, "L1Dw_miss.pdf")
+    cachegrind_event_pct(data['cache'], "LL D-cache write miss rate %", 'DLmw', 'Dw', dir, "LLDw_miss.pdf")
+
+    cachegrind_event_pct(data['cache'], "Conditional branch miss rate %", 'Bcm', 'Bc', dir, "CBR_miss.pdf")
+    cachegrind_event_pct(data['cache'], "Indirect branch miss rate %", 'Bim', 'Bi', dir, "IBR_miss.pdf")
 
 
 if __name__ == '__main__':

@@ -6,9 +6,9 @@ import pandas as pd
 
 import parse_cachegrind
 
-def _checkForOne(files, pattern):
+def _checkForOne(files, pattern, dir):
     if len(files) != 1:
-        print ("unexpected number of files for pattern ", pattern)
+        print ("unexpected number of files for pattern ", pattern, " in ", dir)
         print (files)
         print ("perhaps you have the wrong stack kind name?")
         exit(1)
@@ -56,14 +56,14 @@ def _loadRunningTimes(filePath):
 def _collectMantiBenchData(kind, dataDir):
     ''' returns a dataframe where each row is an observation '''
     pattern = re.compile(r'.*' + kind + r'-[0-9].*\.json')
-    runningTimes = _checkForOne(_getFile(dataDir, pattern), pattern)
+    runningTimes = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
     return _loadRunningTimes(runningTimes)
 
 
 def _collectSizeData(prog, kind, dataDir):
     ''' collects binary size info from bloaty '''
     pattern = re.compile(r'.*-' + kind + r'-size.*\.csv')
-    bloatyFile = _checkForOne(_getFile(dataDir, pattern), pattern)
+    bloatyFile = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
 
     df = pd.read_csv(bloatyFile)
 
@@ -77,7 +77,7 @@ def _collectSizeData(prog, kind, dataDir):
 def _collectCacheData(prog, kind, dataDir):
     ''' collects cachegrind data '''
     pattern = re.compile(r'.*-' + kind + r'-[0-9].*\.cg')
-    cgFile = _checkForOne(_getFile(dataDir, pattern), pattern)
+    cgFile = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
 
     df = parse_cachegrind.to_dataframe(cgFile)
 
