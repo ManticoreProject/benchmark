@@ -76,6 +76,14 @@ def case (matcher):
 def size_plot(sizeData, dir, height=9, aspect=1.2941):
     sizeData = sizeData.copy()
 
+    # we drop the mlton data because we have imprecise information about the code
+    # size since its mixed with the runtime system. Plus, it's not really
+    # comparable to Manticore code anyway.
+    sizeData = sizeData[sizeData['description'] != "mlton"]
+    if len(sizeData) == 0:
+        print ("NOTE: not emitting size plot because table is empty. Did you only request mlton info?")
+        return
+
     sizeData["compileunits"] = sizeData["compileunits"].map(case(mantiCategorize))
     filtered = sizeData[sizeData["compileunits"] == "code"]
 
@@ -109,6 +117,9 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
     if subset:
         df = df[df['problem_name'].isin(subset)]
+    if len(df) == 0:
+        print("NOTE: no time data matched the subset ", subset)
+        return
 
     # process
     for prog in df['problem_name'].unique():
@@ -167,6 +178,9 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     # only include programs we're interested in, if we want only a subset.
     if subset:
         df = df[df['problem_name'].isin(subset)]
+    if len(df) == 0:
+        print("NOTE: no cachegrind data matched the subset ", subset)
+        return
 
     # craft a function to filter out rows based on the file & function name.
     pred = lambda kind: lambda file: True
@@ -273,6 +287,7 @@ def main(dir, progs, kinds, baseline, cached):
 
     data = gather_data.load(dir, progs, kinds, cached)
 
+    print("finished loading. now producing plots...")
 
     ###################
     # PLOTS!!
@@ -286,7 +301,7 @@ def main(dir, progs, kinds, baseline, cached):
     ]
 
     # CODE SIZE
-    # size_plot(data['size'], dir)
+    size_plot(data['size'], dir)
 
     # RUNNING TIMES
     for prefix, subset in subsets:
@@ -296,23 +311,27 @@ def main(dir, progs, kinds, baseline, cached):
 
     # CACHEGRIND
     categories = [["code"], ["mcrt", "misc"]]
+    cacheLevels = ["1"] # the options are: "1" and "L"
     for fileCategory in categories:
         for prefix, subset in subsets:
             cat = "+".join(fileCategory)
             prefix = cat + "__" + prefix
 
-            cachegrind_event_pct(data['cache'], cat + " L1 I-cache read miss rate % ", 'I1mr', 'Ir', dir, fileCategory, subset, prefix + "L1Ir_miss.pdf")
-            cachegrind_event_pct(data['cache'], cat + " LL I-cache read miss rate % ", 'ILmr', 'Ir', dir, fileCategory, subset, prefix + "LLIr_miss.pdf")
-
-            cachegrind_event_pct(data['cache'], cat + " L1 D-cache read miss rate % ", 'D1mr', 'Dr', dir, fileCategory, subset, prefix + "L1Dr_miss.pdf")
-            cachegrind_event_pct(data['cache'], cat + " LL D-cache read miss rate % ", 'DLmr', 'Dr', dir, fileCategory, subset, prefix + "LLDr_miss.pdf")
-
-            cachegrind_event_pct(data['cache'], cat + " L1 D-cache write miss rate % ", 'D1mw', 'Dw', dir, fileCategory, subset, prefix + "L1Dw_miss.pdf")
-            cachegrind_event_pct(data['cache'], cat + " LL D-cache write miss rate % ", 'DLmw', 'Dw', dir, fileCategory, subset, prefix + "LLDw_miss.pdf")
-
             cachegrind_event_pct(data['cache'], cat + " Conditional branch miss rate % ", 'Bcm', 'Bc', dir, fileCategory, subset, prefix + "CBR_miss.pdf")
             cachegrind_event_pct(data['cache'], cat + " Indirect branch miss rate  % ", 'Bim', 'Bi', dir, fileCategory, subset, prefix + "IBR_miss.pdf")
 
+            for level in cacheLevels:
+                cachegrind_event_pct(data['cache'], cat + " L" + level + " I-cache read miss rate % ",\
+                    'I' + level + 'mr', 'Ir', dir, fileCategory, subset, prefix + "L" + level + "Ir_miss.pdf")
+
+                cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache read miss rate % ",\
+                    'D' + level + 'mr', 'Dr', dir, fileCategory, subset, prefix + "L" + level + "Dr_miss.pdf")
+
+                cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache write miss rate % ",\
+                    'D' + level + 'mw', 'Dw', dir, fileCategory, subset, prefix + "L" + level + "Dw_miss.pdf")
+
+
+    print("done.")
 
 if __name__ == '__main__':
     main()
