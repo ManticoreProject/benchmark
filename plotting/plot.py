@@ -54,8 +54,8 @@ other_seq = seq_programs - simpl_seq
 # pattern-matching object to categorize files contributing to the compile unit.
 # NOTE: this is for manticore
 mantiCategorize = [
-    (lambda x: "../.." in x  or  "_hdr.c:" in x, "mcrt"),
-    (lambda x: "mc-seq" in x,                    "code"),
+    (lambda x: "parallel-rt" in x  or  "_hdr.c:" in x, "mcrt"),
+    (lambda x: "mc-seq.s" in x,                  "code"),
     (lambda x: True,                             "misc")
 ]
 
@@ -96,6 +96,7 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 
     # plt.show()
     g.fig.savefig(os.path.join(dir, "code_size.pdf"))
+    plt.close(g.fig)
 
 
 
@@ -152,24 +153,50 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
     # plt.show()
     g.fig.savefig(os.path.join(dir, filename))
+    plt.close(g.fig)
 
 
 
-def cachegrind_event_pct(df, event_name, numerator, denom, dir, filename="cg_event_rate.pdf", height=9, aspect=1.2941):
+def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCategory=None, subset=None, filename="cg_event_rate.pdf", height=9, aspect=1.2941):
     # simple ones for now
-    assert type(numerator) == str
-    assert type(denom) == str
+    assert type(numerator_s) == str
+    assert type(denominator_s) == str
 
     df = df.copy()
 
+    # only include programs we're interested in, if we want only a subset.
+    if subset:
+        df = df[df['problem_name'].isin(subset)]
+
+    # craft a function to filter out rows based on the file & function name.
+    pred = lambda kind: lambda file: True
+    if codeCategory:
+        def predicate (kind):
+            def inner (file):
+                if kind == "mlton":
+                    return case(mltonCategorize)(file) in codeCategory
+                else:
+                    return case(mantiCategorize)(file) in codeCategory
+            return inner
+
+        pred = predicate
+
+    # initialize the output table
     plotData = {'problem_name' : [], 'description' : [], 'rate' : []}
 
     # process
     for prog in df['problem_name'].unique():
         for kind in df['description'].unique():
             obs = df[(df['problem_name'] == prog) & (df['description'] == kind)]
+            obs = obs[obs['function'].map(pred(kind)) == True]
 
-            rate = 100.0 * (obs[numerator].sum() / obs[denom].sum())
+            denom = obs[denominator_s].sum()
+            numer = obs[numerator_s].sum()
+            if denom == 0:
+                assert numer == 0, "the total does not represent the event!"
+                rate = 0.0
+            else:
+                rate = 100.0 * (numer / denom)
 
             plotData['problem_name'].append(prog)
             plotData['description'].append(kind)
@@ -203,6 +230,7 @@ def cachegrind_event_pct(df, event_name, numerator, denom, dir, filename="cg_eve
 
     # plt.show()
     g.fig.savefig(os.path.join(dir, filename))
+    plt.close(g.fig)
 
 
 
@@ -245,31 +273,45 @@ def main(dir, progs, kinds, baseline, cached):
 
     data = gather_data.load(dir, progs, kinds, cached)
 
+
     ###################
     # PLOTS!!
 
+
+    subsets = [
+        # ("ec_", ec_programs),
+        # ("simpl_", simpl_seq),
+        # ("other_", other_seq),
+        ("_", None)
+    ]
+
     # CODE SIZE
-    size_plot(data['size'], dir)
+    # size_plot(data['size'], dir)
 
     # RUNNING TIMES
-    relative_time(data['obs'], baseline, dir, ec_programs, "ec_times.pdf")
-    relative_time(data['obs'], baseline, dir, simpl_seq, "simpl_times.pdf")
-    relative_time(data['obs'], baseline, dir, other_seq, "other_times.pdf")
+    for prefix, subset in subsets:
+        relative_time(data['obs'], baseline, dir, subset, prefix + "times.pdf")
 
     # TODO: GC info plot
 
     # CACHEGRIND
-    cachegrind_event_pct(data['cache'], "L1 I-cache read miss rate %", 'I1mr', 'Ir', dir, "L1Ir_miss.pdf")
-    cachegrind_event_pct(data['cache'], "LL I-cache read miss rate %", 'ILmr', 'Ir', dir, "LLIr_miss.pdf")
+    categories = [["code"], ["mcrt", "misc"]]
+    for fileCategory in categories:
+        for prefix, subset in subsets:
+            cat = "+".join(fileCategory)
+            prefix = cat + "__" + prefix
 
-    cachegrind_event_pct(data['cache'], "L1 D-cache read miss rate %", 'D1mr', 'Dr', dir, "L1Dr_miss.pdf")
-    cachegrind_event_pct(data['cache'], "LL D-cache read miss rate %", 'DLmr', 'Dr', dir, "LLDr_miss.pdf")
+            cachegrind_event_pct(data['cache'], cat + " L1 I-cache read miss rate % ", 'I1mr', 'Ir', dir, fileCategory, subset, prefix + "L1Ir_miss.pdf")
+            cachegrind_event_pct(data['cache'], cat + " LL I-cache read miss rate % ", 'ILmr', 'Ir', dir, fileCategory, subset, prefix + "LLIr_miss.pdf")
 
-    cachegrind_event_pct(data['cache'], "L1 D-cache write miss rate %", 'D1mw', 'Dw', dir, "L1Dw_miss.pdf")
-    cachegrind_event_pct(data['cache'], "LL D-cache write miss rate %", 'DLmw', 'Dw', dir, "LLDw_miss.pdf")
+            cachegrind_event_pct(data['cache'], cat + " L1 D-cache read miss rate % ", 'D1mr', 'Dr', dir, fileCategory, subset, prefix + "L1Dr_miss.pdf")
+            cachegrind_event_pct(data['cache'], cat + " LL D-cache read miss rate % ", 'DLmr', 'Dr', dir, fileCategory, subset, prefix + "LLDr_miss.pdf")
 
-    cachegrind_event_pct(data['cache'], "Conditional branch miss rate %", 'Bcm', 'Bc', dir, "CBR_miss.pdf")
-    cachegrind_event_pct(data['cache'], "Indirect branch miss rate %", 'Bim', 'Bi', dir, "IBR_miss.pdf")
+            cachegrind_event_pct(data['cache'], cat + " L1 D-cache write miss rate % ", 'D1mw', 'Dw', dir, fileCategory, subset, prefix + "L1Dw_miss.pdf")
+            cachegrind_event_pct(data['cache'], cat + " LL D-cache write miss rate % ", 'DLmw', 'Dw', dir, fileCategory, subset, prefix + "LLDw_miss.pdf")
+
+            cachegrind_event_pct(data['cache'], cat + " Conditional branch miss rate % ", 'Bcm', 'Bc', dir, fileCategory, subset, prefix + "CBR_miss.pdf")
+            cachegrind_event_pct(data['cache'], cat + " Indirect branch miss rate  % ", 'Bim', 'Bi', dir, fileCategory, subset, prefix + "IBR_miss.pdf")
 
 
 if __name__ == '__main__':
