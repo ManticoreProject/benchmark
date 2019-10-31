@@ -260,7 +260,9 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
                help="The baseline kind to compare with in relative plots.")
 @click.option("--cached", is_flag=True, default=False, type=bool,
                 help="Uses data from the CSV cache dumped by an earlier run.")
-def main(dir, progs, kinds, baseline, cached):
+@click.option("--plots", default="", type=str,
+               help="Comma-seperated list of plots to output (time, cg, size). Empty string emits all of them.")
+def main(dir, progs, kinds, baseline, cached, plots):
     dir = os.path.abspath(dir)
     print("looking in dir ", dir)
 
@@ -276,6 +278,8 @@ def main(dir, progs, kinds, baseline, cached):
                 progs.append(item)
     else:
         progs = progs.split(",")
+
+    plots = plots.split(",")
 
     progs.sort()
     print("processing for progs: ", progs)
@@ -301,34 +305,37 @@ def main(dir, progs, kinds, baseline, cached):
     ]
 
     # CODE SIZE
-    size_plot(data['size'], dir)
+    if plots == [] or "size" in plots:
+        size_plot(data['size'], dir)
 
     # RUNNING TIMES
-    for prefix, subset in subsets:
-        relative_time(data['obs'], baseline, dir, subset, prefix + "times.pdf")
+    if plots == [] or "time" in plots:
+        for prefix, subset in subsets:
+            relative_time(data['obs'], baseline, dir, subset, prefix + "times.pdf")
 
     # TODO: GC info plot
 
     # CACHEGRIND
-    categories = [["code"], ["mcrt", "misc"]]
-    cacheLevels = ["1"] # the options are: "1" and "L"
-    for fileCategory in categories:
-        for prefix, subset in subsets:
-            cat = "+".join(fileCategory)
-            prefix = cat + "__" + prefix
+    if plots == [] or "cg" in plots:
+        categories = [["code"], ["mcrt", "misc"]]
+        cacheLevels = ["1"] # the options are: "1" and "L"
+        for fileCategory in categories:
+            for prefix, subset in subsets:
+                cat = "+".join(fileCategory)
+                prefix = cat + "__" + prefix
 
-            cachegrind_event_pct(data['cache'], cat + " Conditional branch miss rate % ", 'Bcm', 'Bc', dir, fileCategory, subset, prefix + "CBR_miss.pdf")
-            cachegrind_event_pct(data['cache'], cat + " Indirect branch miss rate  % ", 'Bim', 'Bi', dir, fileCategory, subset, prefix + "IBR_miss.pdf")
+                cachegrind_event_pct(data['cache'], cat + " Conditional branch miss rate % ", 'Bcm', 'Bc', dir, fileCategory, subset, prefix + "CBR_miss.pdf")
+                cachegrind_event_pct(data['cache'], cat + " Indirect branch miss rate  % ", 'Bim', 'Bi', dir, fileCategory, subset, prefix + "IBR_miss.pdf")
 
-            for level in cacheLevels:
-                cachegrind_event_pct(data['cache'], cat + " L" + level + " I-cache read miss rate % ",\
-                    'I' + level + 'mr', 'Ir', dir, fileCategory, subset, prefix + "L" + level + "Ir_miss.pdf")
+                for level in cacheLevels:
+                    cachegrind_event_pct(data['cache'], cat + " L" + level + " I-cache read miss rate % ",\
+                        'I' + level + 'mr', 'Ir', dir, fileCategory, subset, prefix + "L" + level + "Ir_miss.pdf")
 
-                cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache read miss rate % ",\
-                    'D' + level + 'mr', 'Dr', dir, fileCategory, subset, prefix + "L" + level + "Dr_miss.pdf")
+                    cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache read miss rate % ",\
+                        'D' + level + 'mr', 'Dr', dir, fileCategory, subset, prefix + "L" + level + "Dr_miss.pdf")
 
-                cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache write miss rate % ",\
-                    'D' + level + 'mw', 'Dw', dir, fileCategory, subset, prefix + "L" + level + "Dw_miss.pdf")
+                    cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache write miss rate % ",\
+                        'D' + level + 'mw', 'Dw', dir, fileCategory, subset, prefix + "L" + level + "Dw_miss.pdf")
 
 
     print("done.")
