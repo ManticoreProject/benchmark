@@ -181,11 +181,11 @@ def main(dir, progs, kinds, baseline, cached):
     progs.sort()
     print("processing for progs: ", progs)
 
-    assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
-
     if not cached:
         assert kinds != "", "must provide --kinds when not using a cached dataset"
         kinds = kinds.split(",")
+
+    assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
 
     data = gather_data.load(dir, progs, kinds, cached)
 
