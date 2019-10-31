@@ -279,10 +279,10 @@ def main(dir, progs, kinds, baseline, cached):
 
 
     subsets = [
-        # ("ec_", ec_programs),
-        # ("simpl_", simpl_seq),
-        # ("other_", other_seq),
-        ("_", None)
+        ("ec_", ec_programs),
+        ("simpl_", simpl_seq),
+        ("other_", other_seq)
+        # ("_", None)
     ]
 
     # CODE SIZE
