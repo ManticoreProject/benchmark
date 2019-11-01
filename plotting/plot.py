@@ -10,11 +10,13 @@ from scipy import stats
 
 import gather_data
 
+# ALL EC programs
 ec_programs = set([ "ec-ack",
                     "ec-fib",
                     "ec-loop",
                     "ec-tak" ])
 
+# ALL SEQ PROGRAMS
 seq_programs = set([
                 "seq-ack",
                 "seq-cpstak",
@@ -38,19 +40,20 @@ seq_programs = set([
                 "seq-takl"
                 ])
 
-simpl_seq = set([
+
+# Special subsets
+
+toy_seq = set([
              "seq-ack",
-             "seq-cpstak",
              "seq-divrec",
-             "seq-evenodd",
              "seq-fib",
-             "seq-loop",
-             "seq-tailfib",
              "seq-tak",
              "seq-takl"
             ])
 
-other_seq = seq_programs - simpl_seq
+tail_seq = set(["seq-cpstak", "seq-evenodd", "seq-loop", "seq-tailfib"])
+
+real_seq = seq_programs - toy_seq - tail_seq
 
 # pattern-matching object to categorize files contributing to the compile unit.
 # NOTE: this is for manticore
@@ -114,8 +117,6 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", height=9, aspect=1.2941):
     df = df.copy()
 
-    # TODO: perhaps computing a geomean would be useful.
-
     if subset:
         df = df[df['problem_name'].isin(subset)]
     if len(df) == 0:
@@ -140,16 +141,17 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
         df['time_sec'] = df.apply(f, axis=1)
 
 
-    # compute a geomean among the different stack kinds
-    geomean = {"problem_name": [], "description": [], "time_sec": []}
+    # compute an average among the different stack kinds.
+    # NOTE: we use geomean instead of arithmetic because the speedup is unbounded.
+    average = {"problem_name": [], "description": [], "time_sec": []}
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["time_sec"]
         gmean = stats.gmean(allTimes)
-        geomean["problem_name"].append("AVERAGE")
-        geomean["description"].append(kind)
-        geomean["time_sec"].append(gmean)
+        average["problem_name"].append("AVERAGE")
+        average["description"].append(kind)
+        average["time_sec"].append(gmean)
 
-    gmeanRows = pd.DataFrame.from_dict(geomean)
+    gmeanRows = pd.DataFrame.from_dict(average)
     df = df.append(gmeanRows, sort=False)
 
 
@@ -234,16 +236,17 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     # prepare to plot
     df = pd.DataFrame.from_dict(plotData)
 
-    # compute a geomean among the different stack kinds
-    geomean = {"problem_name": [], "description": [], "rate": []}
+    # compute an average among the different stack kinds
+    # NOTE: we use an arithmetic mean because the miss rate is bounded [0, 100]
+    average = {"problem_name": [], "description": [], "rate": []}
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["rate"]
-        gmean = stats.gmean(allTimes)
-        geomean["problem_name"].append("AVERAGE")
-        geomean["description"].append(kind)
-        geomean["rate"].append(gmean)
+        gmean = allTimes.mean()
+        average["problem_name"].append("AVERAGE")
+        average["description"].append(kind)
+        average["rate"].append(gmean)
 
-    gmeanRows = pd.DataFrame.from_dict(geomean)
+    gmeanRows = pd.DataFrame.from_dict(average)
     df = df.append(gmeanRows, sort=False)
 
     # cap the max
@@ -303,7 +306,7 @@ def main(dir, progs, kinds, baseline, cached, plots):
     else:
         progs = progs.split(",")
 
-    plots = plots.split(",")
+    plots = [] if plots == "" else plots.split(",")
 
     progs.sort()
     print("processing for progs: ", progs)
@@ -323,8 +326,9 @@ def main(dir, progs, kinds, baseline, cached, plots):
 
     subsets = [
         ("ec_", ec_programs),
-        ("simpl_", simpl_seq),
-        ("other_", other_seq)
+        ("toy_", toy_seq),
+        ("tail_", tail_seq),
+        ("real_", real_seq)
         # ("_", None)
     ]
 
