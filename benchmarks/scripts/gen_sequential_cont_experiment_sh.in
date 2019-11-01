@@ -58,11 +58,11 @@ OPT_LVL="-O3"
 ./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
 
 ./run-test.sh "$HACK_OPT_LVL -segstack" "segstack"
-./run-test.sh "$HACK_OPT_LVL -segstack -nocopyoverflow" "segstack-nocopyoverflow"
+./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
 ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
 
 ./run-test.sh "$HACK_OPT_LVL -resizestack" "resizestack"
-./run-test.sh "$HACK_OPT_LVL -resizestack -nocopyoverflow" "resizestack-nocopyoverflow"
+./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
 ./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
 
 if [ "$USE_MLTON" == "true" ]; then
