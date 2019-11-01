@@ -92,7 +92,7 @@ def _addTo(cur, new):
     ''' extend a pandas dataframe with more rows '''
     if cur is None:
         return new
-    return cur.append(new)
+    return cur.append(new, sort=False)
 
 
 def load(dir, progs, kinds, cached):

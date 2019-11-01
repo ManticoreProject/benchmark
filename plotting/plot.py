@@ -6,6 +6,7 @@ import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+from scipy import stats
 
 import gather_data
 
@@ -138,6 +139,20 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
         df['time_sec'] = df.apply(f, axis=1)
 
+
+    # compute a geomean among the different stack kinds
+    geomean = {"problem_name": [], "description": [], "time_sec": []}
+    for kind in df["description"].unique():
+        allTimes = df[df["description"] == kind]["time_sec"]
+        gmean = stats.gmean(allTimes)
+        geomean["problem_name"].append("AVERAGE")
+        geomean["description"].append(kind)
+        geomean["time_sec"].append(gmean)
+
+    gmeanRows = pd.DataFrame.from_dict(geomean)
+    df = df.append(gmeanRows, sort=False)
+
+
     # cap the max
     xBounds = (0, 2.0)
 
@@ -216,11 +231,20 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
             plotData['description'].append(kind)
             plotData['rate'].append(rate)
 
-
-
-
     # prepare to plot
     df = pd.DataFrame.from_dict(plotData)
+
+    # compute a geomean among the different stack kinds
+    geomean = {"problem_name": [], "description": [], "rate": []}
+    for kind in df["description"].unique():
+        allTimes = df[df["description"] == kind]["rate"]
+        gmean = stats.gmean(allTimes)
+        geomean["problem_name"].append("AVERAGE")
+        geomean["description"].append(kind)
+        geomean["rate"].append(gmean)
+
+    gmeanRows = pd.DataFrame.from_dict(geomean)
+    df = df.append(gmeanRows, sort=False)
 
     # cap the max
     xBounds = (0, 100.0)
