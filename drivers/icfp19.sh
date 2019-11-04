@@ -43,6 +43,7 @@ set +e
 
 # TODO: test performance of segstack with -stacksz set at various sizes
 # you'll want to pick the best one of the handful for the new default.
+# 4k, 8k, 16k, 32k, 64k, not much morethan 256.
 
 # TODO: add these FFI tests:   ffi-fib, ffi-trigfib
 # you'll need versions with -Ccshim=true and without it (NOT false).
@@ -56,6 +57,12 @@ set +e
 
 # TODO: test performance of segstack and resize stack with -sealingcapture
 # in EC and CML tests.
+
+##################
+# 1. text file with summary of contributions in paper repo.
+#    there are many medium sized details about implementing these strategies
+#    good roadmap to help them digest the paper, but also important to highlight
+#    the new stuff we engineered to make this work.
 
 seq_tests=(
     "seq-ack"
