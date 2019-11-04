@@ -1,10 +1,4 @@
-(* rgb.sml
- *
- * COPYRIGHT (c) 2019 John Reppy (http://cs.uchicago.edu/~jhr)
- * All rights reserved.
- *)
-
-structure RGB : sig
+structure RGB (* : sig
 
     type t = (Real64.real * Real64.real * Real64.real)
 
@@ -25,9 +19,9 @@ structure RGB : sig
     val white : t
     val gray : Real64.real -> t
 
-  end = struct
+  end *) = struct
 
-    type t = (Real64.real * Real64.real * Real64.real)
+    type t = (double * double * double)
 
     fun add ((r1, g1, b1) : t, (r2, g2, b2)) = (r1 + r2, g1 + g2, b1 + b2)
     fun adds ((r1, g1, b1) : t, s, (r2, g2, b2)) = (r1 + s*r2, g1 + s*g2, b1 + s*b2)
