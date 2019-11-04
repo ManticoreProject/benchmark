@@ -1,20 +1,15 @@
 
 structure Fib = struct
 
-  val pi = 3.14159265358979323846
-  val epsilon = 0.001
+  fun one () = Int.identity (1)
+  fun two () = Int.identity (2)
+  fun zero () = Int.identity (0)
 
-  fun one () = Double.tan (pi / 4.0)
-  fun two () = one () + one ()
-  fun zero () = Double.sin pi
-  fun eq (x, y) = Double.abs(x - y) < epsilon
-
-  fun go n =
-    if eq (n, 0.0)
-      then zero()
-    else if eq (n, 1.0)
-      then one()
-    else  go (n-one()) + go (n-two())
+  fun go n = (case n
+    of 0 => zero()
+     | 1 => one()
+     | _ => go (n-one()) + go (n-two())
+    (* end case *))
 
 end (* end struct *)
 
@@ -27,10 +22,10 @@ structure Main =
     fun main (_, _) =
   let
       val iters = 1
-      val n = 40.0
-      val correct = 102334155.0
+      val n = 40
+      val correct = 102334155
 
-      fun run () = if not (Fib.eq (correct, Fib.go n))
+      fun run () = if correct <> Fib.go n
                       then raise Fail "bug"
                       else ()
 
