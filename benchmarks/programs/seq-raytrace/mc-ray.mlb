@@ -17,10 +17,8 @@ ann "sequenceNonUnit error" in
   interval.sml
   ray.sml
   camera.sml
-  aabb.sml
   material.sml
   object.sml
-  bvh.sml
   sphere.sml
   trace.sml
 (* testing code *)
