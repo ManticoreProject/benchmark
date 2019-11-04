@@ -37,6 +37,26 @@ autoconf -Iconfig
 scripts/gen-input-data.sh
 set +e
 
+# NOTE: for all of these, it would be handy to do a run with `perf record`
+# and dump that file to the dir with all the other stuff so you can manually
+# or automatically process it to pin-point what's going on.
+
+# TODO: test performance of segstack with -stacksz set at various sizes
+# you'll want to pick the best one of the handful for the new default.
+
+# TODO: add these FFI tests:   ffi-fib, ffi-trigfib
+# you'll need versions with -Ccshim=true and without it (NOT false).
+# I think the only case where cshim is actually off by default is
+# contig stack and cps.
+
+# TODO: add these CML tests:  cml-pingpong, cml-spawn
+# you'll need to pass -p 1 to the binaries since there's an issue with VProcExit.
+
+# TODO: test performance of segstack with -lazyunderflow on all tests
+
+# TODO: test performance of segstack and resize stack with -sealingcapture
+# in EC and CML tests.
+
 seq_tests=(
     "seq-ack"
     "seq-cpstak"
