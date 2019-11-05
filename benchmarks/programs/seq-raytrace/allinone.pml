@@ -6,11 +6,51 @@ val concat = String.concat
 
 structure U = struct
 
+  fun first2 (x, _) = x
   fun second2 (_, x) = x
 
 end
 
 
+structure Rand =
+  struct
+
+    val state : Word64.word Ref.ref = Ref.new(1234567)
+
+    fun init 0 = Ref.set(state, 1234567)
+      | init w = Ref.set(state, w)
+
+    fun xorshift64 () = let
+	  val x = Ref.get state
+    val x = Word64.xorb(x, Word64.lsh(x, 13))
+    val x = Word64.xorb(x, Word64.rsh(x, 7))
+    val x = Word64.xorb(x, Word64.lsh(x, 17))
+    in
+      (Ref.set(state, x); x)
+    end
+
+    fun rand () = Word64.andb(xorshift64(), 2147483647-1)
+
+    (* fun randInt n = if (n <= 1)
+	  then 1
+	  else Word32.toIntX(Word32.mod(randWord32(), Word32.fromInt n)) *)
+
+  end
+
+(*******************)
+
+
+structure Interval = struct
+
+    type t = (double * double)
+
+    fun within (t, (min, max) : t) = (min <= t) andalso (t <= max)
+
+    fun toString ((min, max) : t) = String.concat[
+	    "[", Double.toString min, " .. ", Double.toString max, "]"
+	  ]
+
+  end
 
 (*******************)
 
@@ -131,3 +171,16 @@ structure RGB = struct
       fun app (f : 'a -> unit) (x, y, z) = (f x; f y; f z)
 
     end
+
+
+(******************)
+
+    structure Ray = struct
+
+        type t = (Vec3.t * Vec3.t)
+
+        fun make (origin, dir) = (origin, Vec3.normalize dir)
+
+        fun eval (r : t, t) = Vec3.adds (U.first2 r, t, U.second2 r)
+
+      end
