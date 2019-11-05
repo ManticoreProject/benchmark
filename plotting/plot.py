@@ -30,6 +30,7 @@ seq_programs = set([
                 "seq-mazefun",
                 "seq-merge",
                 "seq-minimax",
+                "seq-motzkin",
                 "seq-nqueens",
                 "seq-perm",
                 "seq-primes",

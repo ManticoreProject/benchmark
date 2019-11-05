@@ -77,6 +77,7 @@ seq_tests=(
     "seq-mazefun"
     "seq-merge"
     "seq-minimax"
+    "seq-motzkin"
     "seq-nqueens"
     "seq-perm"
     "seq-primes"
