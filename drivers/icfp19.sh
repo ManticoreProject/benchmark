@@ -94,6 +94,7 @@ seq_tests=(
 ec_tests=(
     "ec-ack"
     "ec-loop"
+    "ec-motzkin"
     "ec-sudan"
     "ec-tak"
 )
