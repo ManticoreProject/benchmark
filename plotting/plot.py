@@ -35,6 +35,7 @@ seq_programs = set([
                 "seq-primes",
                 "seq-quicksort",
                 "seq-scc",
+                "seq-sudan",
                 "seq-tailfib",
                 "seq-tak",
                 "seq-takl"
@@ -48,7 +49,8 @@ toy_seq = set([
              "seq-divrec",
              "seq-fib",
              "seq-tak",
-             "seq-takl"
+             "seq-takl",
+             "seq-sudan"
             ])
 
 tail_seq = set(["seq-cpstak", "seq-evenodd", "seq-loop", "seq-tailfib"])

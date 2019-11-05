@@ -82,6 +82,7 @@ seq_tests=(
     "seq-primes"
     "seq-quicksort"
     "seq-scc"
+    "seq-sudan"
     "seq-tailfib"
     "seq-tak"
     "seq-takl"
