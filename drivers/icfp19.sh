@@ -89,6 +89,8 @@ seq_tests=(
     "seq-takl"
 )
 
+# NOTE: -sealingcapture is too slow for these benchmarks!
+# also, they should be run with -sequential for ideal performance.
 ec_tests=(
     "ec-ack"
     "ec-fib"
