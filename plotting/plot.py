@@ -14,6 +14,7 @@ import gather_data
 ec_programs = set([ "ec-ack",
                     "ec-fib",
                     "ec-loop",
+                    "ec-sudan",
                     "ec-tak" ])
 
 # ALL SEQ PROGRAMS
