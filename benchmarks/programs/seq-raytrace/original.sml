@@ -23,11 +23,12 @@ end
 structure Rand =
   struct
 
-    val state : Word32.word ref = ref 0w1234567
+    val state : Word64.word ref = ref 0w1234567
 
     fun init 0w0 = (state := 0w1234567)
       | init w = (state := w)
 
+(*
     fun randWord32 () = let
 	  val r = (Word64.fromLarge (Word32.toLarge (!state)) * 0w48271) mod 0wx7fffffff
 	  val r' = Word32.fromLarge (Word64.toLarge r)
@@ -35,14 +36,26 @@ structure Rand =
 	    state := r';
 	    r'
 	  end
+    *)
+
+    fun xorshift32 () = let
+      val x = !state
+      val x = x + 0w1
+      (* TODO: the below causes a Domain error to be raised *)
+      (* val x = Word32.xorb(x, Word32.<<(x, 0w13))
+      val x = Word32.xorb(x, Word32.>>(x, 0w17))
+      val x = Word32.xorb(x, Word32.<<(x, 0w5)) *)
+    in
+      (state := x; x)
+    end
 
     val scale :Real64.real = 1.0 / 2147483647.0
 
-    fun rand () = scale * Real64.fromLargeInt (Word32.toLargeIntX (randWord32 ()))
+    fun rand () = scale * Real64.fromLargeInt (Word64.toLargeIntX (xorshift32 ()))
 
-    fun randInt n = if (n <= 1)
+    (* fun randInt n = if (n <= 1)
 	  then 1
-	  else Word32.toIntX(Word32.mod(randWord32(), Word32.fromInt n))
+	  else Word32.toIntX(Word32.mod(xorshift32(), Word32.fromInt n)) *)
 
   end
 (* interval.sml
