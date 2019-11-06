@@ -76,6 +76,38 @@ structure RGB = struct
 
   end
 
+(********************)
+
+
+(* color.sml
+ *
+ * COPYRIGHT (c) 2019 John Reppy (http://cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *)
+
+structure Color = struct
+
+    type t = int * int * int
+
+    fun toByte (f : double) = let
+          val f' = Double.floor (f * 255.99)
+          in
+            if (f' <= 0) then 0
+            else if (255 <= f') then 255
+            else f'
+          end
+
+    fun fromRGB ((r, g, b) : RGB.t) = (toByte r, toByte g, toByte b)
+
+    fun fromRGBWithGamma ((r, g, b) : RGB.t) = let
+          fun cvt f = toByte (Double.sqrt f)
+          in
+            (cvt r, cvt g, cvt b)
+          end
+
+  end
+
+
 
 (*******************)
 
