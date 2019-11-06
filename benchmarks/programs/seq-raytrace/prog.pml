@@ -233,7 +233,7 @@ signature VEC3 =
  * Operations on vectors in R^3 (scalar version)
  *)
 
-structure Vec3 : VEC3 =
+structure Vec3 =
   struct
 
     val epsilon = 0.0001
