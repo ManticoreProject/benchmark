@@ -595,18 +595,18 @@ structure Image (* : sig
     datatype t = Img of int * int * Color.t list
 
     fun writePPM (file, Img(wid, ht, pixels)) = let
-      val outS = BinIO.openOut file
-      fun pr s = BinIO.output(outS, Byte.stringToBytes s)
-      fun out1 b = BinIO.output1(outS, Word8.fromInt b)
+      val outS = TextIO.openOut file
+      fun pr s = TextIO.output(outS, s)
+      fun pixToS (r, g, b) = concat [Int.toString r, " ", Int.toString g, " ", Int.toString b]
       in
-      (* write header *)
-        pr "P6\n";
+      (* write header for Plain PPM file: http://netpbm.sourceforge.net/doc/ppm.html *)
+        pr "P3\n";
         pr (concat[Int.toString wid, " ", Int.toString ht, "\n"]);
         pr "255\n";
       (* write pixels *)
-        List.app (fn (r, g, b) => (out1 r; out1 g; out1 b)) pixels;
+        List.app (fn pix => (pr (pixToS pix); pr "\n")) pixels;
       (* close file *)
-        BinIO.closeOut outS
+        TextIO.closeOut outS
       end
 
   end
@@ -870,12 +870,13 @@ structure TestRandomScene =
     (* only time it *)
     fun go () = TestRandomScene.test()
 
-    (* render and dump the image to file, with timing.
-           use ImageMagick like so:
+    (* render and dump the image to a Plain PPM file, with timing.
+       use ImageMagick to generate a PNG image like so:
               convert image.ppm image.png
     *)
     fun test () = TestRandomScene.test'("image.ppm")
 
   end
 
-  val _ = Main.go()
+(* val _ = Main.test() *)
+val _ = Main.go()
