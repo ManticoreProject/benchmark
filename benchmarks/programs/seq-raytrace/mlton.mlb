@@ -7,5 +7,6 @@
 $(SML_LIB)/basis/basis.mlb
 
 ann "sequenceNonUnit error" in
+  compat.sml
   prog.sml
 end

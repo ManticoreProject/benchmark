@@ -26,4 +26,5 @@ is
 
   $/basis.cm
 
+  compat.sml
   prog.sml

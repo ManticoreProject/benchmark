@@ -17,21 +17,23 @@ end
 structure Rand =
   struct
 
-    val state : Word64.word Ref.ref = Ref.new(1234567)
+    val state : Word64.word Ref.ref = Ref.new (Word64.fromInt 1234567)
 
-    fun init 0 = Ref.set(state, 1234567)
+    fun init 0w0 = Ref.set(state, Word64.fromInt 1234567)
       | init w = Ref.set(state, w)
 
     fun xorshift64 () = let
-          val x = Ref.get state
-    val x = Word64.xorb(x, Word64.lsh(x, 13))
-    val x = Word64.xorb(x, Word64.rsh(x, 7))
-    val x = Word64.xorb(x, Word64.lsh(x, 17))
+      val x = Ref.get state
+      val x = Word64.xorb(x, Word64.lsh(x, 13))
+      val x = Word64.xorb(x, Word64.rsh(x, 7))
+      val x = Word64.xorb(x, Word64.lsh(x, 17))
     in
       (Ref.set(state, x); x)
     end
 
-    fun rand () = Word64.andb(xorshift64(), 2147483647-1)
+    val scale : double = 1.0 / 2147483647.0
+
+    fun rand () = scale * Double.fromLong(Word64.toLong(xorshift64()))
 
     (* fun randInt n = if (n <= 1)
           then 1
