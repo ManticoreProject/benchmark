@@ -1,3 +1,15 @@
+(*********** some compatibility and helpers for PML **********)
+
+
+val concat = String.concat
+
+structure U = struct
+
+  fun first2 (x, _) = x
+  fun second2 (_, x) = x
+
+end
+
 (* rand-64.sml
  *
  * COPYRIGHT (c) 2019 John Reppy (http://cs.uchicago.edu/~jhr)
@@ -259,7 +271,7 @@ structure Vec3 : VEC3 =
 	      else (l, scale(1.0 / l, v))
 	  end
 
-    fun normalize v = #2(lengthAndDir v)
+    fun normalize v = U.second2(lengthAndDir v)
 
     fun reflect (v, n) = adds (v, ~2.0 * dot(v, n), n)
 
@@ -318,7 +330,7 @@ structure Ray (* : sig
 
     fun make (origin, dir) = (origin, Vec3.normalize dir)
 
-    fun eval (r : t, t) = Vec3.adds (#1 r, t, #2 r)
+    fun eval (r : t, t) = Vec3.adds (U.first2 r, t, U.second2 r)
 
   end
 (* material.sml
