@@ -857,7 +857,7 @@ structure TestRandomScene =
 		30.0)
 	  val world = makeScene()
 	  in
-	    Trace.rayTracer (cam, world)
+	    RunSeq.run (fn () => Trace.rayTracer (cam, world))
 	  end
 
     fun test' file = Image.writePPM (file, test())
