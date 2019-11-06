@@ -847,19 +847,27 @@ structure TestRandomScene =
 		]))
 	  end
 
-    fun buildAndTrace () = let
-	  val cam = Camera.make (
-		300, 200, 20,
-		(13.0, 2.0, 3.0), Vec3.zero, (0.0, 1.0, 0.0),
-		30.0)
-	  val world = makeScene()
-	  in
-	    Trace.rayTracer (cam, world)
-	  end
 
-    fun test () = RunSeq.run (fn () => buildAndTrace () )
+    fun buildScene () = let
+          val cam = Camera.make (
+                300, 200, 20,
+                (13.0, 2.0, 3.0), Vec3.zero, (0.0, 1.0, 0.0),
+                30.0)
+          val world = makeScene()
+      in
+        (cam, world)
+      end
 
-    fun test' file = RunSeq.run (fn () => Image.writePPM (file, buildAndTrace()))
+
+    fun test () = let
+        val scene = buildScene()
+      in
+        RunSeq.run (fn () => Trace.rayTracer scene )
+      end
+
+
+    fun test' file = Image.writePPM (file, test())
+
 
   end
 
