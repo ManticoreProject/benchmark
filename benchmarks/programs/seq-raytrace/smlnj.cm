@@ -26,25 +26,4 @@ is
 
   $/basis.cm
 
-  camera.sml
-  color.sml
-  image.sml
-  interval.sml
-  material.sml
-  object.sml
-  rand-sig.sml
-#if defined(SIZE_32)
-  rand-32.sml
-#else (* SIZE_64 *)
-  rand-64.sml
-#endif
-  ray.sml
-  rgb.sml
-  sphere.sml
-  trace.sml
-  vec3-sig.sml
-  vec3.sml
-
-(* testing code *)
-  test-sig.sml
-  test-random-scene.sml
+  prog.sml

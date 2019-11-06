@@ -7,22 +7,5 @@
 $(SML_LIB)/basis/basis.mlb
 
 ann "sequenceNonUnit error" in
-  rand-sig.sml
-  rand-64.sml
-  rgb.sml
-  color.sml
-  image.sml
-  vec3-sig.sml
-  vec3.sml
-  interval.sml
-  ray.sml
-  camera.sml
-  material.sml
-  object.sml
-  sphere.sml
-  trace.sml
-(* testing code *)
-  test-sig.sml
-  test-random-scene.sml
-  main-random-scene.sml
+  prog.sml
 end

@@ -767,7 +767,7 @@ structure TestRandomScene =
 (* The main code *)
 structure Main = struct
 
-  fun go () =TestRandomScene.test()
+  fun go () = TestRandomScene.test()
 
 end
 
