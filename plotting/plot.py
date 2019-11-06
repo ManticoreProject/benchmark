@@ -37,6 +37,7 @@ seq_programs = set([
                 "seq-perm",
                 "seq-primes",
                 "seq-quicksort",
+                "seq-raytrace",
                 "seq-scc",
                 "seq-sudan",
                 "seq-tailfib",

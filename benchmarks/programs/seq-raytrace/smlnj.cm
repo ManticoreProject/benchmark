@@ -6,26 +6,13 @@
 
 Library
 
-  structure Camera
-  structure Color
-  structure Image
-  structure Interval
-  structure Material
-  structure Object
-  structure Rand
-  structure Ray
-  structure RGB
-  structure Sphere
-  structure Trace
-  structure Vec3
   structure Main
-
-(* a random test scene *)
-  structure TestRandomScene
 
 is
 
   $/basis.cm
+
+  ../../common/run-seq.sml
 
   compat.sml
   prog.sml
