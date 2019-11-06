@@ -29,6 +29,7 @@ structure Double = struct
   open Real64.Math
 
   val fromLong = Real64.fromLargeInt
+  val intFloor = Real64.floor
 
 end
 

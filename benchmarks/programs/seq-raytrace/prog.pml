@@ -154,7 +154,7 @@ structure Color (* : sig
     type t = int * int * int
 
     fun toByte (f : double) = let
-	  val f' = Double.floor (f * 255.99)
+	  val f' = Double.intFloor (f * 255.99)
 	  in
 	    if (f' <= 0) then 0
 	    else if (255 <= f') then 255
