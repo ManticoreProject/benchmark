@@ -124,14 +124,14 @@ structure Color (* : sig
 
   end *) = struct
 
-    type t = Word8.word * Word8.word * Word8.word
+    type t = int * int * int
 
     fun toByte (f : Real64.real) = let
 	  val f' = Real64.floor (f * 255.99)
 	  in
-	    if (f' <= 0) then 0w0
-	    else if (255 <= f') then 0w255
-	    else Word8.fromInt f'
+	    if (f' <= 0) then 0
+	    else if (255 <= f') then 255
+	    else f'
 	  end
 
     fun fromRGB ((r, g, b) : RGB.t) = (toByte r, toByte g, toByte b)
@@ -351,10 +351,13 @@ structure Material (* : sig
         (hit -> RGB.t) *				(* emit *)
 	(Ray.t * hit -> (RGB.t * Ray.t) option)		(* scatter *)
 
-    fun getEmission (hit as Hit(_, _, _, Material(emit, _))) = emit hit
+    fun getEmission hit = (case hit
+      of Hit(_, _, _, Material(emit, _)) => emit hit
+      (* end case *))
 
-    fun getHitInfo (hit as Hit(_, _, _, Material(_, scatter)), ray) =
-	  scatter (ray, hit)
+    fun getHitInfo (hit, ray) = (case hit
+      of Hit(_, _, _, Material(_, scatter)) => scatter (ray, hit)
+      (* end case *))
 
     fun flat rgb = Material(
 	  fn _ => RGB.black,
@@ -436,20 +439,22 @@ structure Object (* : sig
 
     fun closer (Miss, maybeHit) = maybeHit
       | closer (maybeHit, Miss) = maybeHit
-      | closer (
-	    hit1 as Hit(Material.Hit(t1, _, _, _)),
-	    hit2 as Hit(Material.Hit(t2, _, _, _))
-	  ) = if (t1 <= t2) then hit1 else hit2
+      | closer (hit1, hit2) = (case (hit1, hit2)
+        of (Hit(Material.Hit(t1, _, _, _)), Hit(Material.Hit(t2, _, _, _))) =>
+            if (t1 <= t2) then hit1 else hit2
+        (* end case *))
 
-    fun fromList [] = empty
-      | fromList [obj] = obj
-      | fromList (objs as obj1::objr) = let
-	  fun hitTest' (ray, minMaxT) = List.foldl
-		(fn (obj, mhit) => closer(mhit, hitTest(obj, ray, minMaxT)))
-		  Miss objs
-	  in
-	    Obj hitTest'
-	  end
+    fun fromList nil = empty
+      | fromList (obj :: nil) = obj
+      | fromList objs = let
+          val obj1 = List.hd objs
+          val objr = List.tl objs
+          fun hitTest' (ray, minMaxT) = List.foldl
+                (fn (obj, mhit) => closer(mhit, hitTest(obj, ray, minMaxT)))
+                  Miss objs
+          in
+            Obj hitTest'
+          end
 
     fun translate (delta, Obj hit) = let
 	  fun hitTest' ((origin, dir), minMaxT) = (
@@ -517,7 +522,8 @@ structure Sphere (* : sig
     fun make (center, radius, material) = let
 	  val rSq = radius * radius
 	  val invR = 1.0 / radius
-	  fun hitTest (ray as (ro, rd), minMaxT) = let
+    fun hitTest (ray, minMaxT) = let
+		val (ro, rd) = ray
 		val q = Vec3.sub(ro, center)
 		val b = 2.0 * Vec3.dot(rd, q)
 		val c = Vec3.dot(q, q) - rSq
@@ -562,7 +568,9 @@ structure Image (* : sig
 
     datatype t = Img of int * int * Color.t list
 
-    fun writePPM (file, Img(wid, ht, pixels)) = let
+    fun writePPM (file, Img(wid, ht, pixels)) =
+      print "TODO: implement writePPM!\n"
+    (* let
 	  val outS = BinIO.openOut file
 	  fun pr s = BinIO.output(outS, Byte.stringToBytes s)
 	  fun out1 b = BinIO.output1(outS, b)
@@ -576,6 +584,7 @@ structure Image (* : sig
 	  (* close file *)
 	    BinIO.closeOut outS
 	  end
+    *)
 
   end
 (* camera.sml
@@ -687,7 +696,8 @@ structure Camera (* : sig
 	    List.tabulate (ns, mkRay)
 	  end
 
-    fun aaPixelToRGB (cam as Cam(_, _, ns, _, _, _, _), trace) = let
+    fun aaPixelToRGB (cam, trace) = (case cam
+      of Cam(_, _, ns, _, _, _, _) => let
 	  val rfp = raysForPixel cam
 	  val scale = if ns = 0 then 1.0 else 1.0 / Real64.fromInt ns
 	  in
@@ -697,6 +707,7 @@ structure Camera (* : sig
 		  (fn (ray, c) => RGB.add(c, trace ray))
 		    RGB.black (rfp coords))
 	  end
+    (* end case *))
 
   end
 (* trace.sml
