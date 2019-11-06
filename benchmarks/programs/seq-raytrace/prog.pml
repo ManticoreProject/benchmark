@@ -12,20 +12,20 @@ structure U = struct
 
 end
 
-(* rand-64.sml
- *
- * COPYRIGHT (c) 2019 John Reppy (http://cs.uchicago.edu/~jhr)
- * All rights reserved.
- *
- * Park-Miller RNG (MINSTD) for 64-bit architectures.  This implementation is
- * from
- *	https://en.wikipedia.org/wiki/Lehmer_random_number_generator
- *)
+(*********************)
 
 structure Rand =
   struct
 
-    val state : Word64.word Ref.ref = Ref.new (Word64.fromInt 1234567)
+    val seed = Word64.fromInt 1234567
+    (* parameters of the linear congruential generator, chosen to match
+      "Numerical Recipes" (source: Wikipedia) *)
+    val multiplier = Word64.fromInt 1664525
+    val increment = Word64.fromInt 1013904223
+    val one = Word64.fromInt 1
+    val modulusMask = Word64.sub(Word64.lsh(one, Word64.fromInt 32), one)
+
+    val state : Word64.word Ref.ref = Ref.new seed
 
     (* fun init 0w0 = (state := 0w1234567)
       | init w = (state := w) *)
@@ -40,24 +40,23 @@ structure Rand =
 	  end
     *)
 
-    fun xorshift32 () = let
+    (* range of values is [0, 2^32-1] *)
+    fun genrand32 () = let
       val x = Ref.get state
-      val x = Word64.add(x, Word64.fromInt 1)
-      (* TODO: the below causes a Domain error to be raised *)
-      (* val x = Word32.xorb(x, Word32.<<(x, 0w13))
-      val x = Word32.xorb(x, Word32.>>(x, 0w17))
-      val x = Word32.xorb(x, Word32.<<(x, 0w5)) *)
+      val x = Word64.mul(x, multiplier)
+      val x = Word64.add(x, increment)
+      val x = Word64.andb(x, modulusMask)
     in
       (Ref.set(state, x); x)
     end
 
-    val scale : double = 1.0 / 2147483647.0
+    val scale : double = 1.0 / 4294967295.0
 
-    fun rand () = scale * Double.fromLong (Word64.toLong (xorshift32 ()))
+    fun rand () = scale * Double.fromLong (Word64.toLong (genrand32 ()))
 
     (* fun randInt n = if (n <= 1)
 	  then 1
-	  else Word32.toIntX(Word32.mod(xorshift32(), Word32.fromInt n)) *)
+	  else Word32.toIntX(Word32.mod(genrand32(), Word32.fromInt n)) *)
 
   end
 (* interval.sml

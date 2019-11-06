@@ -14,9 +14,11 @@ structure Word64 = struct
 
   open Word64
 
-  fun lsh (w, i) = Word64.<<(w, Word.fromInt i)
-  fun rsh (w, i) = Word64.>>(w, Word.fromInt i)
+  fun lsh (w, i) = Word64.<<(w, Word.fromLarge i)
+
   val add = Word64.+
+  val sub = Word64.-
+  val mul = Word64.*
 
   val toLong = Word64.toLargeIntX
 
