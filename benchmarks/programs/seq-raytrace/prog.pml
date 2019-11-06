@@ -9,8 +9,6 @@ structure U = struct
   fun first2 (x, _) = x
   fun second2 (_, x) = x
 
-  val posInf : double = 2147483648.0
-
 end
 
 
@@ -661,7 +659,7 @@ structure Trace (* : sig
   end *) = struct
 
     fun castRay world ray = (
-          case Object.hitTest (world, ray, (0.0, U.posInf))
+          case Object.hitTest (world, ray, (0.0, Double.posInf))
            of Object.Miss => Camera.rayToRGB ray
             | Object.Hit hit => (case Material.getHitInfo(hit, ray)
                  of NONE => Material.getEmission hit
@@ -670,7 +668,7 @@ structure Trace (* : sig
           (* end case *))
 
     fun traceRay (world, maxDepth) = let
-          val minMaxT = (0.001, U.posInf)
+          val minMaxT = (0.001, Double.posInf)
           fun trace (ray, depth) = if (depth <= 0)
                 then RGB.black
                 else (case Object.hitTest (world, ray, minMaxT)

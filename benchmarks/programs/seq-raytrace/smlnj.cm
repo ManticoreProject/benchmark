@@ -18,6 +18,7 @@ Library
   structure Sphere
   structure Trace
   structure Vec3
+  structure Main
 
 (* a random test scene *)
   structure TestRandomScene
