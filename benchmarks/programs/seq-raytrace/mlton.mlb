@@ -7,6 +7,7 @@
 $(SML_LIB)/basis/basis.mlb
 
 ann "sequenceNonUnit error" in
+  ../../common/run-seq.sml
   compat.sml
   prog.sml
 end

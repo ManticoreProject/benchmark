@@ -594,23 +594,20 @@ structure Image (* : sig
 
     datatype t = Img of int * int * Color.t list
 
-    fun writePPM (file, Img(wid, ht, pixels)) =
-      print "TODO: implement writePPM!\n"
-    (* let
-	  val outS = BinIO.openOut file
-	  fun pr s = BinIO.output(outS, Byte.stringToBytes s)
-	  fun out1 b = BinIO.output1(outS, b)
-	  in
-	  (* write header *)
-	    pr "P6\n";
-	    pr (concat[Int.toString wid, " ", Int.toString ht, "\n"]);
-	    pr "255\n";
-	  (* write pixels *)
-	    List.app (fn (r, g, b) => (out1 r; out1 g; out1 b)) pixels;
-	  (* close file *)
-	    BinIO.closeOut outS
-	  end
-    *)
+    fun writePPM (file, Img(wid, ht, pixels)) = let
+      val outS = BinIO.openOut file
+      fun pr s = BinIO.output(outS, Byte.stringToBytes s)
+      fun out1 b = BinIO.output1(outS, Word8.fromInt b)
+      in
+      (* write header *)
+        pr "P6\n";
+        pr (concat[Int.toString wid, " ", Int.toString ht, "\n"]);
+        pr "255\n";
+      (* write pixels *)
+        List.app (fn (r, g, b) => (out1 r; out1 g; out1 b)) pixels;
+      (* close file *)
+        BinIO.closeOut outS
+      end
 
   end
 (* camera.sml
@@ -850,17 +847,19 @@ structure TestRandomScene =
 		]))
 	  end
 
-    fun test () = let
+    fun buildAndTrace () = let
 	  val cam = Camera.make (
 		300, 200, 20,
 		(13.0, 2.0, 3.0), Vec3.zero, (0.0, 1.0, 0.0),
 		30.0)
 	  val world = makeScene()
 	  in
-	    RunSeq.run (fn () => Trace.rayTracer (cam, world))
+	    Trace.rayTracer (cam, world)
 	  end
 
-    fun test' file = Image.writePPM (file, test())
+    fun test () = RunSeq.run (fn () => buildAndTrace () )
+
+    fun test' file = RunSeq.run (fn () => Image.writePPM (file, buildAndTrace()))
 
   end
 
@@ -868,7 +867,14 @@ structure TestRandomScene =
   (* The main code *)
   structure Main = struct
 
+    (* only time it *)
     fun go () = TestRandomScene.test()
+
+    (* render and dump the image to file, with timing.
+           use ImageMagick like so:
+              convert image.ppm image.png
+    *)
+    fun test () = TestRandomScene.test'("image.ppm")
 
   end
 
