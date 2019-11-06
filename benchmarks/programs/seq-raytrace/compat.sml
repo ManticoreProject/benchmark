@@ -16,6 +16,7 @@ structure Word64 = struct
 
   fun lsh (w, i) = Word64.<<(w, Word.fromInt i)
   fun rsh (w, i) = Word64.>>(w, Word.fromInt i)
+  val add = Word64.+
 
   val toLong = Word64.toLargeIntX
 
