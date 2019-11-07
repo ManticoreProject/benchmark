@@ -32,9 +32,9 @@ dnl check that we have a compatible version of SML/NJ
 dnl
 CHECK_SMLNJ([AC_MSG_ERROR([unable to find SML/NJ installation; check your PATH or set SMLNJ_CMD])])
 if test $SMLNJ_MAJOR_VERSION -lt 110 \
-  -o $SMLNJ_MINOR_VERSION -lt 65
+  -o $SMLNJ_MINOR_VERSION -lt 94
 then
-  AC_MSG_ERROR([installation requires SML/NJ version 110.65+])
+  AC_MSG_ERROR([installation requires SML/NJ version 110.94+])
 fi
 AC_SUBST(SMLNJ_VERSION)
 
@@ -43,7 +43,7 @@ dnl
 dnl CHECK_SMLNJ_HEAP_SUFFIX([
 dnl   AC_MSG_ERROR([unsupported configuration ${host_cpu}-${host_os}])])
 SMLNJ_ARCH=x86
-SMLNJ_OPSYS=darwin
+SMLNJ_OPSYS=linux
 
 dnl ******************** Paths ********************
 
