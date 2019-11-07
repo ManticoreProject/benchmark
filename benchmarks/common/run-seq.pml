@@ -22,7 +22,7 @@ structure RunSeq (* sig
     end
 
   val run = mkRun (SOME Time.toString)
-	    
+
   val runMicrosec = mkRun (SOME Time.toStringMicrosec)
 
   fun runSilent f = let
@@ -33,4 +33,8 @@ structure RunSeq (* sig
       ans
     end
 
+end
+
+structure Process = struct
+  val success = ()
 end

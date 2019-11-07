@@ -42,7 +42,7 @@ dnl determine the heap-image suffix
 dnl
 dnl CHECK_SMLNJ_HEAP_SUFFIX([
 dnl   AC_MSG_ERROR([unsupported configuration ${host_cpu}-${host_os}])])
-SMLNJ_ARCH=x86
+SMLNJ_ARCH=amd64
 SMLNJ_OPSYS=linux
 
 dnl ******************** Paths ********************

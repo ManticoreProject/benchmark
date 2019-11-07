@@ -51,3 +51,7 @@ structure String = struct
 
 
 end
+
+structure Process = struct
+  val success = OS.Process.success
+end

@@ -45,7 +45,7 @@ smlnj:	smlnj.cm $SML_FILES
 
 .PHONY: clean
 clean:
-	rm -rf mc-par mc-seq mc-seq-elision mlton mlton-profile mlmon.out smlnj.x86.* *.s .cm *.ll *.bc
+	rm -rf mc-par mc-seq mc-seq-elision mlton mlton-profile mlmon.out smlnj.x86.* smlnj.amd64.* *.s .cm *.ll *.bc
 
 EOF
 ) >> Makefile
