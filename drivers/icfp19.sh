@@ -51,7 +51,12 @@ set +e
 # contig stack and cps.
 
 # TODO: add these CML tests:  cml-pingpong, cml-spawn
-# you'll need to pass -p 1 to the binaries since there's an issue with VProcExit.
+# you'll want to pass -p 1 to level the playing-field with SML/NJ.
+# you'll also need to pass -stacksz 128m to all stack strategies,
+# because jemalloc doesn't like many small-allocation requests! This should
+# keep things fair among all stack types until a custom allocator is developed.
+# in fact since that flag is ignored by cps and linkstack, it can be passed to all
+# manticore versions.
 
 # TODO: test performance of segstack with -lazyunderflow on all tests
 

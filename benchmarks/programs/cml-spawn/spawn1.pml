@@ -25,7 +25,7 @@ structure Spawn : sig
 
 structure Main = struct
 
-	val dfltN = 300000
+	val dfltN = 1000000
 
     fun timeit n = let
 	  val t0 = Time.now()
@@ -42,9 +42,9 @@ structure Main = struct
 	  end
 
 	fun main (_, args) = let
-		val n = (case args
+		val n = dfltN (* (case args
           of arg :: _ => Option.getOpt (Int.fromString arg, dfltN)
-           | _ => dfltN)
+           | _ => dfltN) *)
 	in
 		timeit n
 	end

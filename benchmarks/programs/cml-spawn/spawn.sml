@@ -24,15 +24,18 @@ structure Main = struct
 		val () = Spawn.repeat n
 		val t = Time.-(Time.now(), t0)
 		in
-		  TextIO.print(concat[
+    TextIO.print(concat[
+        Time.toString t, "\n"
+      ])
+		  (* TextIO.print(concat[
 		      Int.toString n, " threads spawned in ",
 		      Time.toString t, " seconds\n"
-		    ])
+		    ]) *)
 		end
 	  in
 	    RunCML.doit (thd, NONE)
 	  end
 
-    fun main _ = (timeit 10000000; OS.Process.success)
+    fun main _ = (timeit 1000000; OS.Process.success)
 
   end
