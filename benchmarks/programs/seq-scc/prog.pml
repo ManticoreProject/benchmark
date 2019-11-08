@@ -13,7 +13,7 @@ type edge = vertex * vertex
 fun dfs r (a, b) c = let
 
     fun dfs' (vs, ns, []) = (vs, ns)
-      | dfs' (vs, ns, x::xs) = 
+      | dfs' (vs, ns, x::xs) =
           if List.exists (fn y => x = y) vs
             then dfs' (vs, ns, xs)
             else let
@@ -36,7 +36,7 @@ and stronglyConnComp (es : edge list) (vs : vertex list) = let
             else new_range xys w
 
     fun span_tree r (a, b) c = let
-        
+
         fun span_tree' (vs, ns, []) = (vs, ns)
           | span_tree' (vs, ns, x::xs) =
               if List.exists (fn y => x = y) vs
@@ -78,12 +78,12 @@ structure GraphLoader = struct
             else
                 x :: (lp xs)
        in lp end
-            
-         
+
+
 
        (*
        file format: src vertex, space, dest vertex:
-       
+
        2 1
        3 2
        3 4
@@ -94,14 +94,14 @@ structure GraphLoader = struct
        5 7
        6 5
        7 6
-       
+
        *)
     fun readFromFile () =
     let
         val f = TextIO.openIn "../../input-data/scc-graph.txt"
         fun rd d = Option.valOf (Int.fromString d)
         fun cut line = List.map rd (String.tokenize " " line)
-        
+
         (* reads in lines that contain edges *)
         fun lp (edges, verts) =
             (case TextIO.inputLine f
@@ -118,17 +118,17 @@ structure GraphLoader = struct
                (* end case *))
     in
       lp ([], [])
-    end 
+    end
 
 end
-  
+
 
 structure Main =
   struct
 
       val iterations = 100
 
-    (* Figure 6.4 from SLPJ 87 
+    (* Figure 6.4 from SLPJ 87
       answer should be:
       [[1],[2],[7,5,6],[3,4]]
     *)
@@ -154,11 +154,11 @@ structure Main =
     in
       (edges, vertices)
     end
-  
+
     fun main _ = let
 
       (* result is a [[vertex]] *)
-      
+
       fun printListOf pe l = let
         fun printElmsOf ([]) = Print.print "]"
           | printElmsOf (x::xs) = (
@@ -188,7 +188,7 @@ structure Main =
       fun start () = lp iterations
 
       in
-          RunSeq.run start
+          (RunSeq.run start ; Process.success)
       end
 
 end

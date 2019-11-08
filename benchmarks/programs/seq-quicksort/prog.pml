@@ -70,7 +70,7 @@ structure Main =
 	    fun doit () = Quicksort.sort x
 
 	in
-	    RunSeq.run doit
+	    (RunSeq.run doit ; Process.success)
 	end
 
   end

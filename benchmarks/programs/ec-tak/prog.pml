@@ -56,10 +56,10 @@ structure Main =
                  else lp (n-1)
        (* end case *))
 
-      fun doit () = lp iters
+      fun doIt () = lp iters
 
   in
-      RunSeq.run doit
+      (RunSeq.run doIt; Process.success)
   end
 
   end

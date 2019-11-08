@@ -28,7 +28,7 @@ structure Main =
       val l1 = List.tabulate (len, fn i => i * 2)
       val l2 = List.tabulate (len, fn i => i * 2 + 1)
 
-      fun doit () =
+      fun doIt () =
          let
             fun test () =
                if 0 = List.hd (Sort.merge (l1, l2))
@@ -44,7 +44,7 @@ structure Main =
          end
 
   in
-      RunSeq.run doit
+      (RunSeq.run doIt; Process.success)
   end
 
   end

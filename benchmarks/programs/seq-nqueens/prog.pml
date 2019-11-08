@@ -68,7 +68,7 @@ structure Main =
           else (doit() ; loop (n-1))
 
   in
-      RunSeq.run (fn () => loop iters)
+      (RunSeq.run (fn () => loop iters) ; Process.success)
   end
 
   end

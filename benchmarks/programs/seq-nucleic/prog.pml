@@ -344,7 +344,7 @@ nuc_C1'
   = c1'
 
 fun
-nuc_C2 
+nuc_C2
   (dgf_base_tfo,p_o3'_275_tfo,p_o3'_180_tfo,p_o3'_60_tfo,
    p,o1p,o2p,o5',c5',h5',h5'',c4',h4',o4',c1',h1',c2',h2'',o2',h2',
    c3',h3',o3',n1,n3,c2,c4,c5,c6,_)
@@ -365,7 +365,7 @@ nuc_C3'
   = c3'
 
 fun
-nuc_C4 
+nuc_C4
   (dgf_base_tfo,p_o3'_275_tfo,p_o3'_180_tfo,p_o3'_60_tfo,
    p,o1p,o2p,o5',c5',h5',h5'',c4',h4',o4',c1',h1',c2',h2'',o2',h2',
    c3',h3',o3',n1,n3,c2,c4,c5,c6,_)
@@ -449,7 +449,7 @@ nuc_H5''
   = h5''
 
 fun
-nuc_N1 
+nuc_N1
   (dgf_base_tfo,p_o3'_275_tfo,p_o3'_180_tfo,p_o3'_60_tfo,
    p,o1p,o2p,o5',c5',h5',h5'',c4',h4',o4',c1',h1',c2',h2'',o2',h2',
    c3',h3',o3',n1,n3,c2,c4,c5,c6,_)
@@ -540,7 +540,7 @@ nuc_p_o3'_60_tfo
   = p_o3'_60_tfo
 
 fun
-rA_N6  
+rA_N6
   (dgf_base_tfo,p_o3'_275_tfo,p_o3'_180_tfo,p_o3'_60_tfo,
    p,o1p,o2p,o5',c5',h5',h5'',c4',h4',o4',c1',h1',c2',h2'',o2',h2',
    c3',h3',o3',n1,n3,c2,c4,c5,c6,A (n6,n7,n9,c8,h2,h61,h62,h8))
@@ -552,7 +552,7 @@ rA_N7
    c3',h3',o3',n1,n3,c2,c4,c5,c6,A (n6,n7,n9,c8,h2,h61,h62,h8))
   = n7
 fun
-rA_N9  
+rA_N9
   (dgf_base_tfo,p_o3'_275_tfo,p_o3'_180_tfo,p_o3'_60_tfo,
    p,o1p,o2p,o5',c5',h5',h5'',c4',h4',o4',c1',h1',c2',h2'',o2',h2',
    c3',h3',o3',n1,n3,c2,c4,c5,c6,A (n6,n7,n9,c8,h2,h61,h62,h8))
@@ -570,7 +570,7 @@ rA_H2
    c3',h3',o3',n1,n3,c2,c4,c5,c6,A (n6,n7,n9,c8,h2,h61,h62,h8))
   = h2
 fun
-rA_H61 
+rA_H61
   (dgf_base_tfo,p_o3'_275_tfo,p_o3'_180_tfo,p_o3'_60_tfo,
    p,o1p,o2p,o5',c5',h5',h5'',c4',h4',o4',c1',h1',c2',h2'',o2',h2',
    c3',h3',o3',n1,n3,c2,c4,c5,c6,A (n6,n7,n9,c8,h2,h61,h62,h8))
@@ -3276,7 +3276,7 @@ search_aux partial_inst domains constraint (h::t)
 || from the strand A.
 ||
 || "wc" (stands for Watson-Crick and is a type of base-pairing),
-|| and "wc-dumas" describe the spatial relationship between 
+|| and "wc-dumas" describe the spatial relationship between
 || nucleotides from two chains that are growing in opposite directions.
 || E.g. the nucleotides C1 from strand A and G12 from strand B.
 *)
@@ -3395,7 +3395,7 @@ stacked5' nuc i j partial_inst
 val a38_g37_tfo
   = (
        (0.9991), (~0.0375),  (0.0189),
-       (0.0164),  (0.7616),  (0.6478), 
+       (0.0164),  (0.7616),  (0.6478),
       (~0.0387), (~0.6470),  (0.7615),
        (3.3819),  (0.7718), (~2.5321)
     )
@@ -3404,7 +3404,7 @@ fun
 a38_g37 nuc i j partial_inst
   = (i,(dgf_base a38_g37_tfo (get_var j partial_inst) nuc),nuc)
 
-fun   
+fun
 stacked3' nuc i j partial_inst
   = (a38_g37 nuc i j partial_inst) :: (helix3' nuc i j partial_inst)
 
@@ -3418,7 +3418,7 @@ p_o3' nucs i j partial_inst
                                (tfo_apply t (nuc_C4' n)))
     in
       List.concat
-        (map (fn nuc => 
+        (map (fn nuc =>
                        [ (i,(tfo_combine (nuc_p_o3'_60_tfo nuc) align),nuc),
                          (i,(tfo_combine (nuc_p_o3'_180_tfo nuc) align),nuc),
                          (i,(tfo_combine (nuc_p_o3'_275_tfo nuc) align),nuc) ])
@@ -3537,7 +3537,7 @@ fun anticodon_constraint (i,t,n) partial_inst
               | x :: xs => loop (x, xs) *)
               loop (x, xs)
           end
-       
+
        fun list_of_common_atoms n =
           [
            nuc_P    n,
@@ -3615,7 +3615,7 @@ fun anticodon_constraint (i,t,n) partial_inst
             fst @ snd
         end
 
-          
+
        fun var_most_distant_atom (i, t, n) =
           let
              fun distance pos =
@@ -3627,13 +3627,13 @@ fun anticodon_constraint (i,t,n) partial_inst
           in
              maximum (List.map distance (list_of_atoms n))
           end
-    
+
        fun sol_most_distant_atom s =
           maximum (List.map var_most_distant_atom s)
-       
+
        fun most_distant_atom sols =
           maximum (List.map sol_most_distant_atom sols)
-       
+
        fun doit () =
           let
              val result = most_distant_atom (pseudoknot ())
@@ -3660,7 +3660,7 @@ structure Main =
   struct
 
   	val iterations = 1
-  
+
     fun main _ = let
 
       fun doit () = Benchmark.go ()
@@ -3671,7 +3671,7 @@ structure Main =
       fun start () = lp iterations
 
   	in
-      	RunSeq.run start
+      	(RunSeq.run start ; Process.success)
   	end
 
 end

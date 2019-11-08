@@ -6,7 +6,7 @@ fun even' 0 = true
  | even' i = odd' (i-1)
 and odd'  0 = false
  | odd'  i = even' (i-1)
- 
+
 fun even i = even' (Int.abs i)
 fun odd i  = odd' (Int.abs i)
 
@@ -24,10 +24,10 @@ structure Main =
   struct
 
   	val iterations = 2
-  
+
     fun main _ = let
 
-      fun doit () = Benchmark.go ()
+      fun doIt () = Benchmark.go ()
 
       fun lp 0 = ()
       	| lp n = (doit(); lp (n-1))
@@ -35,7 +35,7 @@ structure Main =
       fun start () = lp iterations
 
   	in
-      	RunSeq.run start
+      	(RunSeq.run doIt; Process.success)
   	end
 
 end

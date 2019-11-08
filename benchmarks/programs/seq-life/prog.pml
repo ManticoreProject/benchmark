@@ -204,13 +204,13 @@ structure Main =
           of arg :: _ => Option.getOpt (Int.fromString arg, dfltSteps)
            | _ => dfltSteps)
 
-      fun doit () =
+      fun doIt () =
         (* we test both versions! *)
         (LifeSeq.test LifeSeq.goGun iters steps ;
          LifeSeq.test LifeSeq.goShuttle iters steps)
 
   in
-      RunSeq.run doit
+      (RunSeq.run doIt; Process.success)
   end
 
   end

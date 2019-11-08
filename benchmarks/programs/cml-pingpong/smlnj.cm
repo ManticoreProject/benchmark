@@ -13,5 +13,7 @@ is
   $cml/basis.cm
   $cml/cml.cm
 
-  pingpong.sml
+  ../../common/run-seq.sml
+  ../../common/smlnj-callec.sml
 
+  pingpong.sml

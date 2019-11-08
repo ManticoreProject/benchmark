@@ -71,7 +71,7 @@ structure Main =
       fun start () = lp iterations
 
   	in
-      	RunSeq.run start
+      	(RunSeq.run start ; Process.success)
   	end
 
 end

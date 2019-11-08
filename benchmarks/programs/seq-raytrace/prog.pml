@@ -876,7 +876,7 @@ structure TestRandomScene =
   structure Main = struct
 
     (* only time it *)
-    fun go () = TestRandomScene.test()
+    fun main _ = (TestRandomScene.test() ; Process.success)
 
     (* render and dump the image to a Plain PPM file, with timing.
        use ImageMagick to generate a PNG image like so:
@@ -887,4 +887,4 @@ structure TestRandomScene =
   end
 
 (* val _ = Main.test() *)
-val _ = Main.go()
+val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

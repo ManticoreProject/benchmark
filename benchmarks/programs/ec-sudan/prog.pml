@@ -38,4 +38,8 @@ fun lp n = (case n
 
 fun doIt () = lp iterations
 
-val _ = RunSeq.run doIt
+structure Main = struct
+  fun main _ = (RunSeq.run doIt; Process.success)
+end
+
+val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

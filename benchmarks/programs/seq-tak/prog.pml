@@ -59,7 +59,7 @@ structure Main =
       fun doit () = lp iters
 
   in
-      RunSeq.run doit
+      (RunSeq.run doit; Process.success)
   end
 
   end

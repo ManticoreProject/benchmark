@@ -35,7 +35,7 @@ structure Main =
 
 
   in
-      RunSeq.run doit
+      (RunSeq.run doit; Process.success)
   end
 
   end

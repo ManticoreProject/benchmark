@@ -34,7 +34,7 @@ fun doIt () = lp iterations
 
 
 structure Main = struct
-  fun main _ = RunSeq.run doIt
+  fun main _ = (RunSeq.run doIt; Process.success)
 end
 
-val _ = Main.main ()
+val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

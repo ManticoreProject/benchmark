@@ -34,10 +34,10 @@ structure Main =
         then ()
         else (run () ; lp (n-1))
 
-      fun doit () = lp iters
+      fun doIt () = lp iters
 
   in
-      RunSeq.run doit
+      (RunSeq.run doIt; Process.success)
   end
 
   end

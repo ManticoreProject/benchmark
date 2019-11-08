@@ -154,4 +154,8 @@ fun doit () = perm9_benchmark (5, 9)
 fun loop n = if n = 0 then () else (doit() ; loop(n-1))
 
 
-val _ = RunSeq.run (fn () => loop iters)
+structure Main = struct
+  fun main _ = (RunSeq.run (fn () => loop iters); Process.success)
+end
+
+val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

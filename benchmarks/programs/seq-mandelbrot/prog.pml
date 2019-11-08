@@ -58,7 +58,7 @@ structure Main =
 
     fun main _ = let
 
-      fun doit () = Benchmark.go ()
+      fun doIt () = Benchmark.go ()
 
       fun lp 0 = ()
       	| lp n = (doit(); lp (n-1))
@@ -66,7 +66,7 @@ structure Main =
       fun start () = lp iterations
 
   	in
-      	RunSeq.run start
+      	(RunSeq.run doIt; Process.success)
   	end
 
 end

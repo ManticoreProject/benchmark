@@ -35,21 +35,4 @@ structure PingPong (*: sig
 
   end
 
-structure Main = struct
-
-    fun timeit n = let
-	  val t0 = Time.now()
-	  val () = PingPong.run n
-	  val t = (Time.now() - t0)
-	  in
-	  	Print.print(Time.toString t ^ "\n")
-	  	(*
-	    Print.print (String.concat[
-		Int.toString n, " messages in ",
-		Time.toString t, " seconds\n"
-	      ]) *)
-	  end
-
-  end
-
-val _ = Main.timeit 2000000
+val _ = RunSeq.run (fn () => PingPong.run 4000000)

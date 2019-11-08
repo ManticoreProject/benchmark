@@ -51,10 +51,10 @@ structure Main =
       fun lp 0 = ()
       	| lp n = (doit(); lp (n-1))
 
-      fun start () = lp iterations
+      fun doIt () = lp iterations
 
   	in
-      	RunSeq.run start
+      	(RunSeq.run doIt; Process.success)
   	end
 
 end
