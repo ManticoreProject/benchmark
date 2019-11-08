@@ -115,6 +115,12 @@ if test x"$BLOATY_CHECK" != x"yes" ; then
     AC_MSG_ERROR([Please install bloaty before continuing.])
 fi
 
+#### check for linux perf events in user's path
+AC_CHECK_PROG(PERF_CHECK,perf,yes)
+if test x"$PERF_CHECK" != x"yes" ; then
+    AC_MSG_ERROR([Please install Linux perf before continuing.])
+fi
+
 
 AC_SUBST(MANTICORE_ROOT)
 AC_SUBST(PMLC)

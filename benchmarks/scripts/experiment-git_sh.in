@@ -20,6 +20,7 @@ PMLC_FLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
 PRETTY_INPUT=""
 RUN_CACHEGRIND="true"  # to enable, use "true"
+RUN_PERF_REPS="3"  # positive integer of number of reps. 0 disables
 
 usage="See the README file for instructions"
 
@@ -107,6 +108,8 @@ if [ ! -e $EXPERIMENT_RESULTS_DIR ]; then
 fi
 LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.json"
 GRIND_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.cg"
+PERF_STAT_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.stat"
+PERF_DATA_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.data"
 SIZE_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-size-$DATETIME.csv"
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
@@ -192,13 +195,22 @@ fi
 if [ $SEQUENTIAL_BINARY == "true" ]; then
     cnt=0
     SEQUENTIAL_EXE=$BENCHMARK_PATH
-    # gather size info with bloaty
-    echo "running bloaty..."
-    bloaty --csv -d compileunits $SEQUENTIAL_EXE > $SIZE_FILE
-    if [ $RUN_CACHEGRIND == "true" ]; then
-      # run the executable with cachegrind once
-      echo "running cachegrind..."
-      valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $SEQUENTIAL_EXE $ARGS
+    if [ $GEN_GC_STATS == "false" ]; then
+      # gather size info with bloaty
+      echo "running bloaty..."
+      bloaty --csv -d compileunits $SEQUENTIAL_EXE > $SIZE_FILE
+      if [ $RUN_CACHEGRIND == "true" ]; then
+        # run the executable with cachegrind once
+        echo "running cachegrind..."
+        valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $SEQUENTIAL_EXE $ARGS
+      fi
+      # run the executable under perf to collect aggregate stats
+      if [ $RUN_PERF_REPS != "0" ]; then
+          echo "running perf-stat..."
+          perf stat -d -d --repeat=$RUN_PERF_REPS $SEQUENTIAL_EXE $ARGS 2> $PERF_STAT_FILE
+          echo "running perf-record..."
+          perf record --call-graph=lbr --output=$PERF_DATA_FILE $SEQUENTIAL_EXE $ARGS
+      fi
     fi
     echo "\"runs\" : [" >> $LOG_FILE
     for ((i=1;i<=NUM_TRIALS;i+=1)); do
