@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# COPYRIGHT (c) 2010 The Manticore Project (http://manticore.cs.uchicago.edu)
+# COPYRIGHT (c) 2019 The Manticore Project (http://manticore.cs.uchicago.edu)
 # All rights reserved.
 #
 # Argument is benchmark name.
@@ -21,6 +21,7 @@ SCRIPT_FILE="seq-cont-test.sh"
 RUN_ONE="run-test.sh"
 
 MANTI_BENCH_ROOT=@MANTI_BENCH_ROOT@
+SMLNJ_HEAP_FILENAME="smlnj.@SMLNJ_ARCH@-@SMLNJ_OPSYS@"
 
 rm -rf $SCRIPT_FILE $RUN_ONE
 touch $SCRIPT_FILE $RUN_ONE
@@ -72,6 +73,12 @@ if [ "$USE_MLTON" == "true" ]; then
   make mlton mlton-profile
   $MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
 fi
+
+###############
+# test SML/NJ
+make clean
+make smlnj
+$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f $SMLNJ_HEAP_FILENAME -n $NAME -d "smlnj" -t $NUM_TRIALS -s "$INPUT"
 
 EOF
 ) >> $SCRIPT_FILE

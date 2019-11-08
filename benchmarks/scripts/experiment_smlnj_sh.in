@@ -1,24 +1,27 @@
 #!/bin/bash
 #
-# COPYRIGHT (c) 2019 The Manticore Project (http://manticore.cs.uchicago.edu)
+# COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
 # All rights reserved.
 #
 # See the README file for instructions.
 
 RESULTS_DIR="@MANTI_BENCH_RESULTS@"
 SCRIPTS_DIR="@MANTI_BENCH_SCRIPTS@"
+SMLNJ="@SMLNJ_CMD@"
 INPUT=""
+BENCHMARK_EXE=""
 EXPERIMENT_NAME="experiment"
 DESCRIPTION=""
 GEN_GC_STATS="@GEN_GC_STATS@"
 NUM_TRIALS="1"
-SMLNJ_VER="@SMLNJ_VERSION@"
 
 usage="See the README file for instructions"
 
 while getopts ":s:f:n:d:t:" options;
 do
     case $options in
+        s ) INPUT="$OPTARG";;
+        f ) BENCHMARK_EXE="$OPTARG";;
         n ) EXPERIMENT_NAME="$OPTARG";;
         d ) DESCRIPTION="$OPTARG";;
         t ) NUM_TRIALS="$OPTARG";;
@@ -29,7 +32,10 @@ do
     esac
 done
 
-if [ ! -d "$RESULTS_DIR" ]; then
+if [ ! -f $BENCHMARK_EXE ]; then
+    echo "$BENCHMARK_EXE does not exist"
+    exit 1
+elif [ ! -d "$RESULTS_DIR" ]; then
     echo "Nonexistant results directory $RESULTS_DIR"
     exit 1
 fi
@@ -69,6 +75,7 @@ if [ ! -e $EXPERIMENT_RESULTS_DIR ]; then
     mkdir $EXPERIMENT_RESULTS_DIR
 fi
 LOG_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.json"
+GRIND_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.cg"
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -76,7 +83,7 @@ SCRIPT_SVN_REVISION=$( git log -n 1 --pretty=oneline | cut -d " " -f 1 )
 SCRIPT_SVN_URL=$( git log -n 1 --pretty=oneline | cut -d " " -f 1 )
 
 CURRENT_DIR=`pwd`
-BENCHMARK_PATH="$CURRENT_DIR"
+BENCHMARK_PATH="$CURRENT_DIR/$BENCHMARK_EXE"
 BENCHMARK_DIR=$( dirname $BENCHMARK_PATH )
 
 pushd $BENCHMARK_DIR > /dev/null
@@ -103,7 +110,8 @@ metadata "seq_cutoff" "0"
 
 metadata "language" "\"SML\""
 metadata "compiler" "\"smlnj\""
-metadata "version" "\"$SMLNJ_VER\""
+SMLNJ_VERSION="@SMLNJ_VERSION@"
+metadata "version" "\"$SMLNJ_VERSION\""
 
 metadata "bench_url" "\"$BENCHMARK_SVN_URL\""
 metadata "bench_svn" "\"$BENCHMARK_SVN_REVISION\""
@@ -116,13 +124,26 @@ metadata "description" "\"$DESCRIPTION\""
 # extras
 metadata "nTrials" "$NUM_TRIALS"
 
+# Build and run the benchmarks
+RUN_COMMAND="$SMLNJ @SMLload=./$BENCHMARK_EXE"
+
+
+# NOTE: this does not currently work. It seems cachegrind only measures the
+# time to execute the `sml` shell script, and doesn't track the process
+# after that script performs an `exec`, since the output of the cache info
+# comes out well before the running time of the program, and is too low.
+
+# run the executable with cachegrind once
+# echo "running cachegrind..."
+# valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $RUN_COMMAND $INPUT
+
 echo "Logging performance results to $LOG_FILE"
 
 cnt=0
 echo "\"runs\" : [" >> $LOG_FILE
 for ((i=1;i<=NUM_TRIALS;i+=1)); do
-    echo "make smlnj"
-    RES=$( make smlnj )
+    echo "$RUN_COMMAND $INPUT"
+    RES=$( $RUN_COMMAND $INPUT )
     if [ $? == "0" ]; then
         echo -n -e "\t\t{ \"n_procs\" : 0,\t\t\"time_sec\" : " >> $LOG_FILE
         echo -n -e "$RES" >> $LOG_FILE

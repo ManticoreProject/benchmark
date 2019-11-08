@@ -122,6 +122,8 @@ AC_SUBST(LOG_WORK_STEALING)
 AC_SUBST(PMLCFLAGS)
 AC_SUBST(GEN_GC_STATS)
 AC_SUBST(SMLNJ_CMD)
+AC_SUBST(SMLNJ_ARCH)
+AC_SUBST(SMLNJ_OPSYS)
 
 AC_CONFIG_FILES(\
 dnl ***** Makefiles *****
@@ -177,5 +179,8 @@ AC_CONFIG_FILES(
 AC_CONFIG_FILES(
   [scripts/experiment-mlton.sh:scripts/experiment_mlton_sh.in],
   [chmod +x scripts/experiment-mlton.sh])
+AC_CONFIG_FILES(
+  [scripts/experiment-smlnj.sh:scripts/experiment_smlnj_sh.in],
+  [chmod +x scripts/experiment-smlnj.sh])
 
 AC_OUTPUT
