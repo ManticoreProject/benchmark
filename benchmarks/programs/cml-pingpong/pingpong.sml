@@ -37,6 +37,24 @@ structure PingPong : sig
 
 structure Main = struct
 
-    fun main _ = (RunSeq.run (fn () => PingPong.run 2000000); OS.Process.success)
+    fun timeit n = let
+	  fun thd () = let
+		val t0 = Time.now()
+		val () = PingPong.run n
+		val t = Time.-(Time.now(), t0)
+		in
+    TextIO.print(concat[
+        Time.toString t, "\n"
+      ])
+		  (* TextIO.print(concat[
+		      Int.toString n, " messages in ",
+		      Time.toString t, " seconds\n"
+		    ]) *)
+		end
+	  in
+	    RunCML.doit (thd, NONE)
+	  end
+
+    fun main _ = (timeit 4000000; OS.Process.success)
 
   end
