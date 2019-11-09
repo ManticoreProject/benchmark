@@ -35,6 +35,7 @@ pushd ../benchmarks
 autoconf -Iconfig
 ./configure --with-manticore="$MC" --with-resultsdir="$RES"
 scripts/gen-input-data.sh
+scripts/gen-all-makefiles.sh
 set +e
 
 # NOTE: for all of these, it would be handy to do a run with `perf record`

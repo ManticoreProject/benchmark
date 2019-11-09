@@ -2,6 +2,6 @@ local
     $(SML_LIB)/basis/basis.mlb
     ../../common/run-seq.sml
 in
-    compat.sml
+    params.sml
     prog.sml
 end

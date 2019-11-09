@@ -5,7 +5,7 @@
     It shares this property with the Ackermann function.
 *)
 
-fun sudan (n, x, y) =
+fun sudan (n : Params.t, x : Params.t, y : Params.t) =
   if n = 0
     then x + y
   else if y = 0
@@ -20,9 +20,9 @@ fun sudan (n, x, y) =
 
 
 
-val iterations = 10000000
-val input = (2, 2, 2)
-val output : long = 15569256417
+val iterations = Params.iterations
+val input = Params.input
+val output = Params.output
 
 (* val _ = Print.printLn (Long.toString (sudan input)) *)
 

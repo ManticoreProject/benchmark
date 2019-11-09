@@ -1,6 +1,7 @@
 Library
 
   structure Main
+  structure Params
 
 is
 
@@ -9,5 +10,5 @@ is
 
   ../../common/run-seq.sml
 
-  compat.sml
+  params.sml
   prog.sml
