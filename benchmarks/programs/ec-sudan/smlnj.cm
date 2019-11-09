@@ -1,6 +1,7 @@
 Library
 
   structure Main
+  structure Params
 
 is
 
@@ -11,4 +12,5 @@ is
   ../../common/run-seq.sml
   ../../common/smlnj-callec.sml
 
+  params.sml
   prog.sml
