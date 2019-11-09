@@ -38,7 +38,7 @@ fun mas (x, y, z) =
 
 
 
-fun go _ = mas (l18, l12, l6)
+fun go _ = List.length (mas (l18, l12, l6))
 
 end
 
