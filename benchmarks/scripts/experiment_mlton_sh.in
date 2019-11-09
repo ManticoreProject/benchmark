@@ -131,28 +131,29 @@ metadata "description" "\"$DESCRIPTION\""
 metadata "nTrials" "$NUM_TRIALS"
 
 # Build and run the benchmarks
+SEQUENTIAL_EXE=$BENCHMARK_PATH
 
 # gather size info with bloaty
 echo "running bloaty..."
-bloaty --csv "./$BENCHMARK_EXE" > $SIZE_FILE
+bloaty --csv "$SEQUENTIAL_EXE" > $SIZE_FILE
 # run the executable with cachegrind once
 echo "running cachegrind..."
-valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" "./$BENCHMARK_EXE" $INPUT
+valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" "$SEQUENTIAL_EXE" $INPUT
 
 if [ $RUN_PERF_REPS != "0" ]; then
   # run the executable under perf to collect aggregate stats
   echo "running perf-stat..."
   perf stat -d -d --repeat=$RUN_PERF_REPS $SEQUENTIAL_EXE $ARGS 2> $PERF_STAT_FILE
   echo "running perf-record..."
-  perf record --call-graph=lbr --output=$PERF_DATA_FILE $SEQUENTIAL_EXE $ARGS
+  perf record --call-graph=lbr --output="$PERF_DATA_FILE" $SEQUENTIAL_EXE $ARGS
 fi
 
 # run the profiled version of the executable, if available
-if [ -e $"./${BENCHMARK_EXE}-profile" ]; then
+if [ -e $"${SEQUENTIAL_EXE}-profile" ]; then
     echo "running profiled version..."
-    ./${BENCHMARK_EXE}-profile
+    ${SEQUENTIAL_EXE}-profile
     mv ./mlmon.out $MLMON_FILE
-    cp ./${BENCHMARK_EXE}-profile $PROF_EXE
+    cp ${SEQUENTIAL_EXE}-profile $PROF_EXE
 fi
 
 echo "Logging performance results to $LOG_FILE"
@@ -160,8 +161,8 @@ echo "Logging performance results to $LOG_FILE"
 cnt=0
 echo "\"runs\" : [" >> $LOG_FILE
 for ((i=1;i<=NUM_TRIALS;i+=1)); do
-    echo "./$BENCHMARK_EXE $INPUT"
-    RES=$( ./$BENCHMARK_EXE $INPUT )
+    echo "$SEQUENTIAL_EXE $INPUT"
+    RES=$( $SEQUENTIAL_EXE $INPUT )
     if [ $? == "0" ]; then
         echo -n -e "\t\t{ \"n_procs\" : 0,\t\t\"time_sec\" : " >> $LOG_FILE
         echo -n -e "$RES" >> $LOG_FILE

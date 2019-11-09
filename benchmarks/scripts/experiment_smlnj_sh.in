@@ -143,9 +143,9 @@ RUN_COMMAND="$SMLNJ @SMLload=./$BENCHMARK_EXE"
 if [ $RUN_PERF_REPS != "0" ]; then
   # run the executable under perf to collect aggregate stats
   echo "running perf-stat..."
-  perf stat -d -d --repeat=$RUN_PERF_REPS $SEQUENTIAL_EXE $ARGS 2> $PERF_STAT_FILE
+  perf stat -d -d --repeat=$RUN_PERF_REPS $RUN_COMMAND $ARGS 2> $PERF_STAT_FILE
   echo "running perf-record..."
-  perf record --call-graph=lbr --output=$PERF_DATA_FILE $SEQUENTIAL_EXE $ARGS
+  perf record --call-graph=lbr --output="$PERF_DATA_FILE" $RUN_COMMAND $ARGS
 fi
 
 echo "Logging performance results to $LOG_FILE"

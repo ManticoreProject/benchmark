@@ -209,7 +209,7 @@ if [ $SEQUENTIAL_BINARY == "true" ]; then
           echo "running perf-stat..."
           perf stat -d -d --repeat=$RUN_PERF_REPS $SEQUENTIAL_EXE $ARGS 2> $PERF_STAT_FILE
           echo "running perf-record..."
-          perf record --call-graph=lbr --output=$PERF_DATA_FILE $SEQUENTIAL_EXE $ARGS
+          perf record --call-graph=lbr --output="$PERF_DATA_FILE" $SEQUENTIAL_EXE $ARGS
       fi
     fi
     echo "\"runs\" : [" >> $LOG_FILE
