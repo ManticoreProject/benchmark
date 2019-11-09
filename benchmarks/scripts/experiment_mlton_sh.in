@@ -14,6 +14,7 @@ EXPERIMENT_NAME="experiment"
 DESCRIPTION=""
 GEN_GC_STATS="@GEN_GC_STATS@"
 NUM_TRIALS="1"
+RUN_PERF_REPS="3"  # positive integer of number of reps. 0 disables
 
 usage="See the README file for instructions"
 
@@ -79,6 +80,8 @@ GRIND_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.cg"
 SIZE_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-size-$DATETIME.csv"
 MLMON_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME-mlmon.out"
 PROF_EXE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DATETIME-mlton-profile.exe"
+PERF_STAT_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.stat"
+PERF_DATA_FILE="$EXPERIMENT_RESULTS_DIR/$EXPERIMENT_NAME-$DESCRIPTION-$DATETIME.data"
 DATETIME_SML=${DATETIME//-/_}
 DATETIME_MD=$( date +"%F %H:%M:%S" )
 
@@ -135,6 +138,14 @@ bloaty --csv "./$BENCHMARK_EXE" > $SIZE_FILE
 # run the executable with cachegrind once
 echo "running cachegrind..."
 valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" "./$BENCHMARK_EXE" $INPUT
+
+if [ $RUN_PERF_REPS != "0" ]; then
+  # run the executable under perf to collect aggregate stats
+  echo "running perf-stat..."
+  perf stat -d -d --repeat=$RUN_PERF_REPS $SEQUENTIAL_EXE $ARGS 2> $PERF_STAT_FILE
+  echo "running perf-record..."
+  perf record --call-graph=lbr --output=$PERF_DATA_FILE $SEQUENTIAL_EXE $ARGS
+fi
 
 # run the profiled version of the executable, if available
 if [ -e $"./${BENCHMARK_EXE}-profile" ]; then
