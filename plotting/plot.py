@@ -10,6 +10,13 @@ from scipy import stats
 
 import gather_data
 
+# Controls for calculating confidence interval
+#  - if "sd", uses standard deviation instead.
+#  - if a in [0.0, 100.0], computes and shows a% bootstrapped confidence interval.
+#  - if None, disables error bars
+confidence = 95
+nboot = 1000    # 1000 is the default in seaborn. we're being explicit here.
+
 # ALL EC programs
 ec_programs = set([ "ec-ack",
                     "ec-fib",
@@ -106,7 +113,8 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="vmsize", y="problem_name", hue="description", data=summed,
-                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h")
+                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                ci=None)
 
     g.set_xlabels("In-Memory Code Size (KiB)")
     g.set_ylabels("Benchmark Program")
@@ -177,7 +185,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
                 kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
-                errwidth=1.125, capsize=0.0625)
+                errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot)
     g.set_ylabels("Benchmark Program")
     g.set_xlabels("Relative Running Time (Lower is better)".format(baseline))
     g._legend.set_title('Stack Kind')
@@ -268,7 +276,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
                 kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
-                errwidth=1.125, capsize=0.0625)
+                errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot)
     g.set_ylabels("Benchmark Program")
     g.set_xlabels(event_name)
     g._legend.set_title('Stack Kind')
