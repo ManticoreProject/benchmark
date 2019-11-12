@@ -7,6 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy import stats
+from  matplotlib.ticker import PercentFormatter
 
 import gather_data
 
@@ -292,6 +293,10 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     g.set_xlabels(event_name)
     g._legend.set_title('Stack Kind')
 
+    for ax in g.axes.flat:
+        # set x axis to use the percent formatter
+        ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
+
     plt.xlim(xBounds)
 
     # plt.show()
@@ -377,17 +382,17 @@ def main(dir, progs, kinds, baseline, cached, plots):
                 cat = "+".join(fileCategory)
                 prefix = cat + "__" + prefix
 
-                cachegrind_event_pct(data['cache'], cat + " Conditional branch miss rate % ", 'Bcm', 'Bc', dir, fileCategory, subset, prefix + "CBR_miss.pdf")
-                cachegrind_event_pct(data['cache'], cat + " Indirect branch miss rate  % ", 'Bim', 'Bi', dir, fileCategory, subset, prefix + "IBR_miss.pdf")
+                cachegrind_event_pct(data['cache'], cat + " Conditional branch miss rate", 'Bcm', 'Bc', dir, fileCategory, subset, prefix + "CBR_miss.pdf")
+                cachegrind_event_pct(data['cache'], cat + " Indirect branch miss rate", 'Bim', 'Bi', dir, fileCategory, subset, prefix + "IBR_miss.pdf")
 
                 for level in cacheLevels:
-                    cachegrind_event_pct(data['cache'], cat + " L" + level + " I-cache read miss rate % ",\
+                    cachegrind_event_pct(data['cache'], cat + " L" + level + " I-cache read miss rate",\
                         'I' + level + 'mr', 'Ir', dir, fileCategory, subset, prefix + "L" + level + "Ir_miss.pdf")
 
-                    cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache read miss rate % ",\
+                    cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache read miss rate",\
                         'D' + level + 'mr', 'Dr', dir, fileCategory, subset, prefix + "L" + level + "Dr_miss.pdf")
 
-                    cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache write miss rate % ",\
+                    cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache write miss rate",\
                         'D' + level + 'mw', 'Dw', dir, fileCategory, subset, prefix + "L" + level + "Dw_miss.pdf")
 
 
