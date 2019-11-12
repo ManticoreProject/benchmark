@@ -17,6 +17,9 @@ import gather_data
 confidence = 95
 nboot = 1000    # 1000 is the default in seaborn. we're being explicit here.
 
+# ALL CML programs
+cml_programs = set(["cml-spawn", "cml-pingpong"])
+
 # ALL EC programs
 ec_programs = set([ "ec-ack",
                     "ec-fib",
@@ -53,18 +56,26 @@ seq_programs = set([
                 ])
 
 
-# Special subsets
+# Special subsets of sequential programs.
 
 toy_seq = set([
              "seq-ack",
              "seq-divrec",
              "seq-fib",
+             "seq-nqueens",
+             "seq-merge",
+             "seq-motzkin",
+             "seq-sudan",
              "seq-tak",
-             "seq-takl",
-             "seq-sudan"
+             "seq-takl"
             ])
 
-tail_seq = set(["seq-cpstak", "seq-evenodd", "seq-loop", "seq-tailfib"])
+tail_seq = set(["seq-cpstak",
+                "seq-evenodd",
+                "seq-loop",
+                "seq-mandelbrot",
+                "seq-tailfib"
+                ])
 
 real_seq = seq_programs - toy_seq - tail_seq
 
