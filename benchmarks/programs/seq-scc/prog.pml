@@ -126,7 +126,7 @@ end
 structure Main =
   struct
 
-      val iterations = 100
+      val iterations = 3
 
     (* Figure 6.4 from SLPJ 87
       answer should be:
