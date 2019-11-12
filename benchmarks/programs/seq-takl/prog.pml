@@ -14,7 +14,7 @@ fun list_n n =
 
 val l18 = list_n 40
 val l12 = list_n 20
-val l6  = list_n 12
+val l6  = list_n 11
 
 (* Part of the fun of this benchmark is seeing how well the compiler
    can understand this ridiculous code, which dates back to the original
@@ -47,7 +47,7 @@ structure Main =
   struct
 
     val iterations = 1
-    val ans = 13
+    val ans = 12
 
     fun main _ = let
 
