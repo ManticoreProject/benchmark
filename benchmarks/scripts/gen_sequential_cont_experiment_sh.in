@@ -48,7 +48,7 @@ EOF
 cat <<EOF
 #!/bin/bash
 
-OPT_LVL="-O3"
+OPT_LVL="-O0"
 
 ./run-test.sh "$HACK_OPT_LVL" "cps"
 
