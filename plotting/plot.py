@@ -341,7 +341,7 @@ def main(dir, progs, kinds, baseline, cached, plots):
         kinds = kinds.split(",")
         assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
 
-    data = gather_data.load(dir, progs, kinds, cached)
+    data = gather_data.load(dir, progs, kinds, cached, plots)
 
     print("finished loading. now producing plots...")
 

@@ -95,7 +95,7 @@ def _addTo(cur, new):
     return cur.append(new, sort=False)
 
 
-def load(dir, progs, kinds, cached):
+def load(dir, progs, kinds, cached, plots):
     '''
     given a path to a directory, and a list of
     program names, loads the available data
@@ -110,28 +110,41 @@ def load(dir, progs, kinds, cached):
     sizeDataSet = None
     cacheDataSet = None
 
+    wantTime = plots == [] or "time" in plots
+    wantSize = plots == [] or "size" in plots
+    wantCG   = plots == [] or "cg" in plots
+
     if not cached:
         for prog in progs:
             dataDir = os.path.join(dir, prog)
             for kind in kinds:
-                obsDataSet = _addTo(obsDataSet, _collectMantiBenchData(kind, dataDir))
-                sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, dataDir))
-                cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, dataDir))
+                if wantTime:
+                    obsDataSet = _addTo(obsDataSet, _collectMantiBenchData(kind, dataDir))
+                if wantSize:
+                    sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, dataDir))
+                if wantCG:
+                    cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, dataDir))
 
-        obsDataSet.reset_index(inplace=True)
-        sizeDataSet.reset_index(inplace=True)
-        cacheDataSet.reset_index(inplace=True)
+        if wantTime:
+            obsDataSet.reset_index(inplace=True)
+            obsDataSet.to_csv(obsFile, index=False)
 
-        # create cache
-        obsDataSet.to_csv(obsFile, index=False)
-        sizeDataSet.to_csv(sizeFile, index=False)
-        cacheDataSet.to_csv(cacheGrindFile, index=False)
+        if wantSize:
+            sizeDataSet.reset_index(inplace=True)
+            sizeDataSet.to_csv(sizeFile, index=False)
+
+        if wantCG:
+            cacheDataSet.reset_index(inplace=True)
+            cacheDataSet.to_csv(cacheGrindFile, index=False)
 
     else:
-        # load cache
-        obsDataSet = pd.read_csv(obsFile)
-        sizeDataSet = pd.read_csv(sizeFile)
-        cacheDataSet = pd.read_csv(cacheGrindFile)
+        # load cached data
+        if wantTime:
+            obsDataSet = pd.read_csv(obsFile)
+        if wantSize:
+            sizeDataSet = pd.read_csv(sizeFile)
+        if wantCG:
+            cacheDataSet = pd.read_csv(cacheGrindFile)
 
     data = {}
     data['obs'] = obsDataSet
