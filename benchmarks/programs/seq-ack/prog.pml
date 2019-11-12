@@ -1,7 +1,8 @@
 
 (*
    A version of Ackermann function from Larcenry benchmarks: http://www.larcenists.org/benchmarksAboutR6.html
-   we use the same (3, 12) input with 2 iterations as they do.
+   They use (3, 12) input with 2 iterations, but that's too much for some
+   strategies when converted to use callec.
 *)
 
 fun ack (m,n) =
@@ -13,9 +14,9 @@ fun ack (m,n) =
         ack(m - 1, ack (m, n - 1))
 
 
-val iterations = 2
-val input = (3, 12)
-val output = 32765
+val iterations = 4
+val input = (3, 11)   (* (3, n) => 2^(n+3) - 3 *)
+val output = 16381
 
 (* val _ = Print.printLn (Int.toString (ack input)) *)
 

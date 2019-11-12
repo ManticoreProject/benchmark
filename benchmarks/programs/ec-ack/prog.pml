@@ -14,9 +14,9 @@ fun ack (m, n) k =
         ack(m - 1, Cont.callec(ack (m, n - 1))) k
 
 
-val iterations = 3
-val input = (3, 10)   (* (3, n) => 2^(n+3) - 3 *)
-val output = 8189
+val iterations = 4
+val input = (3, 11)   (* (3, n) => 2^(n+3) - 3 *)
+val output = 16381
 
 (* val _ = Print.printLn (Int.toString (ack input)) *)
 
