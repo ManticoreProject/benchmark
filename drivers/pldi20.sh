@@ -30,6 +30,8 @@ fi
 ########
 # prepare benchmarks
 
+# TO GENERATE GC STATS VERSIONS, RUN CONFIGURE WITH: --with-gcstats
+
 set -e
 pushd ../benchmarks
 autoconf -Iconfig
@@ -37,14 +39,6 @@ autoconf -Iconfig
 scripts/gen-input-data.sh
 scripts/gen-all-makefiles.sh
 set +e
-
-# NOTE: for all of these, it would be handy to do a run with `perf record`
-# and dump that file to the dir with all the other stuff so you can manually
-# or automatically process it to pin-point what's going on.
-
-# TODO: test performance of segstack with -stacksz set at various sizes
-# you'll want to pick the best one of the handful for the new default.
-# 4k, 8k, 16k, 32k, 64k, not much morethan 256.
 
 # TODO: add these FFI tests:   ffi-fib, ffi-trigfib
 # you'll need versions with -Ccshim=true and without it (NOT false).
@@ -60,9 +54,6 @@ set +e
 # manticore versions.
 
 # TODO: test performance of segstack with -lazyunderflow on all tests
-
-# TODO: test performance of segstack and resize stack with -sealingcapture
-# in EC and CML tests.
 
 ##################
 # 1. text file with summary of contributions in paper repo.
@@ -104,6 +95,16 @@ ec_tests=(
     "ec-motzkin"
     "ec-sudan"
     "ec-tak"
+)
+
+cml_tests=(
+    "cml-spawn"
+    "cml-pingpong"
+)
+
+ffi_tests=(
+  "ffi-fib"
+  "ffi-trigfib"
 )
 
 # run sequential tests that do not use callec.
