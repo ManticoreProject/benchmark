@@ -138,7 +138,7 @@ RUN_COMMAND="$SMLNJ @SMLload=./$BENCHMARK_EXE"
 
 # run the executable with cachegrind once
 # echo "running cachegrind..."
-# valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $RUN_COMMAND $INPUT
+valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $RUN_COMMAND $INPUT
 
 if [ $RUN_PERF_REPS != "0" ]; then
   # run the executable under perf to collect aggregate stats
