@@ -14,6 +14,12 @@ fi
 INPUT=$2
 NUM_TRIALS=$3
 USE_MLTON=$4
+BINARY_NAME=$5
+
+# if not provided, assume it's mc-seq
+if [ -z "$BINARY_NAME" ]; then
+  BINARY_NAME="mc-seq"
+fi
 
 # DESCRIPTION="BACKEND TEST"
 SCRIPT_FILE="seq-cont-test.sh"
@@ -27,19 +33,23 @@ rm -rf $SCRIPT_FILE $RUN_ONE
 touch $SCRIPT_FILE $RUN_ONE
 
 # because the multi-line strings below want to do substitutions,
-# we wrap the intended string so it's substituted.
+# we wrap the intended string so it's substituted. the prefix "HACK"
+# means we're wrapping that variable so it's not subsituted at the wrong time.
 HACK1='$1'
 HACK2='$2'
 HACK_OPT_LVL='$OPT_LVL'
+HACK_DESCRIP='$DESCRIP'
 
 (
 cat <<EOF
 #!/bin/bash
 
-BACKEND=$HACK1 $MANTI_BENCH_ROOT/scripts/gen-makefile.sh
+BACKEND=$HACK1
+DESCRIP="${HACK2}-${BINARY_NAME}"
+$MANTI_BENCH_ROOT/scripts/gen-makefile.sh
 make clean
-make mc-seq
-$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f mc-seq -e -n $NAME -d $HACK2 -t $NUM_TRIALS -s "$INPUT"
+make $BINARY_NAME
+$MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $BINARY_NAME -e -n $NAME -d $HACK_DESCRIP -t $NUM_TRIALS -s "$INPUT"
 
 EOF
 ) >> $RUN_ONE

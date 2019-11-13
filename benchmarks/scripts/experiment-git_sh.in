@@ -176,6 +176,7 @@ metadata "username" "\"$EXPERIMENTOR\""
 metadata "datetime" "\"$DATETIME_MD\""
 metadata "machine" "\"$MACHINE\""
 metadata "description" "\"$DESCRIPTION\""
+metadata "gc_stats" "\"$GEN_GC_STATS\""
 
 # extras
 metadata "pmlcFlags" "\"$PMLC_FLAGS\""

@@ -30,6 +30,10 @@ mc-par:	mc.mlb $PML_FILES
 	$PMLC $PMLCFLAGS $BACKEND -o mc-par mc.mlb
 mc-seq:	mc-seq.mlb $PML_FILES
 	$PMLC $PMLCFLAGS $BACKEND -sequential -o mc-seq mc-seq.mlb
+mc-seq-noshim:	mc-seq.mlb $PML_FILES
+	$PMLC $PMLCFLAGS $BACKEND -sequential -Ccshim=false -o mc-seq-noshim mc-seq.mlb
+mc-seq-shim:	mc-seq.mlb $PML_FILES
+	$PMLC $PMLCFLAGS $BACKEND -sequential -Ccshim=true -o mc-seq-shim mc-seq.mlb
 mc-seq-elision:	mc.mlb $PML_FILES
 	$PMLC $PMLCFLAGS $BACKEND -sequential -o mc-seq-elision mc.mlb
 mc-par-log:	mc.mlb $PML_FILES
@@ -45,7 +49,7 @@ smlnj:	smlnj.cm $SML_FILES
 
 .PHONY: clean
 clean:
-	rm -rf mc-par mc-seq mc-seq-elision mlton mlton-profile mlmon.out smlnj.x86.* smlnj.amd64.* *.s .cm *.ll *.bc
+	rm -rf mc-par mc-seq mc-seq-shim mc-seq-noshim mc-seq-elision mlton mlton-profile mlmon.out smlnj.x86.* smlnj.amd64.* *.s .cm *.ll *.bc
 
 EOF
 ) >> Makefile
