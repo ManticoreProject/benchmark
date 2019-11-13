@@ -4,6 +4,7 @@ import click
 import os
 
 import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy import stats
@@ -23,7 +24,6 @@ cml_programs = set(["cml-spawn", "cml-pingpong"])
 
 # ALL EC programs
 ec_programs = set([ "ec-ack",
-                    "ec-fib",
                     "ec-loop",
                     "ec-motzkin",
                     "ec-sudan",
@@ -140,7 +140,7 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 
 
 ################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", height=9, aspect=1.2941):
+def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", height=11, aspect=0.772727273):
     df = df.copy()
 
     if subset:
@@ -160,7 +160,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
         def f(row):
             if row['problem_name'] == prog:
-                return row['time_sec'] / baselineAvg
+                return (row['time_sec'] / baselineAvg) - 1.0
             else:
                 return row['time_sec']
 
@@ -168,11 +168,11 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
 
     # compute an average among the different stack kinds.
-    # NOTE: we use geomean instead of arithmetic because the speedup is unbounded.
+    # NOTE: we use arithmetic mean because some values may be zero.
     average = {"problem_name": [], "description": [], "time_sec": []}
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["time_sec"]
-        gmean = stats.gmean(allTimes)
+        gmean = allTimes.mean() # stats.gmean(allTimes)
         average["problem_name"].append("AVERAGE")
         average["description"].append(kind)
         average["time_sec"].append(gmean)
@@ -180,30 +180,43 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     gmeanRows = pd.DataFrame.from_dict(average)
     df = df.append(gmeanRows, sort=False)
 
+    # drop all data involving baseline, since we're now relative to that.
+    df = df[df["description"] != baseline]
 
     # cap the max
-    xBounds = (0, 2.0)
+    xBounds = (-1.0, 1.0)
 
     # make prog names nicer to read
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
 
-    # stack kind ordering. baseline in front, then the rest sorted alphabetically
+    # stack kind ordering sort alphabetically
     order = list(df['description'].unique())
     order.sort()
-    order.remove(baseline)
-    order = [baseline] + order
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    # sns.set(font_scale=2)
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
                 kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
-                errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot)
+                errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     g.set_ylabels("Benchmark Program")
-    g.set_xlabels("Relative Running Time (Lower is better)".format(baseline))
-    g._legend.set_title('Stack Kind')
+    g.set_xlabels("Running Time Difference Relative to \"" + baseline + "\" (lower is better)".format(baseline))
 
     plt.xlim(xBounds)
-    plt.axvline(x=1, color='black')
+    plt.axvline(x=0, color='black')
+
+    # https://stackoverflow.com/questions/45201514/edit-seaborn-legend
+    leg = g.axes.flat[0].get_legend()
+    new_title = "Stack Kind"
+    leg.set_title(new_title)
+
+    for ax in g.axes.flat:
+        # set x axis to use the percent formatter
+        ax.xaxis.set_major_formatter(PercentFormatter(xmax=1.0))
+
+    leftB, rightB = xBounds
+    numTicks = 11
+    g.set(xticks=np.linspace(leftB,rightB, numTicks))
 
     # plt.show()
     g.fig.savefig(os.path.join(dir, filename))
@@ -293,6 +306,10 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     g.set_xlabels(event_name)
     g._legend.set_title('Stack Kind')
 
+    leftB, rightB = xBounds
+    numTicks = 11
+    g.set(xticks=np.linspace(leftB,rightB, numTicks))
+
     for ax in g.axes.flat:
         # set x axis to use the percent formatter
         ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
@@ -313,7 +330,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
                help="Comma-seperated list of programs to analyze. PREFIX* is specially recognized as a pattern.")
 @click.option("--kinds", default="", type=str,
                help="Comma-seperated list of kinds to analyze (cps, segstack, etc)")
-@click.option("--baseline", default="contig", type=str,
+@click.option("--baseline", default="cps", type=str,
                help="The baseline kind to compare with in relative plots.")
 @click.option("--cached", is_flag=True, default=False, type=bool,
                 help="Uses data from the CSV cache dumped by an earlier run.")
@@ -352,6 +369,10 @@ def main(dir, progs, kinds, baseline, cached, plots):
 
     ###################
     # PLOTS!!
+
+    # There are five preset seaborn themes: darkgrid, whitegrid, dark, white, and ticks
+    # https://seaborn.pydata.org/tutorial/aesthetics.html
+    sns.set_style("whitegrid")
 
 
     subsets = [
