@@ -222,11 +222,10 @@ if [ $SEQUENTIAL_BINARY == "true" ]; then
             echo -n -e "$RES" >> $LOG_FILE
             echo -n -e ",\t\t" >> $LOG_FILE
             if [ $GEN_GC_STATS == "false" ]; then
-                echo -n -e "\"gc\" : []" >> $LOG_FILE
+                echo -n -e "\"gc\" : {}" >> $LOG_FILE
             else
-                echo -n -e "\"gc\" : \"" >> $LOG_FILE
+                echo -n -e "\"gc\" : " >> $LOG_FILE
                 cat stats.json >> $LOG_FILE
-                echo -n -e "\"" >> $LOG_FILE
                 rm -rf stats.json
             fi
         else
@@ -271,7 +270,7 @@ else
             echo -n -e "$RES" >> $LOG_FILE
             echo -n -e ",\t\t" >> $LOG_FILE
             if [ $GEN_GC_STATS == "false" ]; then
-                echo -n -e "\"gc\" : []" >> $LOG_FILE
+                echo -n -e "\"gc\" : {}" >> $LOG_FILE
             else
                 echo -n -e "\"gc\" :" >> $LOG_FILE
                 cat stats.json >> $LOG_FILE

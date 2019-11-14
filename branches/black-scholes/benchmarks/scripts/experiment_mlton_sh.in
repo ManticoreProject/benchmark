@@ -143,7 +143,7 @@ for ((i=1;i<=NUM_TRIALS;i+=1)); do
 	echo -n -e "\t\t{ \"n_procs\" : 0,\t\t\"time_sec\" : " >> $LOG_FILE
 	echo -n -e "$RES" >> $LOG_FILE
 	echo -n -e ",\t\t" >> $LOG_FILE
-	echo -n -e "\"gc\" : []" >> $LOG_FILE
+	echo -n -e "\"gc\" : {}" >> $LOG_FILE
     else
 	echo "Benchmark failed unexpectedly with nonzero return code"
 	exit 1
