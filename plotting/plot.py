@@ -24,6 +24,7 @@ cml_programs = set(["cml-spawn", "cml-pingpong"])
 
 # ALL EC programs
 ec_programs = set([ "ec-ack",
+                    "ec-fib",
                     "ec-loop",
                     "ec-motzkin",
                     "ec-sudan",

@@ -101,6 +101,7 @@ seq_tests=(
 # also, they should be run with -sequential for ideal performance.
 ec_tests=(
     "ec-ack"
+    "ec-fib"
     "ec-loop"
     "ec-motzkin"
     "ec-sudan"
