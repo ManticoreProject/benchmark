@@ -18,6 +18,11 @@ RUN_PERF_REPS="3"  # positive integer of number of reps. 0 disables
 
 usage="See the README file for instructions"
 
+if [ $GEN_GC_STATS == "true" ]; then
+  echo "Skipping MLton experiment because GC Stats was configured."
+  exit 0
+fi
+
 while getopts ":s:f:n:d:t:" options;
 do
     case $options in
