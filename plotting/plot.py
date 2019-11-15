@@ -145,12 +145,19 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
-def addLabels():
+def addLabels(plt, ax, x_max):
+    label_max = x_max - 0.28
+
+    rects = ax.patches
     # For each bar: Place a label
     for rect in rects:
         # Get X and Y placement of label from rect.
         x_value = rect.get_width()
+        x_pos = x_value
         y_value = rect.get_y() + rect.get_height() / 2
+
+        if x_pos > label_max:
+            x_pos = label_max
 
         # Number of points between bar and label. Change to your liking.
         space = 5
@@ -158,19 +165,19 @@ def addLabels():
         ha = 'left'
 
         # If value of bar is negative: Place label left of bar
-        if x_value < 0:
+        if x_pos < 0:
             # Invert space to place label to the left
             space *= -1
             # Horizontally align label at right
             ha = 'right'
 
         # Use X value as label and format number with one decimal place
-        label = "{:.1f}".format(x_value)
+        label = decimal.Decimal("{:.2f}".format(x_value)).normalize()
 
         # Create annotation
         plt.annotate(
             label,                      # Use `label` as label
-            (x_value, y_value),         # Place label at end of the bar
+            (x_pos, y_value),         # Place label at end of the bar
             xytext=(space, 0),          # Horizontally shift label by `space`
             textcoords="offset points", # Interpret `xytext` as offset in points
             va='center',                # Vertically center label
@@ -224,7 +231,9 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     df = df[df["description"] != baseline]
 
     # cap the max
-    xBounds = (0.0, 3.0)
+    xMin = 0.0
+    xMax = 3.0
+    xBounds = (xMin, xMax)
 
     # make prog names nicer to read
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
@@ -243,12 +252,15 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     g.set_xlabels("Speedup relative to \"" + baseline + "\" (higher is better)".format(baseline))
 
     plt.xlim(xBounds)
-    plt.axvline(x=1, color='black')
+    plt.axvline(x=1, color='gray')
 
     # https://stackoverflow.com/questions/45201514/edit-seaborn-legend
-    leg = g.axes.flat[0].get_legend()
+    ax = g.axes.flat[0]
+    leg = ax.get_legend()
     new_title = "Stack Kind"
     leg.set_title(new_title)
+
+    addLabels(plt, ax, xMax)
 
     # https://matplotlib.org/3.1.1/gallery/ticks_and_spines/tick-formatters.html
     # https://stackoverflow.com/a/11227743
