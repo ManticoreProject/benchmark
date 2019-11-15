@@ -398,6 +398,17 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 
 
 
+# TPI = time per instruction executed.
+def cachegrind_tpi(cg_df, time_df, dir, filename="cg_tpi.pdf", height=9, aspect=1.2941):
+    cg_df = cg_df.copy()
+    time_df = time_df.copy()
+    
+    # TODO plot nanoseconds per instruction
+
+
+
+
+
 
 @click.command()
 @click.option("--dir", default=True, type=str,
@@ -478,6 +489,9 @@ def main(dir, progs, kinds, baseline, cached, plots):
 
     # CACHEGRIND
     if plots == [] or "cg" in plots:
+
+        cachegrind_tpi(df['cache'], df['time'])
+
         categories = [["code"], ["mcrt", "misc"]]
         cacheLevels = ["1"] # the options are: "1" and "L"
         for fileCategory in categories:
