@@ -87,6 +87,10 @@ tail_seq = set(["seq-cpstak",
 
 real_seq = seq_programs - toy_seq - tail_seq
 
+# human-readable floats, limited to at most 2 digits after the point.
+def float2lab(x):
+    return str(decimal.Decimal("{:.2f}".format(x)).normalize())
+
 # pattern-matching object to categorize files contributing to the compile unit.
 # NOTE: this is for manticore
 mantiCategorize = [
@@ -146,7 +150,7 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
 def addLabels(plt, ax, x_max):
-    label_max = x_max - 0.28
+    label_max = x_max - 0.14
 
     rects = ax.patches
     # For each bar: Place a label
@@ -156,8 +160,23 @@ def addLabels(plt, ax, x_max):
         x_pos = x_value
         y_value = rect.get_y() + rect.get_height() / 2
 
+        # Use X value as label and format number with one decimal place
+        label = float2lab(x_value)
+
         if x_pos > label_max:
             x_pos = label_max
+            label = "{:.2f}".format(x_value) # pad it out fully so it doesn't look odd
+
+            if x_value > x_max:
+                 plt.annotate(
+                     '···',                      # Use `label` as label
+                     (x_max, y_value),
+                     xytext=(2, 0),
+                     textcoords="offset points",
+                     va='center',
+                     ha=ha,
+                     fontsize=16)
+
 
         # Number of points between bar and label. Change to your liking.
         space = 5
@@ -171,18 +190,16 @@ def addLabels(plt, ax, x_max):
             # Horizontally align label at right
             ha = 'right'
 
-        # Use X value as label and format number with one decimal place
-        label = decimal.Decimal("{:.2f}".format(x_value)).normalize()
 
-        # Create annotation
+        # Create annotation for the number
         plt.annotate(
             label,                      # Use `label` as label
             (x_pos, y_value),         # Place label at end of the bar
             xytext=(space, 0),          # Horizontally shift label by `space`
             textcoords="offset points", # Interpret `xytext` as offset in points
             va='center',                # Vertically center label
-            ha=ha)                      # Horizontally align label differently for
-                                        # positive and negative values.
+            ha=ha,                       # Horizontally align label differently for positive and negative values.
+            fontsize=12)
 
 
 
@@ -232,7 +249,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
     # cap the max
     xMin = 0.0
-    xMax = 3.0
+    xMax = 2.0
     xBounds = (xMin, xMax)
 
     # make prog names nicer to read
@@ -265,7 +282,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     # https://matplotlib.org/3.1.1/gallery/ticks_and_spines/tick-formatters.html
     # https://stackoverflow.com/a/11227743
     def formatLabel(x, pos):
-        return decimal.Decimal(x).normalize()
+        return float2lab(x)
 
     for ax in g.axes.flat:
         # add an "x" after the labels for speedup
@@ -274,7 +291,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
 
     leftB, rightB = xBounds
-    numTicks = 13
+    numTicks = 11  # 13 ticks works well for [0, 3], 11 for [0, 2]
     g.set(xticks=np.linspace(leftB,rightB, numTicks))
 
     # plt.show()
