@@ -102,6 +102,8 @@ for versionDir in "${sub_versions[@]}"; do
     CONFFLAG="--with-gcstats"
   fi
 
+  mkdir "$versionDir"
+
   echo -e "\n\n\n RUNNING BENCHMARKS FOR VERSION DIR $versionDir"
   echo -e "\tTrials = $TRIALS, Configure Flag = $CONFFLAG"
   echo -e "\n\n\n"

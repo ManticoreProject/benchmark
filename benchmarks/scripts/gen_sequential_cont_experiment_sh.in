@@ -16,6 +16,8 @@ NUM_TRIALS=$3
 USE_MLTON=$4
 BINARY_NAME=$5
 
+GEN_GC_STATS="@GEN_GC_STATS@"
+
 # if not provided, assume it's mc-seq
 if [ -z "$BINARY_NAME" ]; then
   BINARY_NAME="mc-seq"
@@ -61,34 +63,35 @@ cat <<EOF
 OPT_LVL="-O0"
 
 ./run-test.sh "$HACK_OPT_LVL" "cps"
-
 ./run-test.sh "$HACK_OPT_LVL -linkstack" "linkstack"
-./run-test.sh "$HACK_OPT_LVL -linkstack -noras" "linkstack-noras"
-
 ./run-test.sh "$HACK_OPT_LVL -contigstack" "contig"
-./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
-
 ./run-test.sh "$HACK_OPT_LVL -segstack" "segstack"
-./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
-./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
-
 ./run-test.sh "$HACK_OPT_LVL -resizestack" "resizestack"
-./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
-./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
 
-if [ "$USE_MLTON" == "true" ]; then
-  ################
-  # test mlton
+if [ "$GEN_GC_STATS" == "false" ]; then
+  ./run-test.sh "$HACK_OPT_LVL -linkstack -noras" "linkstack-noras"
+  ./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
+  ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
+  ./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
+
+  ./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
+  ./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
+
+  if [ "$USE_MLTON" == "true" ]; then
+    ################
+    # test mlton
+    make clean
+    make mlton mlton-profile
+    $MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
+  fi
+
+  ###############
+  # test SML/NJ
   make clean
-  make mlton mlton-profile
-  $MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
-fi
+  make smlnj
+  $MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f $SMLNJ_HEAP_FILENAME -n $NAME -d "smlnj" -t $NUM_TRIALS -s "$INPUT"
 
-###############
-# test SML/NJ
-make clean
-make smlnj
-$MANTI_BENCH_ROOT/scripts/experiment-smlnj.sh -f $SMLNJ_HEAP_FILENAME -n $NAME -d "smlnj" -t $NUM_TRIALS -s "$INPUT"
+fi
 
 EOF
 ) >> $SCRIPT_FILE
