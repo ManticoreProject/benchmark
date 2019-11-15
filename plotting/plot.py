@@ -2,6 +2,7 @@
 
 import click
 import os
+import decimal
 
 import seaborn as sns
 import numpy as np
@@ -9,6 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from scipy import stats
 from  matplotlib.ticker import PercentFormatter
+from  matplotlib.ticker import FuncFormatter
 
 import gather_data
 
@@ -141,6 +143,39 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
     g.fig.savefig(os.path.join(dir, "code_size.pdf"))
     plt.close(g.fig)
 
+# source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
+# for horizontal bars
+def addLabels():
+    # For each bar: Place a label
+    for rect in rects:
+        # Get X and Y placement of label from rect.
+        x_value = rect.get_width()
+        y_value = rect.get_y() + rect.get_height() / 2
+
+        # Number of points between bar and label. Change to your liking.
+        space = 5
+        # Vertical alignment for positive values
+        ha = 'left'
+
+        # If value of bar is negative: Place label left of bar
+        if x_value < 0:
+            # Invert space to place label to the left
+            space *= -1
+            # Horizontally align label at right
+            ha = 'right'
+
+        # Use X value as label and format number with one decimal place
+        label = "{:.1f}".format(x_value)
+
+        # Create annotation
+        plt.annotate(
+            label,                      # Use `label` as label
+            (x_value, y_value),         # Place label at end of the bar
+            xytext=(space, 0),          # Horizontally shift label by `space`
+            textcoords="offset points", # Interpret `xytext` as offset in points
+            va='center',                # Vertically center label
+            ha=ha)                      # Horizontally align label differently for
+                                        # positive and negative values.
 
 
 
@@ -165,7 +200,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
         def f(row):
             if row['problem_name'] == prog:
-                return (row['time_sec'] / baselineAvg) - 1.0
+                return baselineAvg / row['time_sec']
             else:
                 return row['time_sec']
 
@@ -173,11 +208,11 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
 
     # compute an average among the different stack kinds.
-    # NOTE: we use arithmetic mean because some values may be zero.
+    # NOTE: we use geometric mean because speedup is unbounded and won't be zero
     average = {"problem_name": [], "description": [], "time_sec": []}
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["time_sec"]
-        gmean = allTimes.mean() # stats.gmean(allTimes)
+        gmean = stats.gmean(allTimes)
         average["problem_name"].append("AVERAGE")
         average["description"].append(kind)
         average["time_sec"].append(gmean)
@@ -189,7 +224,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     df = df[df["description"] != baseline]
 
     # cap the max
-    xBounds = (-1.0, 1.0)
+    xBounds = (0.0, 3.0)
 
     # make prog names nicer to read
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
@@ -205,22 +240,29 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
                 kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     g.set_ylabels("Benchmark Program")
-    g.set_xlabels("Running Time Difference Relative to \"" + baseline + "\" (lower is better)".format(baseline))
+    g.set_xlabels("Speedup relative to \"" + baseline + "\" (higher is better)".format(baseline))
 
     plt.xlim(xBounds)
-    plt.axvline(x=0, color='black')
+    plt.axvline(x=1, color='black')
 
     # https://stackoverflow.com/questions/45201514/edit-seaborn-legend
     leg = g.axes.flat[0].get_legend()
     new_title = "Stack Kind"
     leg.set_title(new_title)
 
+    # https://matplotlib.org/3.1.1/gallery/ticks_and_spines/tick-formatters.html
+    # https://stackoverflow.com/a/11227743
+    def formatLabel(x, pos):
+        return decimal.Decimal(x).normalize()
+
     for ax in g.axes.flat:
-        # set x axis to use the percent formatter
-        ax.xaxis.set_major_formatter(PercentFormatter(xmax=1.0))
+        # add an "x" after the labels for speedup
+        ax.xaxis.set_major_formatter(FuncFormatter(formatLabel))
+
+
 
     leftB, rightB = xBounds
-    numTicks = 11
+    numTicks = 13
     g.set(xticks=np.linspace(leftB,rightB, numTicks))
 
     # plt.show()
@@ -294,7 +336,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     df = df.append(gmeanRows, sort=False)
 
     # cap the max
-    xBounds = (0, 100.0)
+    xBounds = (0, 20.0)
 
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
 
