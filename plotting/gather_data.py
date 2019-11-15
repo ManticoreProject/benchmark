@@ -35,6 +35,16 @@ def _loadRunningTimes(filePath):
             print("parsing error loading " + filePath)
             raise ex
 
+    name = j["description"]
+    # remove the mc-seq / mc-par etc from the description, but preserving -shim and -noshim
+    name = re.sub(r'-mc-seq', '', name)
+    name = re.sub(r'-mc-par', '', name)
+    j["description"] = name
+
+    program = j["problem_name"]
+    program = re.sub(r'seq-raytrace', 'seq-mcray', program) # clearer name for figures
+    j["problem_name"] = program
+
     commonCol = ["problem_name", "compiler", "input", "machine", "description"]
     commonRow = [ j[x] for x in commonCol ]
 
@@ -53,16 +63,18 @@ def _loadRunningTimes(filePath):
     return df
 
 
-def _collectMantiBenchData(kind, dataDir):
+def _collectMantiBenchData(kind, attr, dataDir):
     ''' returns a dataframe where each row is an observation '''
-    pattern = re.compile(r'.*' + kind + r'-[0-9].*\.json')
+    attr = r'-' + attr if attr != "" else attr
+    pattern = re.compile(r'.*' + kind + r'-mc-(seq|par)' + attr + r'-[0-9].*\.json')
     runningTimes = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
     return _loadRunningTimes(runningTimes)
 
 
-def _collectSizeData(prog, kind, dataDir):
+def _collectSizeData(prog, kind, attr, dataDir):
     ''' collects binary size info from bloaty '''
-    pattern = re.compile(r'.*-' + kind + r'-size.*\.csv')
+    attr = r'-' + attr if attr != "" else attr
+    pattern = re.compile(r'.*-' + kind + r'-mc-(seq|par)' + attr + r'-[0-9].*\.csv')
     bloatyFile = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
 
     df = pd.read_csv(bloatyFile)
@@ -74,9 +86,10 @@ def _collectSizeData(prog, kind, dataDir):
     return df
 
 
-def _collectCacheData(prog, kind, dataDir):
+def _collectCacheData(prog, kind, attr, dataDir):
     ''' collects cachegrind data '''
-    pattern = re.compile(r'.*-' + kind + r'-[0-9].*\.cg')
+    attr = r'-' + attr if attr != "" else attr
+    pattern = re.compile(r'.*-' + kind + r'-mc-(seq|par)' + attr + r'-[0-9].*\.cg')
     cgFile = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
 
     df = parse_cachegrind.to_dataframe(cgFile)
@@ -118,12 +131,18 @@ def load(dir, progs, kinds, cached, plots):
         for prog in progs:
             dataDir = os.path.join(dir, prog)
             for kind in kinds:
+                # pull apart the kind, because we may have as possible kinds:
+                # cps, cps-shim, cps-noshim
+                split = kind.split("-")
+                kind = split[0]
+                attr = split[1] if len(split) > 1 else ""
+
                 if wantTime:
-                    obsDataSet = _addTo(obsDataSet, _collectMantiBenchData(kind, dataDir))
+                    obsDataSet = _addTo(obsDataSet, _collectMantiBenchData(kind, attr, dataDir))
                 if wantSize:
-                    sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, dataDir))
+                    sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, attr, dataDir))
                 if wantCG:
-                    cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, dataDir))
+                    cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, attr, dataDir))
 
         if wantTime:
             obsDataSet.reset_index(inplace=True)

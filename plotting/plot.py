@@ -28,7 +28,11 @@ ec_programs = set([ "ec-ack",
                     "ec-loop",
                     "ec-motzkin",
                     "ec-sudan",
-                    "ec-tak" ])
+                    "ec-tak"])
+
+cont_programs = cml_programs | ec_programs
+
+ffi_seq = set(["ffi-fib", "ffi-trigfib"])
 
 # ALL SEQ PROGRAMS
 seq_programs = set([
@@ -49,7 +53,7 @@ seq_programs = set([
                 "seq-perm",
                 "seq-primes",
                 "seq-quicksort",
-                "seq-raytrace",
+                "seq-mcray",  # aka seq-raytrace
                 "seq-scc",
                 "seq-sudan",
                 "seq-tailfib",
@@ -328,7 +332,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 @click.option("--dir", default=True, type=str,
                help="Root of directory containing data to analyze")
 @click.option("--progs", default="", type=str,
-               help="Comma-seperated list of programs to analyze. PREFIX* is specially recognized as a pattern.")
+               help="Comma-seperated list of programs to analyze. PREFIX* is specially recognized as a pattern. ~ in front inverts the match")
 @click.option("--kinds", default="", type=str,
                help="Comma-seperated list of kinds to analyze (cps, segstack, etc)")
 @click.option("--baseline", default="cps", type=str,
@@ -346,10 +350,15 @@ def main(dir, progs, kinds, baseline, cached, plots):
         prefix = "" if len(s) == 0 else s[0].strip()
         print ("directory search prefix = \'", prefix, "\'")
 
+        flip = lambda x: x
+        if prefix.startswith("~"):
+            prefix = prefix[1:]
+            flip = lambda x: not x
+
         # assume all dirs in the data dir are the prog names.
         progs = []
         for item in os.listdir(dir):
-            if os.path.isdir(os.path.join(dir, item)) and not item.startswith('.') and item.startswith(prefix):
+            if os.path.isdir(os.path.join(dir, item)) and not item.startswith('.') and flip(item.startswith(prefix)):
                 progs.append(item)
     else:
         progs = progs.split(",")
@@ -377,10 +386,11 @@ def main(dir, progs, kinds, baseline, cached, plots):
 
 
     subsets = [
-        ("ec_", ec_programs),
+        ("cont_", cont_programs),
         ("toy_", toy_seq),
         ("tail_", tail_seq),
-        ("real_", real_seq)
+        ("real_", real_seq),
+        ("ffi_", ffi_seq)
         # ("_", None)
     ]
 
