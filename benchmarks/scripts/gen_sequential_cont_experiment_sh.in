@@ -22,7 +22,6 @@ if [ -z "$BINARY_NAME" ]; then
   BINARY_NAME="mc-seq"
 fi
 
-# DESCRIPTION="BACKEND TEST"
 SCRIPT_FILE="seq-cont-test.sh"
 
 RUN_ONE="run-test.sh"
@@ -45,9 +44,10 @@ HACK_DESCRIP='$DESCRIP'
 cat <<EOF
 #!/bin/bash
 
-BACKEND=$HACK1
+# NOTE: this generation of the makefile embeds the backend flag!
+BACKEND=$HACK1 $MANTI_BENCH_ROOT/scripts/gen-makefile.sh
+
 DESCRIP="${HACK2}-${BINARY_NAME}"
-$MANTI_BENCH_ROOT/scripts/gen-makefile.sh
 make clean
 make $BINARY_NAME
 $MANTI_BENCH_ROOT/scripts/experiment-git.sh -f $BINARY_NAME -e -n $NAME -d $HACK_DESCRIP -t $NUM_TRIALS -s "$INPUT"

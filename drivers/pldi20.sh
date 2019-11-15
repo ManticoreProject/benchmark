@@ -117,13 +117,12 @@ for versionDir in "${sub_versions[@]}"; do
   autoconf -Iconfig
   ./configure --with-manticore="$MC" --with-resultsdir="$versionDir" $CONFFLAG
   scripts/gen-input-data.sh
-  # scripts/gen-all-makefiles.sh  # NOTE this is done for individual benchmarks
   set +e
 
   ########
   # start tests
 
-  echo -e "\n\n\t run CML tests. we must disable MLton here since its too slow. \n\n"
+  echo -e "\n\n\t CML TESTS. we must disable MLton here since its too slow. \n\n"
   for test in "${cml_tests[@]}"; do
       pushd "programs/$test"
       ../../scripts/gen-sequential-cont-experiment.sh "$test" "-p 1 $INPUT" "$TRIALS" "mc-par"
@@ -131,16 +130,7 @@ for versionDir in "${sub_versions[@]}"; do
       popd
   done
 
-  echo -e "\n\n\t run sequential tests that do NOT use callec. \n\n"
-  for test in "${seq_tests[@]}"; do
-      pushd "programs/$test"
-      ../../scripts/gen-sequential-cont-experiment.sh "$test" "$INPUT" "$TRIALS" "mc-seq"
-      ./seq-cont-test.sh # execute the tests!
-      popd
-  done
-
-
-  echo -e "\n\n\t run tests that DO use callec. we must disable MLton here since its too slow. \n\n"
+  echo -e "\n\n\t EC TESTS. we must disable MLton here since its too slow. \n\n"
   for test in "${ec_tests[@]}"; do
       pushd "programs/$test"
       ../../scripts/gen-sequential-cont-experiment.sh "$test" "$INPUT" "$TRIALS" "mc-seq"
@@ -148,7 +138,7 @@ for versionDir in "${sub_versions[@]}"; do
       popd
   done
 
-  echo -e "\n\n\t run tests that are focused on FFI calls. \n\n"
+  echo -e "\n\n\t FFI TESTS. \n\n"
   ffi_configs=(
     "mc-seq-shim"
     "mc-seq-noshim"
@@ -167,8 +157,15 @@ for versionDir in "${sub_versions[@]}"; do
         ./run-test.sh "$OPT_LVL -resizestack" "resizestack"
 
       done
-
       popd
   done # end of ffi test loop
+
+  echo -e "\n\n\t REGULAR SEQ TESTS. \n\n"
+  for test in "${seq_tests[@]}"; do
+      pushd "programs/$test"
+      ../../scripts/gen-sequential-cont-experiment.sh "$test" "$INPUT" "$TRIALS" "mc-seq"
+      ./seq-cont-test.sh # execute the tests!
+      popd
+  done
 
 done  # end of version loop
