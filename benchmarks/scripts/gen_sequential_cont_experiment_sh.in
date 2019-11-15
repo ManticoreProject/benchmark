@@ -13,8 +13,7 @@ if [ "$NAME" == "" ]; then
 fi
 INPUT=$2
 NUM_TRIALS=$3
-USE_MLTON=$4
-BINARY_NAME=$5
+BINARY_NAME=$4
 
 GEN_GC_STATS="@GEN_GC_STATS@"
 
@@ -69,15 +68,16 @@ OPT_LVL="-O0"
 ./run-test.sh "$HACK_OPT_LVL -resizestack" "resizestack"
 
 if [ "$GEN_GC_STATS" == "false" ]; then
-  ./run-test.sh "$HACK_OPT_LVL -linkstack -noras" "linkstack-noras"
-  ./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
-  ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
-  ./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
 
-  ./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
-  ./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
+  if [ $BINARY_NAME == "mc-seq" ]; then
+    ./run-test.sh "$HACK_OPT_LVL -linkstack -noras" "linkstack-noras"
+    ./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
+    ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
+    ./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
 
-  if [ "$USE_MLTON" == "true" ]; then
+    ./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
+    ./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
+
     ################
     # test mlton
     make clean
