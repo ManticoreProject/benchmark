@@ -24,8 +24,7 @@ def _getFile(dataDir, pat):
     return matches
 
 
-# TODO: add handling for the GC stats field, if found.
-def _loadRunningTimes(filePath):
+def _loadRunningTimes(filePath, needGC=False):
     ''' loads the JSON formatted running times into a dataframe '''
     with open(filePath) as data_file:
         jsonStr = data_file.read().replace('\n', ' ')
@@ -49,13 +48,35 @@ def _loadRunningTimes(filePath):
     commonRow = [ j[x] for x in commonCol ]
 
     rows = {}
+
+    # set up the columns corresponding to observed data, which will vary per row
+    runs = j['runs']
+    assert len(runs) > 0, "missing trial data in this file!"
+
+    someRow = runs[0]
+    assert "time_sec" in someRow, "missing running time!"
     cols = commonCol + ["time_sec"]
 
-    runs = j['runs']
+    gc_cols = []
+    GC_TOT = "TOT"
+    if "gc" in someRow and GC_TOT in someRow["gc"]:
+        someGCData = someRow["gc"][GC_TOT]
+        gc_cols = list(sorted(someGCData.keys()))
+
+    assert not (needGC and len(gc_cols) == 0), "requested GC data, but it's missing!"
+    cols += gc_cols
+
     i = 0
     for run in runs:
         row = commonRow[:]
-        row.append(float(run["time_sec"]))
+        runningTime = float(run["time_sec"])
+        row.append(runningTime)
+
+        for stat in gc_cols:
+            assert GC_TOT in run["gc"], "TOT gc data is missing in one row"
+            gcData = run["gc"][GC_TOT]
+            row.append(float(gcData[stat]))
+
         rows[i] = row
         i += 1
 
