@@ -14,6 +14,7 @@ fi
 INPUT=$2
 NUM_TRIALS=$3
 BINARY_NAME=$4
+USE_MLTON=$5
 
 GEN_GC_STATS="@GEN_GC_STATS@"
 
@@ -78,11 +79,13 @@ if [ "$GEN_GC_STATS" == "false" ]; then
     ./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
     ./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
 
-    ################
-    # test mlton
-    make clean
-    make mlton mlton-profile
-    $MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
+    if [ $USE_MLTON == "true" ]; then
+      ################
+      # test mlton
+      make clean
+      make mlton mlton-profile
+      $MANTI_BENCH_ROOT/scripts/experiment-mlton.sh -f mlton -n $NAME -d "mlton" -t $NUM_TRIALS -s "$INPUT"
+    fi
   fi
 
   ###############
