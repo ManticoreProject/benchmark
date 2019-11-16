@@ -399,11 +399,74 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 
 
 # TPI = time per instruction executed.
-def cachegrind_tpi(cg_df, time_df, dir, filename="cg_tpi.pdf", height=9, aspect=1.2941):
+# generates two plots. One for total instructions executed
+# the other is TPI. you can specify the subset of programs you care about,
+# or use [] to generate for all
+def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=1.2941):
     cg_df = cg_df.copy()
     time_df = time_df.copy()
-    
-    # TODO plot nanoseconds per instruction
+
+    # initialize the output tables
+    tpiData = {'problem_name' : [], 'description' : [], 'tpi' : []}
+    instData = {'problem_name' : [], 'description' : [], 'instructions' : []}
+
+    # process
+    for prog in cg_df['problem_name'].unique():
+        if len(progs) > 1 and prog not in progs:
+            continue
+
+        for kind in cg_df['description'].unique():
+
+            cg_subset = cg_df[(cg_df['problem_name'] == prog) & (cg_df['description'] == kind)]
+            time_subset = time_df[(time_df['problem_name'] == prog) & (time_df['description'] == kind)]
+
+            totalInstrs = cg_subset['Ir'].sum()
+            avgTime = time_subset['time_sec'].mean()
+            avgTime *= 1000000000  # convert to nanoseconds
+
+            tpi = avgTime / totalInstrs
+
+            tpiData['problem_name'].append(prog)
+            tpiData['description'].append(kind)
+            tpiData['tpi'].append(tpi)
+
+            instData['problem_name'].append(prog)
+            instData['description'].append(kind)
+            instData['instructions'].append(totalInstrs)
+
+    # prepare to plot
+    tpi_df = pd.DataFrame.from_dict(tpiData)
+    instr_df = pd.DataFrame.from_dict(instData)
+
+    # list alphabetically
+    order = list(tpi_df['description'].unique())
+    order.sort()
+
+    ##############################
+    # plot TPI
+    sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    g = sns.catplot(x="tpi", y="problem_name", hue="description", hue_order=order, data=tpi_df,
+                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                errwidth=1.125, capsize=0.0625, ci=None)
+    g.set_ylabels("Benchmark Programs")
+    g.set_xlabels("Nanoseconds per instruction (lower is better)")
+    g._legend.set_title('Stack Kind')
+
+    g.fig.savefig(os.path.join(dir, "cg_tpi" + file_tag + ".pdf"))
+    plt.close(g.fig)
+
+    ##############################
+    # plot INSTRS
+    sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    g = sns.catplot(x="instructions", y="problem_name", hue="description", hue_order=order, data=instr_df,
+                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                errwidth=1.125, capsize=0.0625, ci=None)
+    g.set_ylabels("Benchmark Programs")
+    g.set_xlabels("Total instructions executed (lower is better)")
+    g._legend.set_title('Stack Kind')
+
+    g.fig.savefig(os.path.join(dir, "cg_instrs" + file_tag + ".pdf"))
+    plt.close(g.fig)
 
 
 
@@ -490,7 +553,8 @@ def main(dir, progs, kinds, baseline, cached, plots):
     # CACHEGRIND
     if plots == [] or "cg" in plots:
 
-        cachegrind_tpi(df['cache'], df['time'])
+        if plots == [] or "time" in plots:
+            cachegrind_tpi(data['cache'], data['obs'], dir)
 
         categories = [["code"], ["mcrt", "misc"]]
         cacheLevels = ["1"] # the options are: "1" and "L"
