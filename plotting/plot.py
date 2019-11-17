@@ -14,6 +14,14 @@ from  matplotlib.ticker import FuncFormatter
 
 import gather_data
 
+pfx = ""
+
+# exports and closes the figure, with the correct global prefix requested
+def exportFig(g, dir, filename):
+    g.fig.savefig(os.path.join(dir, pfx + filename))
+    plt.close(g.fig)
+
+
 # Controls for calculating confidence interval
 #  - if "sd", uses standard deviation instead.
 #  - if a in [0.0, 100.0], computes and shows a% bootstrapped confidence interval.
@@ -144,13 +152,16 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
     g._legend.set_title('Stack Kind')
 
     # plt.show()
-    g.fig.savefig(os.path.join(dir, "code_size.pdf"))
-    plt.close(g.fig)
+    exportFig(g, dir, "code_size.pdf")
 
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
 def addLabels(plt, ax, x_max):
     label_max = x_max - 0.14
+    # Number of points between bar and label. Change to your liking.
+    space = 5
+    # Vertical alignment for positive values
+    ha = 'left'
 
     rects = ax.patches
     # For each bar: Place a label
@@ -176,12 +187,6 @@ def addLabels(plt, ax, x_max):
                      va='center',
                      ha=ha,
                      fontsize=16)
-
-
-        # Number of points between bar and label. Change to your liking.
-        space = 5
-        # Vertical alignment for positive values
-        ha = 'left'
 
         # If value of bar is negative: Place label left of bar
         if x_pos < 0:
@@ -273,11 +278,10 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
     # https://stackoverflow.com/questions/45201514/edit-seaborn-legend
     ax = g.axes.flat[0]
+    addLabels(plt, ax, xMax)
     leg = ax.get_legend()
     new_title = "Stack Kind"
     leg.set_title(new_title)
-
-    addLabels(plt, ax, xMax)
 
     # https://matplotlib.org/3.1.1/gallery/ticks_and_spines/tick-formatters.html
     # https://stackoverflow.com/a/11227743
@@ -295,8 +299,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     g.set(xticks=np.linspace(leftB,rightB, numTicks))
 
     # plt.show()
-    g.fig.savefig(os.path.join(dir, filename))
-    plt.close(g.fig)
+    exportFig(g, dir, filename)
 
 
 
@@ -393,8 +396,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     plt.xlim(xBounds)
 
     # plt.show()
-    g.fig.savefig(os.path.join(dir, filename))
-    plt.close(g.fig)
+    exportFig(g, dir, filename)
 
 
 
@@ -452,8 +454,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     g.set_xlabels("Nanoseconds per instruction (lower is better)")
     g._legend.set_title('Stack Kind')
 
-    g.fig.savefig(os.path.join(dir, "cg_tpi" + file_tag + ".pdf"))
-    plt.close(g.fig)
+    exportFig(g, dir, "cg_tpi" + file_tag + ".pdf")
 
     ##############################
     # plot INSTRS
@@ -465,9 +466,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     g.set_xlabels("Total instructions executed (lower is better)")
     g._legend.set_title('Stack Kind')
 
-    g.fig.savefig(os.path.join(dir, "cg_instrs" + file_tag + ".pdf"))
-    plt.close(g.fig)
-
+    exportFig(g, dir, "cg_instrs" + file_tag + ".pdf")
 
 
 
@@ -486,7 +485,12 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
                 help="Uses data from the CSV cache dumped by an earlier run.")
 @click.option("--plots", default="", type=str,
                help="Comma-seperated list of plots to output (time, cg, size). Empty string emits all of them.")
-def main(dir, progs, kinds, baseline, cached, plots):
+@click.option("--fileprefix", default="", type=str,
+               help="Prefix to add to all generated plot files.")
+def main(dir, progs, kinds, baseline, cached, plots, fileprefix):
+    global pfx
+    pfx = fileprefix
+
     dir = os.path.abspath(dir)
     print("looking in dir ", dir)
 
