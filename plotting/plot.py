@@ -284,7 +284,8 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
                 kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
-    g.set_ylabels("Benchmark Program")
+    # g.set_ylabels("Benchmark Program")
+    g.set_ylabels("")
     g.set_xlabels("Speedup relative to \"" + baseline + "\" (higher is better)".format(baseline))
 
     plt.xlim(xBounds)
