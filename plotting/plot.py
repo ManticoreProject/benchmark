@@ -18,8 +18,8 @@ pfx = ""
 colors = ""
 
 # exports and closes the figure, with the correct global prefix requested
-def exportFig(g, dir, filename):
-    g.fig.savefig(os.path.join(dir, pfx + filename))
+def exportFig(g, dir, filename, extraArtists=[]):
+    g.fig.savefig(os.path.join(dir, pfx + filename), bbox_extra_artists=extraArtists, bbox_inches='tight')
     plt.close(g.fig)
 
 
@@ -95,6 +95,19 @@ tail_seq = set(["seq-cpstak",
                 ])
 
 real_seq = seq_programs - toy_seq - tail_seq
+
+def sortStacks(cats):
+    def pushBack(key, lst):
+        if key in lst:
+            lst.remove(key)
+            lst.append(key)
+
+    new = cats[:]
+    new.sort()
+    pushBack("mlton", new)
+    pushBack("smlnj", new)
+    return new
+
 
 # human-readable floats, limited to at most 2 digits after the point.
 def float2lab(x):
@@ -263,7 +276,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
     # stack kind ordering sort alphabetically
     order = list(df['description'].unique())
-    order.sort()
+    order = sortStacks(order)
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
@@ -280,9 +293,15 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     # https://stackoverflow.com/questions/45201514/edit-seaborn-legend
     ax = g.axes.flat[0]
     addLabels(plt, ax, xMax)
-    leg = ax.get_legend()
-    new_title = "Stack Kind"
-    leg.set_title(new_title)
+    # leg = ax.get_legend()
+    # new_title = "Stack Kind"
+    # leg.set_title(new_title)
+
+    # leg.set_bbox_to_anchor((0.5, 1.05))
+
+    # https://matplotlib.org/3.1.1/tutorials/intermediate/legend_guide.html
+    lgd = ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+           ncol=3, mode="expand", borderaxespad=0.)
 
     # https://matplotlib.org/3.1.1/gallery/ticks_and_spines/tick-formatters.html
     # https://stackoverflow.com/a/11227743
@@ -300,7 +319,8 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     g.set(xticks=np.linspace(leftB,rightB, numTicks))
 
     # plt.show()
-    exportFig(g, dir, filename)
+    # https://stackoverflow.com/questions/10101700/moving-matplotlib-legend-outside-of-the-axis-makes-it-cutoff-by-the-figure-box
+    exportFig(g, dir, filename, [lgd])
 
 
 
@@ -375,7 +395,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 
     # list alphabetically
     order = list(df['description'].unique())
-    order.sort()
+    order = sortStacks(order)
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
@@ -443,7 +463,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
 
     # list alphabetically
     order = list(tpi_df['description'].unique())
-    order.sort()
+    order = sortStacks(order)
 
     ##############################
     # plot TPI

@@ -22,11 +22,12 @@ RES_GC="$RES/gcstats"
 
 pushd ../plotting
 
+# colors: colorblind, cubehelix, Set2
 
 ############
 # generate main running time plots comparing manticore stacks
-./plot.py --fileprefix "same_" --dir "$RES_NORMAL" \
-          --kinds "cps,contig,segstack,resizestack,linkstack" --baseline "cps" --progs '~ffi-*'
+# ./plot.py --fileprefix "same_" --dir "$RES_NORMAL" \
+#           --kinds "cps,contig,segstack,resizestack,linkstack" --baseline "cps" --progs '~ffi-*'
 
 # TODO: ffi comparison plot
 
@@ -37,11 +38,11 @@ pushd ../plotting
 ###################
 # compare with mlton and SML/NJ for Sequential progs
 ./plot.py --fileprefix "cross_" --dir "$RES_NORMAL" \
-          --kinds "cps,contig,linkstack,mlton,smlnj" --baseline "cps" --progs 'seq-*' \
-          --plots "time" --palette "cubehelix"
+          --kinds "cps,contig,linkstack,segstack,resizestack,mlton,smlnj" --baseline "cps" --progs 'seq-*' \
+          --plots "time" --palette "colorblind"
 
 # compare with SML/NJ for cont progs
 CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | tr '/' ',' | xargs)
 ./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,smlnj" --baseline "cps" \
-          --progs "$CONTPROGS" --plots "time" --palette "Set2"
+          --progs "$CONTPROGS" --plots "time" --palette "cubehelix"
