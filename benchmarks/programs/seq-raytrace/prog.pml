@@ -876,7 +876,11 @@ structure TestRandomScene =
   structure Main = struct
 
     (* only time it *)
-    fun main _ = (TestRandomScene.test() ; Process.success)
+    fun main _ = let
+        val _ = TestRandomScene.test()
+      in
+        Process.success
+      end
 
     (* render and dump the image to a Plain PPM file, with timing.
        use ImageMagick to generate a PNG image like so:
