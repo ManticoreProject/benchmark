@@ -15,6 +15,7 @@ from  matplotlib.ticker import FuncFormatter
 import gather_data
 
 pfx = ""
+colors = ""
 
 # exports and closes the figure, with the correct global prefix requested
 def exportFig(g, dir, filename):
@@ -144,7 +145,7 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="vmsize", y="problem_name", hue="description", data=summed,
-                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
                 ci=None)
 
     g.set_xlabels("In-Memory Code Size (KiB)")
@@ -268,7 +269,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     # sns.set(font_scale=2)
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     g.set_ylabels("Benchmark Program")
     g.set_xlabels("Speedup relative to \"" + baseline + "\" (higher is better)".format(baseline))
@@ -379,7 +380,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot)
     g.set_ylabels("Benchmark Program")
     g.set_xlabels(event_name)
@@ -448,7 +449,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     # plot TPI
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="tpi", y="problem_name", hue="description", hue_order=order, data=tpi_df,
-                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=None)
     g.set_ylabels("Benchmark Programs")
     g.set_xlabels("Nanoseconds per instruction (lower is better)")
@@ -460,7 +461,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     # plot INSTRS
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="instructions", y="problem_name", hue="description", hue_order=order, data=instr_df,
-                kind="bar", height=height, aspect=aspect, palette="colorblind", orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=None)
     g.set_ylabels("Benchmark Programs")
     g.set_xlabels("Total instructions executed (lower is better)")
@@ -487,9 +488,13 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
                help="Comma-seperated list of plots to output (time, cg, size). Empty string emits all of them.")
 @click.option("--fileprefix", default="", type=str,
                help="Prefix to add to all generated plot files.")
-def main(dir, progs, kinds, baseline, cached, plots, fileprefix):
+@click.option("--palette", default="colorblind", type=str,
+               help="A Seaborn color pallete name\nSee: https://seaborn.pydata.org/tutorial/color_palettes.html")
+def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
     global pfx
+    global colors
     pfx = fileprefix
+    colors=palette
 
     dir = os.path.abspath(dir)
     print("looking in dir ", dir)
@@ -510,7 +515,8 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix):
             if os.path.isdir(os.path.join(dir, item)) and not item.startswith('.') and flip(item.startswith(prefix)):
                 progs.append(item)
     else:
-        progs = progs.split(",")
+        # break progs apart, delete empty strings (from trailing commas) and trim whitespace
+        progs = [x.strip() for x in progs.split(",") if x.strip() != ""]
 
     plots = [] if plots == "" else plots.split(",")
 

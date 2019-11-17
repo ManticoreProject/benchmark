@@ -87,9 +87,9 @@ def _loadRunningTimes(filePath, needGC=False):
 def _collectMantiBenchData(kind, attr, dataDir):
     ''' returns a dataframe where each row is an observation '''
     attr = r'-' + attr if attr != "" else attr
-    kind += r'-mc-(seq|par)' if kind != "mlton" and kind != "smlnj" else r''
+    kindRegex = kind + r'-mc-(seq|par)' if kind != "mlton" and kind != "smlnj" else r''
 
-    pattern = re.compile(r'.*' + kind + attr + r'-[0-9].*\.json')
+    pattern = re.compile(r'.*' + kindRegex + attr + r'-[0-9].*\.json')
     runningTimes = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
     return _loadRunningTimes(runningTimes)
 
@@ -97,9 +97,9 @@ def _collectMantiBenchData(kind, attr, dataDir):
 def _collectSizeData(prog, kind, attr, dataDir):
     ''' collects binary size info from bloaty '''
     attr = r'-' + attr if attr != "" else attr
-    kind += r'-mc-(seq|par)' if kind != "mlton" and kind != "smlnj" else r''
+    kindRegex = kind + r'-mc-(seq|par)' if kind != "mlton" and kind != "smlnj" else r''
 
-    pattern = re.compile(r'.*-' + kind + attr + r'-size-[0-9].*\.csv')
+    pattern = re.compile(r'.*-' + kindRegex + attr + r'-size-[0-9].*\.csv')
     bloatyFile = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
 
     df = pd.read_csv(bloatyFile)
@@ -114,9 +114,9 @@ def _collectSizeData(prog, kind, attr, dataDir):
 def _collectCacheData(prog, kind, attr, dataDir):
     ''' collects cachegrind data '''
     attr = r'-' + attr if attr != "" else attr
-    kind += r'-mc-(seq|par)' if kind != "mlton" and kind != "smlnj" else r''
+    kindRegex = kind + r'-mc-(seq|par)' if kind != "mlton" and kind != "smlnj" else r''
 
-    pattern = re.compile(r'.*-' + kind + attr + r'-[0-9].*\.cg')
+    pattern = re.compile(r'.*-' + kindRegex + attr + r'-[0-9].*\.cg')
     cgFile = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
 
     df = parse_cachegrind.to_dataframe(cgFile)

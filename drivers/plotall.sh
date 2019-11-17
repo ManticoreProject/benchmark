@@ -25,7 +25,7 @@ pushd ../plotting
 
 ############
 # generate main running time plots comparing manticore stacks
-./plot.py --fileprefix "manti_" --dir "$RES_NORMAL" \
+./plot.py --fileprefix "same_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,segstack,resizestack,linkstack" --baseline "cps" --progs '~ffi-*'
 
 # TODO: ffi comparison plot
@@ -35,8 +35,13 @@ pushd ../plotting
 # TODO: RAS comparison plot
 
 ###################
-# compare with mlton and SML/NJ
-# TODO: maybe change color scheme for these!
-./plot.py --fileprefix "compilers_" --dir "$RES_NORMAL" \
+# compare with mlton and SML/NJ for Sequential progs
+./plot.py --fileprefix "cross_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,mlton,smlnj" --baseline "cps" --progs 'seq-*' \
-          --plots "time"
+          --plots "time" --palette "cubehelix"
+
+# compare with SML/NJ for cont progs
+CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | tr '/' ',' | xargs)
+./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
+          --kinds "cps,contig,linkstack,segstack,resizestack,smlnj" --baseline "cps" \
+          --progs "$CONTPROGS" --plots "time" --palette "Set2"
