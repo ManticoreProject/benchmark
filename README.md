@@ -6,9 +6,10 @@ Below is a guide to navigating the Manticore benchmark suite.
 #### Preparing benchmarks
 
   Let `MC` equal the root directory of the Manticore compiler (e.g., `<path to>/branches/swp`).
-  Let `RES` equal the directory in which you wish to store results generated during experiments.
+  Let `RES` equal the directory in which you wish to store results generated during experiments
+  (the default is manti-bench/results).
 
-    cd manti-bench/src
+    cd manti-bench/benchmarks
     autoconf -Iconfig
     ./configure --with-manticore=$MC --with-resultsdir=$RES
     scripts/gen-input-data.sh
