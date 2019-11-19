@@ -256,7 +256,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["time_sec"]
         gmean = stats.gmean(allTimes)
-        average["problem_name"].append("AVERAGE")
+        average["problem_name"].append("GEOMEAN")
         average["description"].append(kind)
         average["time_sec"].append(gmean)
 
@@ -382,7 +382,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["rate"]
         gmean = allTimes.mean()
-        average["problem_name"].append("AVERAGE")
+        average["problem_name"].append("MEAN")
         average["description"].append(kind)
         average["rate"].append(gmean)
 
@@ -420,6 +420,115 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     # plt.show()
     exportFig(g, dir, filename)
 
+
+#####################################
+
+# GC PLOTTING
+
+###############################
+def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filename="gc_ratio.pdf", subtractAllocs="", height=11, aspect=0.772727273):
+    # simple ones for now
+    assert type(numerator_s) == str
+    assert type(denominator_s) == str
+
+    df = df.copy()
+
+    # only include programs we're interested in, if we want only a subset.
+    if subset:
+        df = df[df['problem_name'].isin(subset)]
+    if len(df) == 0:
+        print("NOTE: no gc time data matched the subset ", subset)
+        return
+
+    # initialize the output table
+    plotData = {'problem_name' : [], 'description' : [], 'rate' : []}
+
+    # process
+    for prog in df['problem_name'].unique():
+        for kind in df['description'].unique():
+            obs = df[(df['problem_name'] == prog) & (df['description'] == kind)]
+
+            # "subtractAllocs" means to subtract the heap allocations from "contig"
+            # data from this stack's data.
+            numerSub = 0
+            denomSub = 0
+            if subtractAllocs != "":
+                sub_df = df[(df['problem_name'] == prog) & (df['description'] == subtractAllocs)]
+                denomSub = sub_df[denominator_s].sum()
+                numerSub = sub_df[numerator_s].sum()
+
+            denom = obs[denominator_s].sum() - denomSub
+            numer = obs[numerator_s].sum() - numerSub
+            if denom == 0:
+                if numer != 0:
+                    print ("WARNING: {} / {} ratio in gc_plot for {} {}".format(numer, denom, prog, kind))
+                rate = 0.0
+            else:
+                rate = 100.0 * (numer / denom)
+
+            plotData['problem_name'].append(prog)
+            plotData['description'].append(kind)
+            plotData['rate'].append(rate)
+
+    # prepare to plot
+    df = pd.DataFrame.from_dict(plotData)
+
+    # compute an average among the different stack kinds
+    # NOTE: we use an arithmetic mean because the miss rate is bounded [0, 100]
+    average = {"problem_name": [], "description": [], "rate": []}
+    for kind in df["description"].unique():
+        allTimes = df[df["description"] == kind]["rate"]
+        gmean = allTimes.mean()
+        average["problem_name"].append("MEAN")
+        average["description"].append(kind)
+        average["rate"].append(gmean)
+
+    gmeanRows = pd.DataFrame.from_dict(average)
+    df = df.append(gmeanRows, sort=False)
+
+    # cap the max
+    xBounds = (0, 100.0)
+
+    df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+
+    # list alphabetically
+    order = list(df['description'].unique())
+    order = sortStacks(order)
+
+    # plot
+    sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
+                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
+                errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
+    g.set_ylabels("")
+    g.set_xlabels(event_name)
+    # g._legend.set_title('Stack Kind')
+
+    xMin, xMax = xBounds
+    numTicks = 11
+    g.set(xticks=np.linspace(xMin,xMax, numTicks))
+
+    for ax in g.axes.flat:
+        # set x axis to use the percent formatter
+        ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
+
+    plt.xlim(xBounds)
+
+    # https://stackoverflow.com/questions/45201514/edit-seaborn-legend
+    ax = g.axes.flat[0]
+    addLabels(plt, ax, xMax)
+    # leg = ax.get_legend()
+    # new_title = "Stack Kind"
+    # leg.set_title(new_title)
+
+    # leg.set_bbox_to_anchor((0.5, 1.05))
+
+    # https://matplotlib.org/3.1.1/tutorials/intermediate/legend_guide.html
+    lgd = ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+           ncol=3, mode="expand", borderaxespad=0.)
+
+    # plt.show()
+    exportFig(g, dir, filename, [lgd])
 
 
 # TPI = time per instruction executed.
@@ -579,7 +688,21 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
         for prefix, subset in subsets:
             relative_time(data['obs'], baseline, dir, subset, prefix + "times.pdf")
 
-    # TODO: GC info plot
+    if plots == [] or "time" in plots and "gc" in plots:
+        prefix = ""
+        for prefix, subset in subsets:
+            gc_plot(data['obs'], dir, "time-gc", "time-total", "Percent of run-time spent managing memory", \
+                        subset, prefix + "gc_time_total_pct.pdf")
+
+            gc_plot(data['obs'], dir, "largeobj-time", "time-total", "Percent of run-time spent managing large objects", \
+                        subset, prefix + "gc_time_largeObj_pct.pdf")
+
+            gc_plot(data['obs'], dir, "minorgc-live", "minorgc-alloc", "Percent of data in nursery that is live during Minor GC", \
+                        subset, prefix + "gc_minorLive_pct.pdf")
+
+            gc_plot(data['obs'], dir, "minorgc-live", "minorgc-alloc", "Percent of stack frame data in nursery that is live during Minor GC",\
+                        subset, prefix + "gc_minorLiveFrames_pct.pdf", subtractAllocs="contig")
+
 
     # CACHEGRIND
     if plots == [] or "cg" in plots:
