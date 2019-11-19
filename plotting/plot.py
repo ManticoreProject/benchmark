@@ -703,6 +703,9 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
             gc_plot(data['obs'], dir, "minorgc-live", "minorgc-alloc", "Percent of stack frame data in nursery that is live during Minor GC",\
                         subset, prefix + "gc_minorLiveFrames_pct.pdf", subtractAllocs="contig")
 
+            # gc_plot(data['obs'], dir, "stackcache-misses", "stackcache-access", "Stack cache miss rate",\
+            #             subset, prefix + "gc_stackcache_miss.pdf")
+
 
     # CACHEGRIND
     if plots == [] or "cg" in plots:
