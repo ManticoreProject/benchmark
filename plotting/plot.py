@@ -79,9 +79,9 @@ toy_seq = set([
              "seq-ack",
              "seq-divrec",
              "seq-fib",
-             "seq-nqueens",
              "seq-merge",
              "seq-motzkin",
+             "seq-quicksort",
              "seq-sudan",
              "seq-tak",
              "seq-takl"
