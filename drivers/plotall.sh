@@ -46,3 +46,7 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
 ./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,smlnj" --baseline "cps" \
           --progs "$CONTPROGS" --plots "time" --palette "YlGnBu"
+
+# look at GC statistics data
+./plot.py --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
+          --plots "time,gc" --progs "~ffi-*" --palette "cubehelix"

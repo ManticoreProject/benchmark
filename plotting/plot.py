@@ -690,6 +690,7 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
 
     if plots == [] or "time" in plots and "gc" in plots:
         prefix = ""
+        generations = ["minor", "major", "global"]
         for prefix, subset in subsets:
             gc_plot(data['obs'], dir, "time-gc", "time-total", "Percent of run-time spent managing memory", \
                         subset, prefix + "gc_time_total_pct.pdf")
@@ -697,14 +698,17 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
             gc_plot(data['obs'], dir, "largeobj-time", "time-total", "Percent of run-time spent managing large objects", \
                         subset, prefix + "gc_time_largeObj_pct.pdf")
 
-            gc_plot(data['obs'], dir, "minorgc-live", "minorgc-alloc", "Percent of data in nursery that is live during Minor GC", \
-                        subset, prefix + "gc_minorLive_pct.pdf")
-
-            gc_plot(data['obs'], dir, "minorgc-live", "minorgc-alloc", "Percent of stack frame data in nursery that is live during Minor GC",\
-                        subset, prefix + "gc_minorLiveFrames_pct.pdf", subtractAllocs="contig")
-
             # gc_plot(data['obs'], dir, "stackcache-misses", "stackcache-access", "Stack cache miss rate",\
             #             subset, prefix + "gc_stackcache_miss.pdf")
+
+            for gen in generations:
+                gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of data that is live during " + gen + " GC", \
+                            subset, prefix + "gc_" + gen + "_live_pct.pdf")
+
+                gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of stack frame data that is live during " + gen + " GC",\
+                            subset, prefix + "gc_" + gen + "_live_frames_pct.pdf", subtractAllocs="contig")
+
+
 
 
     # CACHEGRIND
