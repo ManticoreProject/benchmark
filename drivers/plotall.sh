@@ -39,10 +39,10 @@ pushd ../plotting
 # compare with mlton and SML/NJ for Sequential progs
 ./plot.py --fileprefix "cross_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,mlton,smlnj" --baseline "cps" --progs 'seq-*' \
-          --plots "time" --palette "colorblind"
+          --plots "time" --palette "cubehelix"
 
 # compare with SML/NJ for cont progs
 CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | tr '/' ',' | xargs)
 ./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,smlnj" --baseline "cps" \
-          --progs "$CONTPROGS" --plots "time" --palette "cubehelix"
+          --progs "$CONTPROGS" --plots "time" --palette "YlGnBu"
