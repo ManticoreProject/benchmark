@@ -225,7 +225,7 @@ def addLabels(plt, ax, x_max):
 
 
 ################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", height=11, aspect=0.772727273):
+def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", height=1, aspect=8.5/11):
     df = df.copy()
 
     if subset:
@@ -280,11 +280,13 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     order = list(df['description'].unique())
     order = sortStacks(order)
 
+    totHeight = max(8.5, len(df['problem_name'].unique()) * height)
+
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     # sns.set(font_scale=2)
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
+                kind="bar", height=totHeight, aspect=aspect, palette=colors, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     # g.set_ylabels("Benchmark Program")
     g.set_ylabels("")
@@ -428,7 +430,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 # GC PLOTTING
 
 ###############################
-def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filename="gc_ratio.pdf", subtractAllocs="", height=11, aspect=0.772727273):
+def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filename="gc_ratio.pdf", subtractAllocs="", wantMean=True, height=1, aspect=8.5/9):
     # simple ones for now
     assert type(numerator_s) == str
     assert type(denominator_s) == str
@@ -475,18 +477,19 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filena
     # prepare to plot
     df = pd.DataFrame.from_dict(plotData)
 
-    # compute an average among the different stack kinds
-    # NOTE: we use an arithmetic mean because the miss rate is bounded [0, 100]
-    average = {"problem_name": [], "description": [], "rate": []}
-    for kind in df["description"].unique():
-        allTimes = df[df["description"] == kind]["rate"]
-        gmean = allTimes.mean()
-        average["problem_name"].append("MEAN")
-        average["description"].append(kind)
-        average["rate"].append(gmean)
+    if wantMean:
+        # compute an average among the different stack kinds
+        # NOTE: we use an arithmetic mean because the miss rate is bounded [0, 100]
+        average = {"problem_name": [], "description": [], "rate": []}
+        for kind in df["description"].unique():
+            allTimes = df[df["description"] == kind]["rate"]
+            gmean = allTimes.mean()
+            average["problem_name"].append("MEAN")
+            average["description"].append(kind)
+            average["rate"].append(gmean)
 
-    gmeanRows = pd.DataFrame.from_dict(average)
-    df = df.append(gmeanRows, sort=False)
+        gmeanRows = pd.DataFrame.from_dict(average)
+        df = df.append(gmeanRows, sort=False)
 
     # cap the max
     xBounds = (0, 100.0)
@@ -497,10 +500,12 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filena
     order = list(df['description'].unique())
     order = sortStacks(order)
 
+    totHeight = max(8.5, len(df['problem_name'].unique()) * height)
+
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
+                kind="bar", height=totHeight, aspect=aspect, palette=colors, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     g.set_ylabels("")
     g.set_xlabels(event_name)
@@ -622,7 +627,9 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
                help="Prefix to add to all generated plot files.")
 @click.option("--palette", default="colorblind", type=str,
                help="A Seaborn color pallete name\nSee: https://seaborn.pydata.org/tutorial/color_palettes.html")
-def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
+@click.option("--combined", is_flag=True, default=False, type=bool,
+                help="If true, will combine all known categories of programs into one plot.")
+def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combined):
     global pfx
     global colors
     global base
@@ -674,14 +681,22 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
     sns.set_style("whitegrid")
 
 
-    subsets = [
-        ("cont_", cont_programs),
-        ("toy_", toy_seq),
-        ("tail_", tail_seq),
-        ("real_", real_seq),
-        ("ffi_", ffi_seq)
-        # ("_", None)
-    ]
+    if combined:
+        subsets = [("all_", cont_programs
+                         | toy_seq
+                         | tail_seq
+                         | real_seq
+                         | ffi_seq
+                   )]
+    else:
+        subsets = [
+            ("cont_", cont_programs),
+            ("toy_", toy_seq),
+            ("tail_", tail_seq),
+            ("real_", real_seq),
+            ("ffi_", ffi_seq)
+            # ("_", None)
+        ]
 
     # CODE SIZE
     if plots == [] or "size" in plots:
@@ -693,24 +708,25 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
             relative_time(data['obs'], baseline, dir, subset, prefix + "times.pdf")
 
     if plots == [] or "time" in plots and "gc" in plots:
+        wantMean = not combined
         prefix = ""
         generations = ["minor", "major", "global"]
         for prefix, subset in subsets:
             gc_plot(data['obs'], dir, "time-gc", "time-total", "Percent of run-time spent managing memory", \
-                        subset, prefix + "gc_time_total_pct.pdf")
+                        subset, prefix + "gc_time_total_pct.pdf", wantMean=wantMean)
 
             gc_plot(data['obs'], dir, "largeobj-time", "time-total", "Percent of run-time spent managing large objects", \
-                        subset, prefix + "gc_time_largeObj_pct.pdf")
+                        subset, prefix + "gc_time_largeObj_pct.pdf", wantMean=wantMean)
 
             # gc_plot(data['obs'], dir, "stackcache-misses", "stackcache-access", "Stack cache miss rate",\
             #             subset, prefix + "gc_stackcache_miss.pdf")
 
             for gen in generations:
                 gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of data that is live during " + gen + " GC", \
-                            subset, prefix + "gc_" + gen + "_live_pct.pdf")
+                            subset, prefix + "gc_" + gen + "_live_pct.pdf", wantMean=wantMean)
 
                 gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of stack frame data that is live during " + gen + " GC",\
-                            subset, prefix + "gc_" + gen + "_live_frames_pct.pdf", subtractAllocs="contig")
+                            subset, prefix + "gc_" + gen + "_live_frames_pct.pdf", subtractAllocs="contig", wantMean=wantMean)
 
 
 

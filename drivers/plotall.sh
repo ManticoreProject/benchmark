@@ -31,8 +31,6 @@ pushd ../plotting
 
 # TODO: ffi comparison plot
 
-# TODO: gc comparison plot
-
 # TODO: RAS comparison plot
 
 ###################
@@ -48,5 +46,9 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
           --progs "$CONTPROGS" --plots "time" --palette "YlGnBu"
 
 # look at GC statistics data
-./plot.py --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
+./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
           --plots "time,gc" --progs "~ffi-*" --palette "PuRd"
+
+GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
+./plot.py --fileprefix "paper_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
+          --plots "time,gc" --progs "$GCTIME_PROGS" --combined --palette "PuRd"
