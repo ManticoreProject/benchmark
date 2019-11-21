@@ -30,12 +30,12 @@ structure Main =
       fun doIt () = Benchmark.go ()
 
       fun lp 0 = ()
-      	| lp n = (doit(); lp (n-1))
+      	| lp n = (doIt(); lp (n-1))
 
       fun start () = lp iterations
 
   	in
-      	(RunSeq.run doIt; Process.success)
+      	(RunSeq.run start; Process.success)
   	end
 
 end
