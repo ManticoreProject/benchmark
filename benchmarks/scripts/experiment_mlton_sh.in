@@ -14,7 +14,7 @@ EXPERIMENT_NAME="experiment"
 DESCRIPTION=""
 GEN_GC_STATS="@GEN_GC_STATS@"
 NUM_TRIALS="1"
-RUN_PERF_REPS="3"  # positive integer of number of reps. 0 disables
+RUN_PERF_REPS="0"  # positive integer of number of reps. 0 disables
 
 usage="See the README file for instructions"
 
@@ -141,11 +141,11 @@ SEQUENTIAL_EXE=$BENCHMARK_PATH
 # gather size info with bloaty
 echo "running bloaty..."
 bloaty --csv "$SEQUENTIAL_EXE" > $SIZE_FILE
-# run the executable with cachegrind once
-echo "running cachegrind..."
-valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" "$SEQUENTIAL_EXE" $INPUT
 
 if [ $RUN_PERF_REPS != "0" ]; then
+  # run the executable with cachegrind once
+  echo "running cachegrind..."
+  valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" "$SEQUENTIAL_EXE" $INPUT
   # run the executable under perf to collect aggregate stats
   echo "running perf-stat..."
   perf stat -d -d --repeat=$RUN_PERF_REPS $SEQUENTIAL_EXE $ARGS 2> $PERF_STAT_FILE

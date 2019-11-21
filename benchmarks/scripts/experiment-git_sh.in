@@ -19,7 +19,7 @@ GEN_GC_STATS="@GEN_GC_STATS@"
 PMLC_FLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
 PRETTY_INPUT=""
-RUN_CACHEGRIND="true"  # to enable, use "true"
+RUN_CACHEGRIND="false"  # to enable, use "true"
 RUN_PERF_REPS="3"  # positive integer of number of reps. 0 disables
 
 usage="See the README file for instructions"
