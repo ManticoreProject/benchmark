@@ -16,6 +16,7 @@ import gather_data
 
 pfx = ""
 colors = ""
+base = ""
 
 # exports and closes the figure, with the correct global prefix requested
 def exportFig(g, dir, filename, extraArtists=[]):
@@ -106,6 +107,7 @@ def sortStacks(cats):
     new.sort()
     pushBack("mlton", new)
     pushBack("smlnj", new)
+    pushBack(base, new)  # if the baseline is included, it's dead last
     return new
 
 
@@ -623,6 +625,8 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
 def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette):
     global pfx
     global colors
+    global base
+    base = baseline
     pfx = fileprefix
     colors=palette
 
