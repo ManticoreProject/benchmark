@@ -60,7 +60,7 @@ EOF
 cat <<EOF
 #!/bin/bash
 
-OPT_LVL="-O0"
+OPT_LVL="-O1"
 
 ./run-test.sh "$HACK_OPT_LVL" "cps"
 ./run-test.sh "$HACK_OPT_LVL -linkstack" "linkstack"

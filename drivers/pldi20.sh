@@ -150,7 +150,7 @@ for versionDir in "${sub_versions[@]}"; do
         ../../scripts/gen-sequential-cont-experiment.sh "$test" "$INPUT" "$TRIALS" "$config" "false"
 
         # execute the tests!
-        OPT_LVL="-O0"
+        OPT_LVL="-O1"
         ./run-test.sh "$OPT_LVL" "cps"
         ./run-test.sh "$OPT_LVL -contigstack" "contig"
         ./run-test.sh "$OPT_LVL -segstack" "segstack"
