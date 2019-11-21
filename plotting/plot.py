@@ -23,6 +23,16 @@ def exportFig(g, dir, filename, extraArtists=[]):
     g.fig.savefig(os.path.join(dir, pfx + filename), bbox_extra_artists=extraArtists, bbox_inches='tight')
     plt.close(g.fig)
 
+def prettyStackName(s):
+    if s == "resizestack":
+        return "resize"
+    elif s == "linkstack":
+        return "linked"
+    elif s == "segstack":
+        return "segment"
+
+    return s
+
 
 # Controls for calculating confidence interval
 #  - if "sd", uses standard deviation instead.
@@ -157,6 +167,7 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 
     # make prog names nicer to read
     summed['problem_name'] = summed['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    summed['description'] = summed['description'].apply(prettyStackName)
 
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     g = sns.catplot(x="vmsize", y="problem_name", hue="description", data=summed,
@@ -273,8 +284,9 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     xMax = 2.0
     xBounds = (xMin, xMax)
 
-    # make prog names nicer to read
+    # make prog names and stacks nicer to read
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    df['description'] = df['description'].apply(prettyStackName)
 
     # stack kind ordering sort alphabetically
     order = list(df['description'].unique())
@@ -397,6 +409,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     xBounds = (0, 20.0)
 
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    df['description'] = df['description'].apply(prettyStackName)
 
     # list alphabetically
     order = list(df['description'].unique())
@@ -495,6 +508,7 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filena
     xBounds = (0, 100.0)
 
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    df['description'] = df['description'].apply(prettyStackName)
 
     # list alphabetically
     order = list(df['description'].unique())
