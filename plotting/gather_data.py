@@ -5,6 +5,7 @@ import json
 import pandas as pd
 
 import parse_cachegrind
+import parse_perfstat
 
 def _checkForOne(files, pattern, dir):
     if len(files) != 1:
@@ -128,6 +129,23 @@ def _collectCacheData(prog, kind, attr, dataDir):
     return df
 
 
+def _collectPerfData(prog, kind, attr, dataDir):
+    ''' collects perf stat data '''
+    attr = r'-' + attr if attr != "" else attr
+    kindRegex = kind + (r'-mc-(seq|par)' if kind != "mlton" and kind != "smlnj" else r'')
+
+    pattern = re.compile(r'.*-' + kindRegex + attr + r'-[0-9].*\.stat')
+    perfStatFile = _checkForOne(_getFile(dataDir, pattern), pattern, dataDir)
+
+    df = parse_perfstat.to_dataframe(perfStatFile)
+
+    # tag the info
+    df["problem_name"] = prog
+    df["description"] = kind
+
+    return df
+
+
 def _addTo(cur, new):
     ''' extend a pandas dataframe with more rows '''
     if cur is None:
@@ -145,14 +163,17 @@ def load(dir, progs, kinds, cached, plots):
     obsFile = os.path.join(dir, "observations.csv")
     sizeFile = os.path.join(dir, "sizes.csv")
     cacheGrindFile = os.path.join(dir, "cachegrind.csv")
+    perfDataFile = os.path.join(dir, "perf.csv")
 
     obsDataSet = None
     sizeDataSet = None
     cacheDataSet = None
+    perfDataSet = None
 
     wantTime = plots == [] or "time" in plots
     wantSize = plots == [] or "size" in plots
     wantCG   = plots == [] or "cg" in plots
+    wantPerf = plots == [] or "perf" in plots
 
     if not cached:
         for prog in progs:
@@ -170,6 +191,8 @@ def load(dir, progs, kinds, cached, plots):
                     sizeDataSet = _addTo(sizeDataSet, _collectSizeData(prog, kind, attr, dataDir))
                 if wantCG:
                     cacheDataSet = _addTo(cacheDataSet, _collectCacheData(prog, kind, attr, dataDir))
+                if wantPerf:
+                    perfDataSet = _addTo(perfDataSet, _collectPerfData(prog, kind, attr, dataDir))
 
         if wantTime:
             obsDataSet.reset_index(inplace=True)
@@ -183,6 +206,10 @@ def load(dir, progs, kinds, cached, plots):
             cacheDataSet.reset_index(inplace=True)
             cacheDataSet.to_csv(cacheGrindFile, index=False)
 
+        if wantPerf:
+            perfDataSet.reset_index(inplace=True)
+            perfDataSet.to_csv(perfDataFile, index=False)
+
     else:
         # load cached data
         if wantTime:
@@ -191,9 +218,12 @@ def load(dir, progs, kinds, cached, plots):
             sizeDataSet = pd.read_csv(sizeFile)
         if wantCG:
             cacheDataSet = pd.read_csv(cacheGrindFile)
+        if wantPerf:
+            perfDataSet = pd.read_csv(perfDataFile)
 
     data = {}
     data['obs'] = obsDataSet
     data['size'] = sizeDataSet
     data['cache'] = cacheDataSet
+    data['perf'] = perfDataSet
     return data
