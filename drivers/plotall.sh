@@ -54,5 +54,5 @@ GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
           --plots "time,gc" --progs "$GCTIME_PROGS" --combined --palette "PuRd"
 
 # look at perf data
-./plot.py --dir normal --kinds "cps,contig,linkstack,segstack,resizestack" --plots "perf" \
+./plot.py --dir "$RES_NORMAL" --kinds "cps,contig,linkstack,segstack,resizestack" --plots "perf" \
           --progs "~ffi-*" --combined --mean --palette "PuRd"
