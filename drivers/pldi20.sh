@@ -45,7 +45,6 @@ seq_tests=(
     "seq-evenodd"
     "seq-fib"
     "seq-life"
-    "seq-loop"
     "seq-mandelbrot"
     "seq-mazefun"
     "seq-merge"
@@ -67,8 +66,8 @@ seq_tests=(
 # also, they should be run with -sequential for ideal performance.
 ec_tests=(
     "ec-ack"
+    "ec-evenodd"
     "ec-fib"
-    "ec-loop"
     "ec-motzkin"
     "ec-sudan"
     "ec-tak"
