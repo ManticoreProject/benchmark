@@ -108,17 +108,20 @@ tail_seq = set(["seq-cpstak",
 
 real_seq = seq_programs - toy_seq - tail_seq
 
+ordering = ["contig", "resizestack", "segstack", "linkstack", "cps", "mlton", "smlnj"]
+
 def sortStacks(cats):
     def pushBack(key, lst):
         if key in lst:
             lst.remove(key)
             lst.append(key)
 
-    new = cats[:]
-    new.sort()
-    pushBack("mlton", new)
-    pushBack("smlnj", new)
-    pushBack(base, new)  # if the baseline is included, it's dead last
+    new = [x for x in ordering if x in cats]
+    # new = cats [:]
+    # new.sort()
+    # pushBack("mlton", new)
+    # pushBack("smlnj", new)
+    # pushBack(base, new)  # if the baseline is included, it's dead last
     return new
 
 
@@ -168,6 +171,7 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
 
     # make prog names nicer to read
     summed['problem_name'] = summed['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    summed['problem_name'] = summed['problem_name'].apply(lambda s: s.replace('cml-', ''))
     summed['description'] = summed['description'].apply(prettyStackName)
 
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
@@ -287,6 +291,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
     # make prog names and stacks nicer to read
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('cml-', ''))
     df['description'] = df['description'].apply(prettyStackName)
 
     # stack kind ordering sort alphabetically
@@ -303,7 +308,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     # g.set_ylabels("Benchmark Program")
     g.set_ylabels("")
-    g.set_xlabels("Speedup relative to \"" + baseline + "\" (higher is better)".format(baseline))
+    g.set_xlabels("Speedup relative to \"" + baseline + "\" (longer is better)".format(baseline))
 
     plt.xlim(xBounds)
     plt.axvline(x=1, color='gray')
@@ -410,6 +415,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     xBounds = (0, 20.0)
 
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('cml-', ''))
     df['description'] = df['description'].apply(prettyStackName)
 
     # list alphabetically
@@ -512,6 +518,7 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
     xBounds = range
 
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('cml-', ''))
     df['description'] = df['description'].apply(prettyStackName)
 
     # list alphabetically
@@ -753,13 +760,13 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     if plots == [] or "perf" in plots:
         rateMetrics = [
             ("branch-misses", "branches", "Branch predictor miss rate", (0, 10), True),
-            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 100), True),
+            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 50), True),
             ("instructions", "cycles", "Instructions per cycle", (0, 6), False),
             ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False),
             ("page-faults", "task-clock", "Page-faults per msec", (0, 225), False)
         ]
 
-        aspect = 8.5/9 if not combined else 10/len(progs)
+        aspect = 8.5/11 if not combined else 10/len(progs)
         for prefix, subset in subsets:
             for numer, denom, title, range, isPct in rateMetrics:
                 gc_plot(data['perf'], dir, numer, denom, title, \

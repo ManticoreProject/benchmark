@@ -43,7 +43,7 @@ pushd ../plotting
 CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | tr '/' ',' | xargs)
 ./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,smlnj" --baseline "cps" \
-          --progs "$CONTPROGS" --plots "time" --palette "YlGnBu"
+          --progs "$CONTPROGS" --plots "time" --palette "YlGnBu" --baseline "contig"
 
 # look at GC statistics data
 ./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
@@ -55,4 +55,4 @@ GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
 
 # look at perf data
 ./plot.py --dir "$RES_NORMAL" --kinds "cps,contig,linkstack,segstack,resizestack" --plots "perf" \
-          --progs "~ffi-*" --combined --mean --palette "PuRd"
+          --progs "~ffi-*" --mean --palette "PuRd"
