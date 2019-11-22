@@ -52,3 +52,7 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
 GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
 ./plot.py --fileprefix "paper_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
           --plots "time,gc" --progs "$GCTIME_PROGS" --combined --palette "PuRd"
+
+# look at perf data
+./plot.py --dir normal --kinds "cps,contig,linkstack,segstack,resizestack" --plots "perf" \
+          --progs "~ffi-*" --combined --mean --palette "PuRd"

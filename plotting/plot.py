@@ -443,7 +443,9 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 # GC PLOTTING
 
 ###############################
-def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filename="gc_ratio.pdf", subtractAllocs="", wantMean=True, height=1, aspect=8.5/9):
+def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
+    filename="gc_ratio.pdf", subtractAllocs="", wantMean=True, range=(0, 100), \
+    height=1, aspect=8.5/9, isPct=True):
     # simple ones for now
     assert type(numerator_s) == str
     assert type(denominator_s) == str
@@ -481,7 +483,8 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filena
                     print ("WARNING: {} / {} ratio in gc_plot for {} {}".format(numer, denom, prog, kind))
                 rate = 0.0
             else:
-                rate = 100.0 * (numer / denom)
+                scale = 100.0 if isPct else 1.0
+                rate = scale * (numer / denom)
 
             plotData['problem_name'].append(prog)
             plotData['description'].append(kind)
@@ -505,7 +508,7 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filena
         df = df.append(gmeanRows, sort=False)
 
     # cap the max
-    xBounds = (0, 100.0)
+    xBounds = range
 
     df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
     df['description'] = df['description'].apply(prettyStackName)
@@ -529,9 +532,10 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, filena
     numTicks = 11
     g.set(xticks=np.linspace(xMin,xMax, numTicks))
 
-    for ax in g.axes.flat:
-        # set x axis to use the percent formatter
-        ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
+    if isPct:
+        for ax in g.axes.flat:
+            # set x axis to use the percent formatter
+            ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
 
     plt.xlim(xBounds)
 
@@ -643,7 +647,9 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
                help="A Seaborn color pallete name\nSee: https://seaborn.pydata.org/tutorial/color_palettes.html")
 @click.option("--combined", is_flag=True, default=False, type=bool,
                 help="If true, will combine all known categories of programs into one plot.")
-def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combined):
+@click.option("--mean", is_flag=True, default=False, type=bool,
+                help="If true, always include mean when possible.")
+def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combined, mean):
     global pfx
     global colors
     global base
@@ -694,7 +700,7 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     # https://seaborn.pydata.org/tutorial/aesthetics.html
     sns.set_style("whitegrid")
 
-
+    wantMean = not combined or mean
     if combined:
         subsets = [("all_", cont_programs
                          | toy_seq
@@ -722,7 +728,6 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
             relative_time(data['obs'], baseline, dir, subset, prefix + "times.pdf")
 
     if plots == [] or "time" in plots and "gc" in plots:
-        wantMean = not combined
         prefix = ""
         generations = ["minor", "major", "global"]
         for prefix, subset in subsets:
@@ -743,6 +748,23 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
                             subset, prefix + "gc_" + gen + "_live_frames_pct.pdf", subtractAllocs="contig", wantMean=wantMean)
 
 
+    # PERF
+    if plots == [] or "perf" in plots:
+        rateMetrics = [
+            ("branch-misses", "branches", "Branch predictor miss rate", (0, 10), True),
+            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 100), True),
+            ("instructions", "cycles", "Instructions per cycle", (0, 6), False),
+            ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False),
+            ("page-faults", "task-clock", "Page-faults per msec", (0, 225), False)
+        ]
+
+        aspect = 8.5/9 if not combined else 10/len(progs)
+        for prefix, subset in subsets:
+            for numer, denom, title, range, isPct in rateMetrics:
+                gc_plot(data['perf'], dir, numer, denom, title, \
+                            subset, prefix + "perf_" + numer + ".pdf", \
+                            wantMean=wantMean, range=range, isPct=isPct, \
+                            aspect=aspect)
 
 
     # CACHEGRIND
