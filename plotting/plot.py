@@ -293,7 +293,7 @@ def print_rel_times(df, baseline, subset=None):
 
 
 ################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.pdf", height=1, aspect=8.5/11):
+def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.pdf", height=1, aspect=8.5/9):
     df = df.copy()
 
     if subset:
@@ -807,8 +807,8 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
                 gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of data that is live during " + gen + " GC", \
                             subset, prefix + "gc_" + gen + "_live_pct.pdf", wantMean=wantMean)
 
-                gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of stack frame data that is live during " + gen + " GC",\
-                            subset, prefix + "gc_" + gen + "_live_frames_pct.pdf", subtractAllocs="contig", wantMean=wantMean)
+                # gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of stack frame data that is live during " + gen + " GC",\
+                #             subset, prefix + "gc_" + gen + "_live_frames_pct.pdf", subtractAllocs="contig", wantMean=wantMean)
 
 
     # PERF
@@ -817,7 +817,7 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
             ("branch-misses", "branches", "Branch predictor miss rate", (0, 10), True),
             ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 50), True),
             ("instructions", "cycles", "Instructions per cycle", (0, 6), False),
-            ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False),
+            # ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False),
             ("page-faults", "task-clock", "Page-faults per msec", (0, 225), False)
         ]
 
