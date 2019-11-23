@@ -108,7 +108,7 @@ tail_seq = set(["seq-cpstak",
 
 real_seq = seq_programs - toy_seq - tail_seq
 
-ordering = ["contig", "resizestack", "segstack", "linkstack", "cps", "mlton", "smlnj"]
+ordering = list(map (prettyStackName, ["contig", "resizestack", "segstack", "linkstack", "cps", "mlton", "smlnj"]))
 
 def sortStacks(cats):
     def pushBack(key, lst):
@@ -240,8 +240,8 @@ def addLabels(plt, ax, x_max):
 
 
 
-################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", height=1, aspect=8.5/11):
+
+def print_rel_times(df, baseline, subset=None):
     df = df.copy()
 
     if subset:
@@ -274,7 +274,59 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["time_sec"]
         gmean = stats.gmean(allTimes)
-        average["problem_name"].append("GEOMEAN")
+        average["problem_name"].append("GMEAN")
+        average["description"].append(kind)
+        average["time_sec"].append(gmean)
+
+    gmeanRows = pd.DataFrame.from_dict(average)
+    df = df.append(gmeanRows, sort=False)
+
+    # drop all data involving baseline, since we're now relative to that.
+    df = df[df["description"] != baseline]
+
+    # make prog names and stacks nicer to read
+    df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('seq-', ''))
+    df['problem_name'] = df['problem_name'].apply(lambda s: s.replace('cml-', ''))
+    df['description'] = df['description'].apply(prettyStackName)
+
+    print(df)
+
+
+################### RELATIVE TIME PLOT
+def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.pdf", height=1, aspect=8.5/11):
+    df = df.copy()
+
+    if subset:
+        df = df[df['problem_name'].isin(subset)]
+    if len(df) == 0:
+        print("NOTE: no time data matched the subset ", subset)
+        return
+
+    # process
+    for prog in df['problem_name'].unique():
+        obs = df[df['problem_name'] == prog]
+        baselineAvg = obs[obs['description'] == baseline]['time_sec'].mean()
+
+        if baselineAvg is None or baselineAvg <= 0:
+            print("invalid baseline average found in data for ", prog)
+            assert false
+
+        def f(row):
+            if row['problem_name'] == prog:
+                return baselineAvg / row['time_sec']
+            else:
+                return row['time_sec']
+
+        df['time_sec'] = df.apply(f, axis=1)
+
+
+    # compute an average among the different stack kinds.
+    # NOTE: we use geometric mean because speedup is unbounded and won't be zero
+    average = {"problem_name": [], "description": [], "time_sec": []}
+    for kind in df["description"].unique():
+        allTimes = df[df["description"] == kind]["time_sec"]
+        gmean = stats.gmean(allTimes)
+        average["problem_name"].append("GMEAN")
         average["description"].append(kind)
         average["time_sec"].append(gmean)
 
@@ -286,7 +338,7 @@ def relative_time(df, baseline, dir, subset=None, filename="running_time.pdf", h
 
     # cap the max
     xMin = 0.0
-    xMax = 2.0
+    xMax = xmax
     xBounds = (xMin, xMax)
 
     # make prog names and stacks nicer to read
@@ -657,7 +709,9 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
                 help="If true, will combine all known categories of programs into one plot.")
 @click.option("--mean", is_flag=True, default=False, type=bool,
                 help="If true, always include mean when possible.")
-def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combined, mean):
+@click.option("--xmax", default=2.0, type=float,
+               help="Max on X scale for speedup.")
+def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combined, mean, xmax):
     global pfx
     global colors
     global base
@@ -733,7 +787,8 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     # RUNNING TIMES
     if plots == [] or "time" in plots:
         for prefix, subset in subsets:
-            relative_time(data['obs'], baseline, dir, subset, prefix + "times.pdf")
+            # print_rel_times(data['obs'], baseline)
+            relative_time(data['obs'], baseline, dir, xmax, subset, prefix + "times.pdf")
 
     if plots == [] or "time" in plots and "gc" in plots:
         prefix = ""

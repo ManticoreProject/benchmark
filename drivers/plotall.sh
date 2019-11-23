@@ -43,15 +43,15 @@ pushd ../plotting
 CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | tr '/' ',' | xargs)
 ./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,smlnj" --baseline "cps" \
-          --progs "$CONTPROGS" --plots "time" --palette "YlGnBu" --baseline "contig"
+          --progs "$CONTPROGS" --plots "time" --palette "YlGnBu" --baseline "contig" --xmax 3
 
 # look at GC statistics data
 ./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
           --plots "time,gc" --progs "~ffi-*" --palette "PuRd"
 
-GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
-./plot.py --fileprefix "paper_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
-          --plots "time,gc" --progs "$GCTIME_PROGS" --combined --palette "PuRd"
+# GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
+# ./plot.py --fileprefix "paper_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
+#           --plots "time,gc" --progs "$GCTIME_PROGS" --combined --palette "PuRd"
 
 # look at perf data
 ./plot.py --dir "$RES_NORMAL" --kinds "cps,contig,linkstack,segstack,resizestack" --plots "perf" \
