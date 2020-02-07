@@ -74,7 +74,6 @@ ec_tests=(
 )
 
 # you'll want to pass -p 1 to level the playing-field with SML/NJ.
-# TODO: do something with these!
 cml_tests=(
     "cml-spawn"
     "cml-pingpong"
@@ -109,8 +108,6 @@ for versionDir in "${sub_versions[@]}"; do
 
   ########
   # prepare benchmarks
-
-  git clean -df ..
 
   pushd ../benchmarks
   autoconf -Iconfig
