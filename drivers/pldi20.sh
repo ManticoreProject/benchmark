@@ -109,6 +109,8 @@ for versionDir in "${sub_versions[@]}"; do
   ########
   # prepare benchmarks
 
+  git clean -df ..
+
   pushd ../benchmarks
   autoconf -Iconfig
   ./configure --with-manticore="$MC" --with-resultsdir="$versionDir" $CONFFLAG
