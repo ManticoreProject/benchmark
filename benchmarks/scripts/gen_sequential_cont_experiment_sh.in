@@ -70,7 +70,7 @@ OPT_LVL="-O1"
 
 if [ "$GEN_GC_STATS" == "false" ]; then
 
-  if [ $BINARY_NAME == "mc-seq" ]; then
+  if [ "$BINARY_NAME" == "mc-seq" ]; then
     ./run-test.sh "$HACK_OPT_LVL -linkstack -noras" "linkstack-noras"
     ./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
     ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
@@ -80,7 +80,7 @@ if [ "$GEN_GC_STATS" == "false" ]; then
     # ./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
     # ./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
 
-    if [ $USE_MLTON == "true" ]; then
+    if [ "$USE_MLTON" == "true" ]; then
       ################
       # test mlton
       make clean
