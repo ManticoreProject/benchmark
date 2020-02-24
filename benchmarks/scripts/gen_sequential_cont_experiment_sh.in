@@ -76,8 +76,9 @@ if [ "$GEN_GC_STATS" == "false" ]; then
     ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
     ./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
 
-    ./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
-    ./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
+    ## sealing capture is incredibly slow... 14 sec ec-ack takes 700 sec with it on.
+    # ./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"
+    # ./run-test.sh "$HACK_OPT_LVL -resizestack -sealingcapture" "resizestack-sealingcapture"
 
     if [ $USE_MLTON == "true" ]; then
       ################
