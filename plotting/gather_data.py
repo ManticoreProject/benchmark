@@ -185,6 +185,14 @@ def load(dir, progs, kinds, cached, plots):
                 kind = split[0]
                 attr = split[1] if len(split) > 1 else ""
 
+                # We accidentially made the noras versions of
+                # filenames inconsistent with shim/noshim:
+                # NAME-mc-seq-SHIM
+                #    vs
+                # NAME-NORAS-mc-seq
+                # so you must ask for NAME+NORAS and then we fix that up to a dash. :(
+                kind = kind.replace('+', '-')
+
                 if wantTime:
                     obsDataSet = _addTo(obsDataSet, _collectMantiBenchData(kind, attr, dataDir))
                 if wantSize:

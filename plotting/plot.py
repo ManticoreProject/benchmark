@@ -122,6 +122,11 @@ def sortStacks(cats):
     # pushBack("mlton", new)
     # pushBack("smlnj", new)
     # pushBack(base, new)  # if the baseline is included, it's dead last
+
+    # this is needed because the *-noshim, *-shim, *-ras etc versions aren't in that ordering!
+    if len(new) != cats:
+        return sorted(cats)  # provide a stable sorting at least
+
     return new
 
 
@@ -752,6 +757,10 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
         assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
 
     data = gather_data.load(dir, progs, kinds, cached, plots)
+
+    # fixups due to noras ugliness
+    kinds = [x.replace('+', '-') for x in kinds]
+    baseline = baseline.replace('+', '-')
 
     print("finished loading. now producing plots...")
 

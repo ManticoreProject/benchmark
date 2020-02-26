@@ -29,10 +29,6 @@ pushd ../plotting
 # ./plot.py --fileprefix "same_" --dir "$RES_NORMAL" \
 #           --kinds "cps,contig,segstack,resizestack,linkstack" --baseline "cps" --progs '~ffi-*'
 
-# TODO: ffi comparison plot
-
-# TODO: RAS comparison plot
-
 ###################
 # compare with mlton and SML/NJ for Sequential progs
 ./plot.py --fileprefix "cross_" --dir "$RES_NORMAL" \
@@ -56,3 +52,20 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
 # look at perf data
 ./plot.py --dir "$RES_NORMAL" --kinds "cps,contig,linkstack,segstack,resizestack" --plots "perf" \
           --progs "~ffi-*" --mean --palette "PuRd"
+
+
+
+# FFI comparison plots. linkstack is not affected by the shim flag.
+declare -a ffiArr=("cps" "contig" "segstack" "resizestack")
+for kind in "${ffiArr[@]}"; do
+  ./plot.py --fileprefix "ffi_${kind}_" --dir "$RES_NORMAL" --kinds "${kind}-shim,${kind}-noshim" --baseline "${kind}-shim" \
+                --plots "time" --progs "ffi-*"
+done
+
+
+# RAS comparison plots.
+declare -a rasArr=("contig" "segstack" "resizestack" "linkstack")
+for kind in "${rasArr[@]}"; do
+  ./plot.py --fileprefix "ras_${kind}_" --dir "$RES_NORMAL" --kinds "${kind}+noras,${kind}" --baseline "${kind}+noras" \
+                --plots "time" --progs 'seq-*'
+done
