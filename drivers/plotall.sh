@@ -68,4 +68,8 @@ declare -a rasArr=("contig" "segstack" "resizestack" "linkstack")
 for kind in "${rasArr[@]}"; do
   ./plot.py --fileprefix "ras_${kind}_" --dir "$RES_NORMAL" --kinds "${kind}+noras,${kind}" --baseline "${kind}+noras" \
                 --plots "time" --progs 'seq-*'
+
+  # we want this plot to basically just to get the total GEOMEAN
+  ./plot.py --fileprefix "ras_TOTAL_${kind}_" --dir "$RES_NORMAL" --kinds "${kind}+noras,${kind}" --baseline "${kind}+noras" \
+                --plots "time" --progs 'seq-*' --combined
 done
