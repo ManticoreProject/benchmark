@@ -108,25 +108,28 @@ tail_seq = set(["seq-cpstak",
 
 real_seq = seq_programs - toy_seq - tail_seq
 
-ordering = list(map (prettyStackName, ["contig", "resizestack", "segstack", "linkstack", "cps", "mlton", "smlnj"]))
-
+# an O(n^2) relative sorting algorithm, based on human desired order.
 def sortStacks(cats):
     def pushBack(key, lst):
-        if key in lst:
-            lst.remove(key)
-            lst.append(key)
+        for idx in range(len(lst)):
+            # partial matcher
+            if lst[idx].startswith(key) or lst[idx].startswith(prettyStackName(key)):
+                lst.append(lst.pop(idx)) # move it to the back
+                return
 
-    new = [x for x in ordering if x in cats]
-    # new = cats [:]
-    # new.sort()
-    # pushBack("mlton", new)
-    # pushBack("smlnj", new)
+    new = cats [:]
+    # This is the desired ordering. Anything not in this sequence of pushBacks
+    # will remain in the front.
+    pushBack("contig", new)
+    pushBack("resizestack", new)
+    pushBack("segstack", new)
+    pushBack("linkstack", new)
+    pushBack("cps", new)
+    pushBack("mlton", new)
+    pushBack("smlnj", new)
     # pushBack(base, new)  # if the baseline is included, it's dead last
 
-    # this is needed because the *-noshim, *-shim, *-ras etc versions aren't in that ordering!
-    if len(new) != cats:
-        return sorted(cats)  # provide a stable sorting at least
-
+    assert len(cats) == len(new), "we lost an element!"
     return new
 
 
