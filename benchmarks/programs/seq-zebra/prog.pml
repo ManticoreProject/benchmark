@@ -119,17 +119,28 @@ val poss = [1, 2, 3, 4, 5]
 val first = SOME 1
 val middle = SOME 3
 
-fun toUnit x = ()
+structure Compat = struct
+  (* General.ignore *)
+  fun ignor x = ()
+
+  (* General.before, but second argument must be a thunk. this is to preserve
+     side-effects in a CBV language. *)
+  fun befor a b = let
+    val () = b ()
+  in
+    a
+  end
+end
 
 type 'a attribute = {poss: pos list,
                      unknown: 'a list,
                      known: (pos * 'a) list}
 
 exception Done
-fun 'a fluidLet (r: 'a ref, x: 'a, f: unit -> 'b): 'b =
+fun 'a fluidLet (r: 'a ref, x: 'a, f: unit -> 'b) : 'b =
    let val old = !r
    in r := x
-      ; (f () before r := old)
+      ; Compat.befor (f ()) (fn () => r := old)
       handle Done => raise Done
            | e => (r := old; raise e)
    end
@@ -206,7 +217,7 @@ fun search () =
             fun loop (l, ac) =
                case l of
                   [] => ()
-                | x :: l => (toUnit (f (x, l @ ac)); loop (l, x :: ac))
+                | x :: l => (Compat.ignor (f (x, l @ ac)); loop (l, x :: ac))
          in loop (l, [])
          end
 
