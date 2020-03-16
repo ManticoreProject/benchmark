@@ -137,7 +137,7 @@ type 'a attribute = {poss: pos list,
                      known: (pos * 'a) list}
 
 exception Done
-fun 'a fluidLet (r: 'a ref, x: 'a, f: unit -> 'b) : 'b =
+fun fluidLet (r: 'a ref, x: 'a, f: unit -> 'b) : 'b =
    let val old = !r
    in r := x
       ; Compat.befor (f ()) (fn () => r := old)
