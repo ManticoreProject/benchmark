@@ -119,6 +119,8 @@ val poss = [1, 2, 3, 4, 5]
 val first = SOME 1
 val middle = SOME 3
 
+fun toUnit x = ()
+
 type 'a attribute = {poss: pos list,
                      unknown: 'a list,
                      known: (pos * 'a) list}
@@ -204,7 +206,7 @@ fun search () =
             fun loop (l, ac) =
                case l of
                   [] => ()
-                | x :: l => (f (x, l @ ac); loop (l, x :: ac))
+                | x :: l => (toUnit (f (x, l @ ac)); loop (l, x :: ac))
          in loop (l, [])
          end
 
@@ -286,6 +288,8 @@ fun search () =
 
 structure Main =
    struct
+      val defaultN = 5000
+
       fun doit n =
          let
             fun loop n =
@@ -293,6 +297,10 @@ structure Main =
                   then ()
                else (search ()
                      ; loop (n - 1))
-         in loop (n * 1000)
+         in loop n
          end
+
+      fun main _ = (RunSeq.run (fn () => doit defaultN ) ; Process.success)
    end
+
+val _ = Main.main (CommandLine.name (), CommandLine.arguments ())
