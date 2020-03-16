@@ -1,0 +1,13 @@
+(* mlton.mlb
+ *
+ * COPYRIGHT (c) 2019 John Reppy (http://cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *)
+
+$(SML_LIB)/basis/basis.mlb
+
+ann "sequenceNonUnit error" in
+  ../../common/run-seq.sml
+  compat.sml
+  prog.sml
+end
