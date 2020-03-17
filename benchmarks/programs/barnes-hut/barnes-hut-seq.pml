@@ -208,7 +208,7 @@ structure Main =
 		end
 
 	in
-	    RunSeq.run doit
+	    (RunSeq.run doit ; Process.success)
 	end
 
   end

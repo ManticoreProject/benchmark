@@ -10,3 +10,4 @@ is
 
 	vector2.sml
 	gen-bodies.sml
+	gen-bodies-main.sml

@@ -8,7 +8,7 @@ structure GenBodies =
     val rand = Random.rand (0, 1)
 
     (* random numbers *)
-    fun xrand (xl, xh) = 
+    fun xrand (xl, xh) =
 	let
 	    val r = Random.randReal rand * 1000000000.0
 	in
@@ -16,9 +16,9 @@ structure GenBodies =
 	end
 
     (* pick a random point on a sphere of specified radius. *)
-    fun pickshell rad = 
+    fun pickshell rad =
 	let
-	    fun pickvec () = 
+	    fun pickvec () =
 		let
 		    val vec = V.tabulate (fn _ => 1.0 - Random.randReal rand * 2.0)
 		    val rsq = V.dotvp(vec, vec)
@@ -53,7 +53,7 @@ structure GenBodies =
 			 fun norm x =
 			     (case x
 			       of (nil, l) => l
-				| ((mass, pos, vel) :: r, l) => 
+				| ((mass, pos, vel) :: r, l) =>
 				  let
 				      val posN = V.subv(pos,cmr)
 				      val velN = V.subv(vel,cmv)
@@ -67,7 +67,7 @@ structure GenBodies =
 		     let
 			 val r = 1.0 / Math.sqrt (Math.pow(xrand(0.0, mfrac), ~2.0/3.0) - 1.0)
 			 val pos = pickshell (rsc * r)
-			 fun vN () = 
+			 fun vN () =
 			     let		(* von Neumann technique *)
 				 val x = xrand(0.0,1.0)
 				 val y = xrand(0.0,0.1)
@@ -83,50 +83,5 @@ structure GenBodies =
 	in
 	    mkBodies (n, V.zerov, V.zerov, nil)
 	end (* testdata *)
-	
-  end
-
-structure Main = struct
-
-    val dfltN = 500000
-
-    val printLn = fn s => print (s^"\n")
-
-    fun particle2sml (mass, (xp,yp), (xv, yv)) =
-	"BHS.PARTICLE(BHS.MP("^Real.toString xp^","^Real.toString yp^","^Real.toString mass^"),"^Real.toString xv^","^Real.toString yv^")"
-
-    fun outputSML n =
-	let
-	    fun p b = (
-		print (particle2sml b);
-		printLn " :: ")
-	in
-	    printLn "val initialBodies =";
-	    List.app p (GenBodies.testdata n);
-	    printLn "nil"
-	end
-
-    val realToCString = String.map (fn #"~" => #"-" | c => c) o Real.toString
-
-    fun particle2s (mass, (xp,yp), (xv, yv)) =
-	realToCString xp^" "^realToCString yp^" "^realToCString mass^" "^realToCString xv^" "^realToCString yv
-
-    fun outputFile n =
-	let
-	    fun p b = print (particle2s b^"\n")
-	in
-	    print (Int.toString n^"\n");
-	    List.app p (GenBodies.testdata n)
-	end
-
-    fun main (_, n :: format :: _) =
-	let
-	    val n = Option.getOpt (Int.fromString n, dfltN)
-	in
-	    (case format
-	      of "sml" => outputSML n
-	       | "file" => outputFile n);
-	    OS.Process.success
-	end
 
 end

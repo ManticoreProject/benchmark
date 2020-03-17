@@ -5,7 +5,7 @@ Library
 is
 
 	$/basis.cm
-	(* $/smlnj-lib.cm *)
+	$/smlnj-lib.cm
 
 	../../common/run-seq.sml
 	compat.sml
