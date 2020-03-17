@@ -5,9 +5,10 @@ Library
 is
 
 	$/basis.cm
-	$/smlnj-lib.cm
+	(* $/smlnj-lib.cm *)
 
 	../../common/run-seq.sml
+	compat.sml
 	gen-bodies.cm
-	../../lib/par-rope-lib/sources.cm
-	barnes-hut.sml
+	(* ../../lib/par-rope-lib/sources.cm *)
+	barnes-hut-seq.sml
