@@ -71,13 +71,30 @@ fun add_lemma term = (case term
 
 (* substitutions *)
 
-exception failure of string;
+(* Manticore's case-expansion pass currently doesn't support any sort of pattern
+   matching in a 'handle' expression beyond the wildcard pattern!
+   However, for correctness we need to know _which_ exception was raised, so
+   we have hacked it in with a global ref like C's errno *)
+
+val NoExn = 0
+val UnifyExn = 1
+val FailureExn = 2
+val errno : int Ref.ref = Ref.new NoExn
+
+exception Something;
+
+fun raiseExn num = (Ref.set (errno, num); raise Something)
+fun tryCatch exnNum (f, alt) = f() handle _ =>
+                                      if (Ref.get errno) = exnNum
+                                        then (Ref.set (errno, NoExn) ; alt())
+                                        else (raise Something)
+
+
 
 datatype binding = Bind of int * term
-;
 
 fun get_binding (v : int) =
-  let fun get_rec nil = (raise (failure "unbound"))
+  let fun get_rec nil = raiseExn FailureExn
         | get_rec (Bind(w,t)::rest) =
             if v = w then t else get_rec rest
   in
@@ -86,36 +103,37 @@ fun get_binding (v : int) =
 ;
 
 fun apply_subst alist =
-  let fun as_rec term = (case term
-    of Var v => ((get_binding v alist) handle failure _ => term)
-     | Prop (head,argl) => Prop (head, map as_rec argl)
-    (* end case *))
+  let
+    fun as_rec term = (case term
+      of Var v => tryCatch FailureExn (fn () => get_binding v alist, fn () => term)
+       | Prop (head,argl) => Prop (head, map as_rec argl)
+      (* end case *))
+
   in
     as_rec
   end
 ;
 
-exception Unify;
-
 fun unify (term1, term2) = unify1 (term1, term2, [])
 and unify1 (term1, term2, unify_subst) =
  (case term2 of
     Var v =>
-      ((if termEq (get_binding v unify_subst,  term1)
-        then unify_subst
-        else (raise Unify))
-       handle failure _ =>
-        Bind(v,term1)::unify_subst)
+      tryCatch FailureExn (
+          fn () => if termEq (get_binding v unify_subst,  term1)
+                    then unify_subst
+                    else raiseExn UnifyExn,
+          fn () => Bind(v,term1)::unify_subst
+      )
   | Prop (head2,argl2) =>
       case term1 of
-         Var _ => (raise Unify)
+         Var _ => raiseExn UnifyExn
        | Prop (head1,argl1) =>
            if headEq (head1, head2) then unify1_lst (argl1, argl2, unify_subst)
-                          else (raise Unify))
+                          else raiseExn UnifyExn)
 and unify1_lst ([], [], unify_subst) = unify_subst
   | unify1_lst (h1::r1, h2::r2, unify_subst) =
       unify1_lst(r1, r2, unify1(h1, h2, unify_subst))
-  | unify1_lst _ = (raise Unify)
+  | unify1_lst _ = raiseExn UnifyExn
 ;
 
 fun rewrite term = (case term
@@ -128,9 +146,11 @@ fun rewrite term = (case term
 
 and rewrite_with_lemmas (term, []) = term
   | rewrite_with_lemmas (term, (t1,t2)::rest) =
-        rewrite (apply_subst (unify (term, t1)) t2)
-      handle unify => (* <- probably should be Unify, but this non-functional typo is in the original *)
-        rewrite_with_lemmas (term, rest)
+      tryCatch UnifyExn (
+          fn () => rewrite (apply_subst (unify (term, t1)) t2),
+          fn () => rewrite_with_lemmas (term, rest)
+       )
+
 ;
 end;
 (* rules.sml:
