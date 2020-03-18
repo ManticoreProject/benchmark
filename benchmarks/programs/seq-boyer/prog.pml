@@ -29,6 +29,19 @@ structure Terms (* :TERMS *) =
 
     val lemmas = Ref.new ([] : head list)
 
+    (* manual implementation of polymorphic equality operation over terms *)
+    fun termEq x = (case x
+      of (Var a, Var b) => (a = b)
+       | (Prop((n1, refL1), rest1), Prop((n2, refL2), rest2)) =>
+            n1 = n2 andalso propsEq (Ref.get refL1, Ref.get refL2)
+       | _ => false
+       (* end case *))
+
+    and propsEq (a : (term * term) list,
+                 b : (term * term) list) = false
+
+    and termPairEq ((a1, a2), (b1, b2)) = termEq (a1, b1) andalso termEq (a2, b2)
+
 (* replacement for property lists *)
 
     fun headname (name, _) = name;
@@ -40,7 +53,7 @@ fun get name =
             then hd1
             else get_rec hdl
         end
-        | get_rec [] =
+        | get_rec nil =
       let val entry = (name, Ref.new []) in
         Ref.set (lemmas, entry :: (Ref.get lemmas));
         entry
@@ -51,7 +64,7 @@ fun get name =
 ;
 
 fun add_lemma term = (case term
-  of Prop(_, [left, right]) => (case left
+  of Prop(_, left :: right :: nil) => (case left
     of Prop((_, r),_) =>
       Ref.set (r, (left, right) :: Ref.get r)
   (* end cases *)))
@@ -64,8 +77,8 @@ exception failure of string;
 datatype binding = Bind of int * term
 ;
 
-fun get_binding v =
-  let fun get_rec [] = raise (failure "unbound")
+fun get_binding (v : int) =
+  let fun get_rec nil = (raise (failure "unbound"))
         | get_rec (Bind(w,t)::rest) =
             if v = w then t else get_rec rest
   in
@@ -91,19 +104,19 @@ and unify1 (term1, term2, unify_subst) =
     Var v =>
       ((if get_binding v unify_subst = term1
         then unify_subst
-        else raise Unify)
+        else (raise Unify))
        handle failure _ =>
         Bind(v,term1)::unify_subst)
   | Prop (head2,argl2) =>
       case term1 of
-         Var _ => raise Unify
+         Var _ => (raise Unify)
        | Prop (head1,argl1) =>
            if head1=head2 then unify1_lst (argl1, argl2, unify_subst)
-                          else raise Unify)
+                          else (raise Unify))
 and unify1_lst ([], [], unify_subst) = unify_subst
   | unify1_lst (h1::r1, h2::r2, unify_subst) =
       unify1_lst(r1, r2, unify1(h1, h2, unify_subst))
-  | unify1_lst _ = raise Unify
+  | unify1_lst _ = (raise Unify)
 ;
 
 fun rewrite term = (case term
@@ -826,7 +839,7 @@ val rewrite = T.rewrite
 type head = T.head
 
 
-fun mem x [] = false
+fun mem x nil = false
   | mem x (y::L) = x=y orelse mem x L
 
 fun truep (x, lst) =
@@ -848,7 +861,7 @@ fun tautologyp (x, true_lst, false_lst) =
  if falsep (x, false_lst) then false else
  (case x of
      T.Var _ => false
-   | T.Prop (head,[test, yes, no]) =>
+   | T.Prop (head,test :: yes :: no :: nil) =>
         if headname head = "if" then
           if truep (test, true_lst) then
             tautologyp (yes, true_lst, false_lst)
@@ -939,7 +952,8 @@ val term =
           then TextIO.output (outstrm, "Proved!\n")
           else TextIO.output (outstrm, "Cannot prove!\n")
 
-    fun doit () = (ignore (tautp (apply_subst subst term)); ())
+    fun ignor _ = ()
+    fun doit () = (ignor (tautp (apply_subst subst term)); ())
 
   end; (* Main *)
 
