@@ -32,15 +32,14 @@ structure Terms (* :TERMS *) =
     (* manual implementation of polymorphic equality operation over terms *)
     fun termEq x = (case x
       of (Var a, Var b) => (a = b)
-       | (Prop((n1, refL1), rest1), Prop((n2, refL2), rest2)) =>
-            n1 = n2 andalso propsEq (Ref.get refL1, Ref.get refL2)
+       | (Prop(head1, rest1), Prop(head2, rest2)) =>
+            headEq (head1, head2) andalso ListPair.allEq termEq (rest1, rest2)
        | _ => false
        (* end case *))
 
-    and propsEq (a : (term * term) list,
-                 b : (term * term) list) = false
-
-    and termPairEq ((a1, a2), (b1, b2)) = termEq (a1, b1) andalso termEq (a2, b2)
+    and headEq ((n1, refL1) : head, (n2, refL2) : head) =
+      (* NOTE: polymorphic equality of refs is via _pointer comparison_ *)
+      n1 = n2 andalso Ref.pointerEq (refL1, refL2)
 
 (* replacement for property lists *)
 
@@ -102,7 +101,7 @@ fun unify (term1, term2) = unify1 (term1, term2, [])
 and unify1 (term1, term2, unify_subst) =
  (case term2 of
     Var v =>
-      ((if get_binding v unify_subst = term1
+      ((if termEq (get_binding v unify_subst,  term1)
         then unify_subst
         else (raise Unify))
        handle failure _ =>
@@ -111,7 +110,7 @@ and unify1 (term1, term2, unify_subst) =
       case term1 of
          Var _ => (raise Unify)
        | Prop (head1,argl1) =>
-           if head1=head2 then unify1_lst (argl1, argl2, unify_subst)
+           if headEq (head1, head2) then unify1_lst (argl1, argl2, unify_subst)
                           else (raise Unify))
 and unify1_lst ([], [], unify_subst) = unify_subst
   | unify1_lst (h1::r1, h2::r2, unify_subst) =
@@ -836,11 +835,12 @@ structure Boyer (* : BOYER *) =
 structure T = Terms
 val headname = T.headname
 val rewrite = T.rewrite
+val termEq = T.termEq
 type head = T.head
 
 
 fun mem x nil = false
-  | mem x (y::L) = x=y orelse mem x L
+  | mem x (y::L) = termEq(x, y) orelse mem x L
 
 fun truep (x, lst) =
   case x of
