@@ -34,8 +34,12 @@ structure Terms (* :TERMS *) =
     fun headname (name, _) = name;
 
 fun get name =
-  let fun get_rec ((hd1 as (n,_))::hdl) =
-      if n = name then hd1 else get_rec hdl
+  let fun get_rec (hd1::hdl) =
+        let val (n, _) = hd1 in
+          if n = name
+            then hd1
+            else get_rec hdl
+        end
         | get_rec [] =
       let val entry = (name, Ref.new []) in
         Ref.set (lemmas, entry :: (Ref.get lemmas));
@@ -46,8 +50,11 @@ fun get name =
   end
 ;
 
-fun add_lemma (Prop(_, [(left as Prop((_, r),_)), right])) =
-  Ref.set (r, (left, right) :: Ref.get r)
+fun add_lemma term = (case term
+  of Prop(_, [left, right]) => (case left
+    of Prop((_, r),_) =>
+      Ref.set (r, (left, right) :: Ref.get r)
+  (* end cases *)))
 ;
 
 (* substitutions *)
@@ -67,10 +74,10 @@ fun get_binding v =
 ;
 
 fun apply_subst alist =
-  let fun as_rec (term as Var v) =
-            ((get_binding v alist) handle failure _ => term)
-        | as_rec (Prop (head,argl)) =
-            Prop (head, map as_rec argl)
+  let fun as_rec term = (case term
+    of Var v => ((get_binding v alist) handle failure _ => term)
+     | Prop (head,argl) => Prop (head, map as_rec argl)
+    (* end case *))
   in
     as_rec
   end
@@ -99,9 +106,14 @@ and unify1_lst ([], [], unify_subst) = unify_subst
   | unify1_lst _ = raise Unify
 ;
 
-fun rewrite (term as Var _) = term
-  | rewrite (Prop ((head as (_, p)), argl)) =
-      rewrite_with_lemmas (Prop (head, map rewrite argl),  Ref.get p)
+fun rewrite term = (case term
+  of Var _ => term
+   | Prop (head, argl) =>
+      let val (_, p) = head in
+        rewrite_with_lemmas (Prop (head, map rewrite argl),  Ref.get p)
+      end
+  (* end case *))
+
 and rewrite_with_lemmas (term, []) = term
   | rewrite_with_lemmas (term, (t1,t2)::rest) =
         rewrite (apply_subst (unify (term, t1)) t2)
