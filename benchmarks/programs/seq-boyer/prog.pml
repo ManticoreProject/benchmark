@@ -4,7 +4,7 @@
  * Manipulations over terms
  *)
 
-signature TERMS =
+(* signature TERMS =
   sig
     type head;
     datatype term =
@@ -16,9 +16,9 @@ signature TERMS =
     and add_lemma: term -> unit
     and apply_subst: binding list -> term -> term
     and rewrite: term -> term
-  end;
+  end; *)
 
-structure Terms:TERMS =
+structure Terms (* :TERMS *) =
   struct
 
     datatype term
@@ -115,12 +115,14 @@ end;
 structure Rules =
   struct
 
-    open Terms;
+  structure T = Terms
+  val get = T.get
+  val add_lemma = T.add_lemma
 
     datatype cterm = CVar of int | CProp of string * cterm list;
 
-    fun cterm_to_term (CVar v) = Var v
-      | cterm_to_term (CProp(p, l)) = Prop(get p, map cterm_to_term l)
+    fun cterm_to_term (CVar v) = T.Var v
+      | cterm_to_term (CProp(p, l)) = T.Prop(get p, map cterm_to_term l)
 
     fun add t = add_lemma (cterm_to_term t)
 
@@ -797,30 +799,34 @@ add (CProp
  * Tautology checker
  *)
 
-signature BOYER =
+(* signature BOYER =
   sig
     include TERMS
     val tautp: term -> bool
-  end
+  end *)
 
-structure Boyer: BOYER =
+structure Boyer (* : BOYER *) =
   struct
 
-open Terms
+structure T = Terms
+val headname = T.headname
+val rewrite = T.rewrite
+type head = T.head
+
 
 fun mem x [] = false
   | mem x (y::L) = x=y orelse mem x L
 
 fun truep (x, lst) =
   case x of
-    Prop(head, _) =>
+    T.Prop(head, _) =>
       headname head = "true" orelse mem x lst
   | _ =>
       mem x lst
 
 and falsep (x, lst) =
   case x of
-    Prop(head, _) =>
+    T.Prop(head, _) =>
       headname head = "false" orelse mem x lst
   | _ =>
       mem x lst
@@ -829,8 +835,8 @@ fun tautologyp (x, true_lst, false_lst) =
  if truep (x, true_lst) then true else
  if falsep (x, false_lst) then false else
  (case x of
-     Var _ => false
-   | Prop (head,[test, yes, no]) =>
+     T.Var _ => false
+   | T.Prop (head,[test, yes, no]) =>
         if headname head = "if" then
           if truep (test, true_lst) then
             tautologyp (yes, true_lst, false_lst)
@@ -845,18 +851,27 @@ fun tautologyp (x, true_lst, false_lst) =
 
   end; (* Boyer *)
 
-signature BMARK =
+(* signature BMARK =
   sig
     val doit : unit -> unit
     val testit : TextIO.outstream -> unit
-  end;
+  end; *)
 
 (* the benchmark *)
-structure Benchmark : BMARK =
+structure Benchmark (* : BMARK *) =
   struct
 
-    open Terms;
-    open Boyer;
+    structure T = Terms
+    structure B = Boyer
+
+    val tautp = B.tautp
+
+    val apply_subst = T.apply_subst
+    val get = T.get
+    fun Prop x = T.Prop x
+    fun Var x = T.Var x
+    fun Bind x = T.Bind x
+
 
 val subst =
 [Bind(23,

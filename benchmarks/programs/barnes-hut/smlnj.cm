@@ -8,7 +8,10 @@ is
 	$/smlnj-lib.cm
 
 	../../common/run-seq.sml
+
+	vector2.sml
+	gen-bodies.sml
+
 	compat.sml
-	gen-bodies.cm
-	(* ../../lib/par-rope-lib/sources.cm *)
+
 	barnes-hut-seq.sml

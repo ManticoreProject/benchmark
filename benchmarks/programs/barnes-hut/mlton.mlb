@@ -10,8 +10,10 @@ local
     *)
 
     $(SML_LIB)/basis/basis.mlb
+    $(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
     ../../common/run-seq.sml
-    gen-bodies-mlton.mlb
+    vector2.sml
+    gen-bodies.sml
     compat.sml
 in
   barnes-hut-seq.sml
