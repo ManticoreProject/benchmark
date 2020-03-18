@@ -129,7 +129,7 @@ fun rewrite term = (case term
 and rewrite_with_lemmas (term, []) = term
   | rewrite_with_lemmas (term, (t1,t2)::rest) =
         rewrite (apply_subst (unify (term, t1)) t2)
-      handle unify =>
+      handle unify => (* <- probably should be Unify, but this non-functional typo is in the original *)
         rewrite_with_lemmas (term, rest)
 ;
 end;
