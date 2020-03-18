@@ -23,21 +23,21 @@ structure Terms (* :TERMS *) =
 
     datatype term
       = Var of int
-      | Prop of { name: string, props: (term * term) list Ref.ref } * term list
+      | Prop of ((* name *) string * (* props *) (term * term) list Ref.ref ) * term list
 
-    type head = { name: string, props: (term * term) list Ref.ref }
+    type head = ((* name *) string * (* props *) (term * term) list Ref.ref )
 
     val lemmas = Ref.new ([] : head list)
 
 (* replacement for property lists *)
 
-    fun headname {name = n, props=p} = n;
+    fun headname (name, _) = name;
 
 fun get name =
-  let fun get_rec ((hd1 as {name=n,...})::hdl) =
+  let fun get_rec ((hd1 as (n,_))::hdl) =
       if n = name then hd1 else get_rec hdl
         | get_rec [] =
-      let val entry = {name = name, props = Ref.new []} in
+      let val entry = (name, Ref.new []) in
         Ref.set (lemmas, entry :: (Ref.get lemmas));
         entry
       end
@@ -46,7 +46,7 @@ fun get name =
   end
 ;
 
-fun add_lemma (Prop(_, [(left as Prop({props=r,...},_)), right])) =
+fun add_lemma (Prop(_, [(left as Prop((_, r),_)), right])) =
   Ref.set (r, (left, right) :: Ref.get r)
 ;
 
@@ -100,7 +100,7 @@ and unify1_lst ([], [], unify_subst) = unify_subst
 ;
 
 fun rewrite (term as Var _) = term
-  | rewrite (Prop ((head as {props=p,...}), argl)) =
+  | rewrite (Prop ((head as (_, p)), argl)) =
       rewrite_with_lemmas (Prop (head, map rewrite argl),  Ref.get p)
 and rewrite_with_lemmas (term, []) = term
   | rewrite_with_lemmas (term, (t1,t2)::rest) =
