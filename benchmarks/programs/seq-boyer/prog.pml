@@ -76,25 +76,24 @@ fun add_lemma term = (case term
    However, for correctness we need to know _which_ exception was raised, so
    we have hacked it in with a global ref like C's errno *)
 
-val NoExn = 0
-val UnifyExn = 1
-val FailureExn = 2
-val errno : int Ref.ref = Ref.new NoExn
+datatype 'a result_kind
+  = RK_Value of 'a
+  | RK_Unify
+  | RK_Failure
 
-exception Something;
-
-fun raiseExn num = (Ref.set (errno, num); raise Something)
-fun tryCatch exnNum (f, alt) = f() handle _ =>
-                                      if (Ref.get errno) = exnNum
-                                        then (Ref.set (errno, NoExn) ; alt())
-                                        else (raise Something)
+val raiseExn = Cont.throw
+fun tryCatch (f, alt) =
+    (case Cont.callec f
+      of RK_Value x => x
+       | someExn => alt someExn
+    (* end case *))
 
 
 
 datatype binding = Bind of int * term
 
-fun get_binding (v : int) =
-  let fun get_rec nil = raiseExn FailureExn
+fun get_binding exnH (v : int) =
+  let fun get_rec nil = raiseExn (exnH, RK_Failure)
         | get_rec (Bind(w,t)::rest) =
             if v = w then t else get_rec rest
   in
@@ -102,53 +101,71 @@ fun get_binding (v : int) =
   end
 ;
 
-fun apply_subst alist =
+fun apply_subst exnH alist =
   let
-    fun as_rec term = (case term
-      of Var v => tryCatch FailureExn (fn () => get_binding v alist, fn () => term)
-       | Prop (head,argl) => Prop (head, map as_rec argl)
+    fun as_rec exnH term = (case term
+      of Var v => tryCatch (fn exnH => RK_Value (get_binding exnH v alist),
+                            fn (RK_Failure) => term
+                             | ex => raiseExn (exnH, ex)
+                           )
+       | Prop (head,argl) => Prop (head, map (as_rec exnH) argl)
       (* end case *))
 
   in
-    as_rec
+    as_rec exnH
   end
 ;
 
-fun unify (term1, term2) = unify1 (term1, term2, [])
-and unify1 (term1, term2, unify_subst) =
+fun unify exnH (term1, term2) = unify1 exnH (term1, term2, [])
+and unify1 exnH (term1, term2, unify_subst) =
  (case term2 of
     Var v =>
-      tryCatch FailureExn (
-          fn () => if termEq (get_binding v unify_subst,  term1)
-                    then unify_subst
-                    else raiseExn UnifyExn,
-          fn () => Bind(v,term1)::unify_subst
+      tryCatch (
+          fn exnH => if termEq (get_binding exnH v unify_subst,  term1)
+                    then RK_Value unify_subst
+                    else raiseExn (exnH, RK_Unify),
+          fn (RK_Failure) => Bind(v,term1)::unify_subst
+           | ex => raiseExn (exnH, ex)
       )
   | Prop (head2,argl2) =>
       case term1 of
-         Var _ => raiseExn UnifyExn
+         Var _ => raiseExn (exnH, RK_Unify)
        | Prop (head1,argl1) =>
-           if headEq (head1, head2) then unify1_lst (argl1, argl2, unify_subst)
-                          else raiseExn UnifyExn)
-and unify1_lst ([], [], unify_subst) = unify_subst
-  | unify1_lst (h1::r1, h2::r2, unify_subst) =
-      unify1_lst(r1, r2, unify1(h1, h2, unify_subst))
-  | unify1_lst _ = raiseExn UnifyExn
+           if headEq (head1, head2) then unify1_lst exnH (argl1, argl2, unify_subst)
+                          else raiseExn (exnH, RK_Unify))
+and unify1_lst exnH ([], [], unify_subst) = unify_subst
+  | unify1_lst exnH (h1::r1, h2::r2, unify_subst) =
+                  unify1_lst exnH (r1, r2, unify1 exnH (h1, h2, unify_subst))
+  | unify1_lst exnH _ = raiseExn (exnH, RK_Unify)
 ;
 
-fun rewrite term = (case term
+(* top level *)
+fun rewrite term = tryCatch (
+    fn exnH => RK_Value (rewrite_ex exnH term),
+    fn _ => raise Fail "rewrite bug, unhandled exception"
+  )
+
+and rewrite_ex exnH term = (case term
   of Var _ => term
    | Prop (head, argl) =>
       let val (_, p) = head in
-        rewrite_with_lemmas (Prop (head, map rewrite argl),  Ref.get p)
+        tryCatch (
+          fn exnH => RK_Value (
+              rewrite_with_lemmas exnH (Prop (head, map (rewrite_ex exnH) argl),  Ref.get p)
+            ),
+          fn _ => raise Fail "bug -- rewrite_ex"
+          )
       end
   (* end case *))
 
-and rewrite_with_lemmas (term, []) = term
-  | rewrite_with_lemmas (term, (t1,t2)::rest) =
-      tryCatch UnifyExn (
-          fn () => rewrite (apply_subst (unify (term, t1)) t2),
-          fn () => rewrite_with_lemmas (term, rest)
+and rewrite_with_lemmas exnH1 (term, []) = term
+  | rewrite_with_lemmas exnH1 (term, (t1,t2)::rest) =
+      tryCatch (
+          fn (exnH2 : term Cont.cont) => RK_Value (
+              rewrite_ex exnH1 (apply_subst exnH1 (unify exnH2 (term, t1)) t2)
+            ),
+          fn (RK_Unify) => rewrite_with_lemmas exnH1 (term, rest)
+           | (RK_Failure) => raiseExn (exnH1, RK_Failure)
        )
 
 ;
