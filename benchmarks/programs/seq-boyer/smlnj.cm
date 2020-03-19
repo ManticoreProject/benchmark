@@ -14,5 +14,4 @@ is
 
   ../../common/run-seq.sml
 
-  compat.sml
   prog.sml
