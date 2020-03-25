@@ -1,1 +1,2 @@
-wrap-captures breaks on this program due to the exceptions
+bom-opt/uncurry.sml:89.43-89.67: Fail: bogus application
+
