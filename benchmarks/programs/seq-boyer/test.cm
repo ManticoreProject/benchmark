@@ -1,0 +1,19 @@
+(* smlnj.cm
+ *
+ * COPYRIGHT (c) 2019 John Reppy (http://cs.uchicago.edu/~jhr)
+ * All rights reserved.
+ *)
+
+Library
+
+  structure Main
+
+is
+
+  $/basis.cm
+
+  ../../common/run-seq.sml
+  ../../common/smlnj-callec.sml
+
+  compat.sml
+  test.sml

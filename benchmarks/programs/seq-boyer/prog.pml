@@ -108,16 +108,16 @@ fun apply_subst alist term =
 
 and apply_subst_ex exnH alist =
   let
-    fun as_rec exnH term = (case term
+    fun as_rec term = (case term
       of Var v => tryCatchTerm (fn exnH => RK_Term (get_binding exnH v alist),
                                 fn (RK_Failure) => term
                                  | ex => raiseExn (exnH, ex)
                            )
-       | Prop (head,argl) => Prop (head, map (as_rec exnH) argl)
+       | Prop (head,argl) => Prop (head, map as_rec argl)
       (* end case *))
 
   in
-    as_rec exnH
+    as_rec
   end
 ;
 
