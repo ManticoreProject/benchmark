@@ -1,2 +1,6 @@
-bom-opt/uncurry.sml:89.43-89.67: Fail: bogus application
-
+➤ ~/research/manticore/gh-pmlc/bin/pmlc -sequential -Cbom.check-all=true -Cbom.keep-uncurry=true mc-seq.mlb
+[mc-seq.mlb:1.1] Warning: nonexhaustive match
+[mc-seq.mlb:1.1] Warning: nonexhaustive match
+[mc-seq.mlb:1.1] Warning: nonexhaustive match
+dumping info to mc-seq.uncurry0.pre.bom
+bom-opt/uncurry.sml:90.39-90.92: Fail: bogus application of apply_subst_ex<C9B2>#2.2
