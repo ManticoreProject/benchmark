@@ -71,26 +71,27 @@ fun add_lemma term = (case term
 
 (* substitutions *)
 
-(* Manticore's case-expansion pass currently doesn't support any sort of pattern
-   matching in a 'handle' expression beyond the wildcard pattern!
-   However, for correctness we need to know _which_ exception was raised, so
-   we have hacked it in with a global ref like C's errno *)
+datatype binding = Bind of int * term
 
 datatype 'a result_kind
-  = RK_Value of 'a
+  = RK_Bindings of binding list
+  | RK_Term of term
   | RK_Unify
   | RK_Failure
 
 val raiseExn = Cont.throw
-fun tryCatch (f, alt) =
+fun tryCatchTerm (f, alt) =
     (case Cont.callec f
-      of RK_Value x => x
+      of RK_Term x => x
        | someExn => alt someExn
     (* end case *))
 
+fun tryCatchBindings (f, alt) =
+    (case Cont.callec f
+      of RK_Bindings x => x
+       | someExn => alt someExn
+    (* end case *))
 
-
-datatype binding = Bind of int * term
 
 fun get_binding exnH (v : int) =
   let fun get_rec nil = raiseExn (exnH, RK_Failure)
@@ -101,12 +102,16 @@ fun get_binding exnH (v : int) =
   end
 ;
 
-fun apply_subst exnH alist =
+fun apply_subst alist term =
+  tryCatchTerm (fn exnH => RK_Term (apply_subst_ex exnH alist term),
+                    fn _ => raise Fail "apply_subst -- unhandled exception")
+
+and apply_subst_ex exnH alist =
   let
     fun as_rec exnH term = (case term
-      of Var v => tryCatch (fn exnH => RK_Value (get_binding exnH v alist),
-                            fn (RK_Failure) => term
-                             | ex => raiseExn (exnH, ex)
+      of Var v => tryCatchTerm (fn exnH => RK_Term (get_binding exnH v alist),
+                                fn (RK_Failure) => term
+                                 | ex => raiseExn (exnH, ex)
                            )
        | Prop (head,argl) => Prop (head, map (as_rec exnH) argl)
       (* end case *))
@@ -120,9 +125,9 @@ fun unify exnH (term1, term2) = unify1 exnH (term1, term2, [])
 and unify1 exnH (term1, term2, unify_subst) =
  (case term2 of
     Var v =>
-      tryCatch (
+      tryCatchBindings (
           fn exnH => if termEq (get_binding exnH v unify_subst,  term1)
-                    then RK_Value unify_subst
+                    then RK_Bindings unify_subst
                     else raiseExn (exnH, RK_Unify),
           fn (RK_Failure) => Bind(v,term1)::unify_subst
            | ex => raiseExn (exnH, ex)
@@ -140,8 +145,8 @@ and unify1_lst exnH ([], [], unify_subst) = unify_subst
 ;
 
 (* top level *)
-fun rewrite term = tryCatch (
-    fn exnH => RK_Value (rewrite_ex exnH term),
+fun rewrite term = tryCatchTerm (
+    fn exnH => RK_Term (rewrite_ex exnH term),
     fn _ => raise Fail "rewrite bug, unhandled exception"
   )
 
@@ -149,8 +154,8 @@ and rewrite_ex exnH term = (case term
   of Var _ => term
    | Prop (head, argl) =>
       let val (_, p) = head in
-        tryCatch (
-          fn exnH => RK_Value (
+        tryCatchTerm (
+          fn exnH => RK_Term (
               rewrite_with_lemmas exnH (Prop (head, map (rewrite_ex exnH) argl),  Ref.get p)
             ),
           fn _ => raise Fail "bug -- rewrite_ex"
@@ -158,14 +163,14 @@ and rewrite_ex exnH term = (case term
       end
   (* end case *))
 
-and rewrite_with_lemmas exnH1 (term, []) = term
-  | rewrite_with_lemmas exnH1 (term, (t1,t2)::rest) =
-      tryCatch (
-          fn (exnH2 : term Cont.cont) => RK_Value (
-              rewrite_ex exnH1 (apply_subst exnH1 (unify exnH2 (term, t1)) t2)
+and rewrite_with_lemmas exnH (term, []) = term
+  | rewrite_with_lemmas exnH (term, (t1,t2)::rest) =
+      tryCatchTerm (
+          fn exnH => RK_Term (
+              rewrite_ex exnH (apply_subst_ex exnH (unify exnH (term, t1)) t2)
             ),
-          fn (RK_Unify) => rewrite_with_lemmas exnH1 (term, rest)
-           | (RK_Failure) => raiseExn (exnH1, RK_Failure)
+          fn (RK_Unify) => rewrite_with_lemmas exnH (term, rest)
+           | ex => raiseExn (exnH, ex)
        )
 
 ;
