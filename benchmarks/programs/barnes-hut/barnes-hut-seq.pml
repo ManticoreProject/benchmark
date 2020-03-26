@@ -13,6 +13,9 @@ type 'a seq = 'a S.list
 
 type scalar = double
 
+(* position plus mass *)
+type mass_pt = scalar * scalar * scalar
+
 (* the particle P (x, y, m, xv, yv) represents a particle in 2d space located *)
 (* at point (x, y) with mass m and velocity (xv, yv) *)
 datatype particle = P of scalar * scalar * scalar * scalar * scalar
@@ -28,17 +31,18 @@ val size = S.length
 val sub = S.nth  (* S.sub *)
 val empty = (fn () => []) (* S.empty *)
 fun fromList x = x
-fun maxv (x, y) = if x > y then x else y
-fun minv (x, y) = if x < y then x else y
+fun maxv (x : scalar, y) = if x > y then x else y
+fun minv (x : scalar, y) = if x < y then x else y
 fun log4 x = Int.ceilingLg x div 2
-fun sq x = x * x
+fun sq (x : scalar) = x * x
 val sqrt = Double.sqrt
 
 val epsilon : scalar = 0.05
 val eClose : scalar = 0.01
 val dt = 0.025
 
-fun circle_plus ((mx0,my0,m0), (mx1,my1,m1)) = (mx0 + mx1, my0 + my1, m0 + m1)
+fun circle_plus ((mx0,my0,m0):mass_pt, (mx1,my1,m1)) =
+      (mx0 + mx1, my0 + my1, m0 + m1)
 
 fun calc_centroid parts = let
   fun f (P (x, y, m, _, _)) = (m * x, m * y, m)
@@ -81,7 +85,7 @@ fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
     build (0, box, particles)
   end
 
-fun accel (x1, y1, _) (x2, y2, m) = let
+fun accel ((x1, y1, _):mass_pt) (x2, y2, m) = let
   val dx   = x1 - x2
   val dy   = y1 - y2
   val rsqr = sq dx + sq dy
@@ -94,7 +98,7 @@ fun accel (x1, y1, _) (x2, y2, m) = let
       in (aabs * dx / r , aabs * dy / r) end
   end
 
-fun is_close (x1, y1, m) (x2, y2) =
+fun is_close ((x1, y1, m):mass_pt) (x2, y2) =
   sq (x1 - x2) + sq (y1 - y2) < eClose
 
 fun calc_accel (P (x, y, m, _, _)) bht = let
