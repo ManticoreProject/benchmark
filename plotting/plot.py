@@ -30,6 +30,8 @@ def prettyStackName(s):
         return "linked"
     elif s == "segstack":
         return "segment"
+    elif s == "hybridstack":
+        return "hybrid"
 
     return s
 
@@ -60,6 +62,7 @@ ffi_seq = set(["ffi-fib", "ffi-trigfib"])
 # ALL SEQ PROGRAMS
 seq_programs = set([
                 "seq-ack",
+                "seq-barneshut",
                 "seq-cpstak",
                 "seq-deriv",
                 "seq-divrec",
@@ -123,6 +126,7 @@ def sortStacks(cats):
     pushBack("contig", new)
     pushBack("resizestack", new)
     pushBack("segstack", new)
+    pushBack("hybridstack", new)
     pushBack("linkstack", new)
     pushBack("cps", new)
     pushBack("mlton", new)

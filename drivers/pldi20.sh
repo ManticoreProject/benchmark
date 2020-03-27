@@ -39,6 +39,7 @@ fi
 
 seq_tests=(
     "seq-ack"
+    "seq-barneshut"
     "seq-cpstak"
     "seq-deriv"
     "seq-divrec"
