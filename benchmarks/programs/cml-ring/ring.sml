@@ -15,8 +15,8 @@ structure Ring (* : sig
   end *) = struct
 
     (* controls workload *)
-    val numElements = 256
-    val ncycles = 50000
+    val numElements = 128
+    val ncycles = 24000
 
     fun ignor _ = ()
 
