@@ -78,6 +78,7 @@ ec_tests=(
 cml_tests=(
     "cml-spawn"
     "cml-pingpong"
+    "cml-ring"
 )
 
 # these need to have the -Ccshim=true / -Ccshim=false flag set during compilation

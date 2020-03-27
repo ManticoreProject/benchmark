@@ -44,7 +44,7 @@ confidence = 95
 nboot = 1000    # 1000 is the default in seaborn. we're being explicit here.
 
 # ALL CML programs
-cml_programs = set(["cml-spawn", "cml-pingpong"])
+cml_programs = set(["cml-spawn", "cml-pingpong", "cml-ring"])
 
 # ALL EC programs
 ec_programs = set([ "ec-ack",
@@ -96,6 +96,7 @@ toy_seq = set([
              "seq-fib",
              "seq-merge",
              "seq-motzkin",
+             "seq-primes",
              "seq-quicksort",
              "seq-sudan",
              "seq-tak",
