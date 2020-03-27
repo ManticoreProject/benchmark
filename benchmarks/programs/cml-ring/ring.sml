@@ -1,4 +1,4 @@
-(* ring-cml.sml
+(* ring.sml
  *
  * COPYRIGHT (c) 2008 The Manticore Project (http://manticore.cs.uchicago.edu)
  * All rights reserved.
@@ -6,41 +6,44 @@
  * Carl Ritson's ring benchmark using CML's synchronous channels.
  *)
 
-structure Ring : sig
+structure Ring (* : sig
 
     val numElements : int
 
     val doit : int -> unit
 
-  end = struct
+  end *) = struct
 
     val numElements = 256
+    fun ignor _ = ()
+
+    val doneChan : unit PrimChan.chan = PrimChan.new()
 
     fun root ncycles (ch, nextCh) = let
-          fun lp (0, tok) = (CML.send(nextCh, 0); ignore(CML.recv ch))
-            | lp (n, tok) = (CML.send(nextCh, tok); lp(n-1, CML.recv ch + 1))
+          fun lp (0, tok) = (PrimChan.send(nextCh, 0); ignor(PrimChan.recv ch))
+            | lp (n, tok) = (PrimChan.send(nextCh, tok); lp(n-1, PrimChan.recv ch + 1))
           in
-            CML.spawn (fn () => lp(ncycles, 1))
+            PrimChan.spawn (fn () => (lp(ncycles, 1) ; PrimChan.send(doneChan, ())))
           end
 
     fun element (ch, nextCh) = let
-          fun lp 0 = CML.send(nextCh, 0)
-            | lp tok = (CML.send(nextCh, tok); lp(CML.recv ch))
+          fun lp 0 = PrimChan.send(nextCh, 0)
+            | lp tok = (PrimChan.send(nextCh, tok); lp(PrimChan.recv ch))
           in
-            CML.spawn (fn () => lp(CML.recv ch))
+            PrimChan.spawn (fn () => lp(PrimChan.recv ch))
           end
 
     fun doit ncycles = let
-          val rootCh = CML.channel()
+          val rootCh = PrimChan.new()
           fun mkElem (0, nextCh) = root ncycles (rootCh, nextCh)
             | mkElem (i, nextCh) = let
-                val ch = CML.channel()
+                val ch = PrimChan.new()
                 in
                   element (ch, nextCh);
                   mkElem (i-1, ch)
                 end
           in
-            CML.sync (CML.joinEvt (mkElem (numElements-1, rootCh)))
+            (mkElem (numElements-1, rootCh) ; PrimChan.recv doneChan)
           end
 
   end
