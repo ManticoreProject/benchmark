@@ -4,3 +4,4 @@ Group is
 
   compat.sml
   ring.sml
+  main.sml

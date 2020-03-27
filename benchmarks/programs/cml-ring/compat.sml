@@ -7,6 +7,6 @@ structure PrimChan = struct
   val new = CML.channel
   val recv = CML.recv
   val send = CML.send
-  val spawn = CML.spawn
+  val spawnThread = CML.spawn
 
 end
