@@ -32,17 +32,17 @@ pushd ../plotting
 ###################
 # compare with mlton and SML/NJ for Sequential progs
 ./plot.py --fileprefix "cross_" --dir "$RES_NORMAL" \
-          --kinds "cps,contig,linkstack,segstack,resizestack,hybridstack,mlton,smlnj" --baseline "cps" --progs 'seq-*' \
+          --kinds "cps,contig,linkstack,segstack,resizestack,mlton,smlnj" --baseline "cps" --progs 'seq-*' \
           --plots "time" --palette "cubehelix"
 
 # compare with SML/NJ for cont progs
 CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | tr '/' ',' | xargs)
 ./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
-          --kinds "cps,contig,linkstack,segstack,resizestack,hybridstack,smlnj" --baseline "cps" \
+          --kinds "cps,contig,linkstack,segstack,resizestack,smlnj" --baseline "cps" \
           --progs "$CONTPROGS" --plots "time" --palette "YlGnBu" --baseline "contig" --xmax 3
 
 # look at GC statistics data
-./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,hybridstack,linkstack" \
+./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
           --plots "time,gc" --progs "~ffi-*" --palette "PuRd"
 
 # GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
@@ -50,13 +50,13 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
 #           --plots "time,gc" --progs "$GCTIME_PROGS" --combined --palette "PuRd"
 
 # look at perf data
-./plot.py --dir "$RES_NORMAL" --kinds "cps,contig,linkstack,segstack,resizestack,hybridstack" --plots "perf" \
+./plot.py --dir "$RES_NORMAL" --kinds "cps,contig,linkstack,segstack,resizestack" --plots "perf" \
           --progs "~ffi-*" --mean --palette "PuRd"
 
 
 
 # FFI comparison plots. linkstack is not affected by the shim flag.
-declare -a ffiArr=("cps" "contig" "segstack" "resizestack" "hybridstack")
+declare -a ffiArr=("cps" "contig" "segstack" "resizestack")
 for kind in "${ffiArr[@]}"; do
   ./plot.py --fileprefix "ffi_${kind}_" --dir "$RES_NORMAL" --kinds "${kind}-shim,${kind}-noshim" --baseline "${kind}-shim" \
                 --plots "time" --progs "ffi-*"
@@ -64,7 +64,7 @@ done
 
 
 # RAS comparison plots.
-declare -a rasArr=("contig" "segstack" "resizestack" "hybridstack" "linkstack")
+declare -a rasArr=("contig" "segstack" "resizestack" "linkstack")
 for kind in "${rasArr[@]}"; do
   ./plot.py --fileprefix "ras_${kind}_" --dir "$RES_NORMAL" --kinds "${kind}+noras,${kind}" --baseline "${kind}+noras" \
                 --plots "time" --progs 'seq-*'
