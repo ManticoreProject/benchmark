@@ -67,7 +67,7 @@ OPT_LVL="-O1"
 ./run-test.sh "$HACK_OPT_LVL -contigstack" "contig"
 ./run-test.sh "$HACK_OPT_LVL -segstack" "segstack"
 ./run-test.sh "$HACK_OPT_LVL -resizestack" "resizestack"
-# ./run-test.sh "$HACK_OPT_LVL -hybridstack" "hybridstack"
+./run-test.sh "$HACK_OPT_LVL -hybridstack" "hybridstack"
 
 if [ "$GEN_GC_STATS" == "false" ]; then
 
@@ -76,7 +76,7 @@ if [ "$GEN_GC_STATS" == "false" ]; then
     ./run-test.sh "$HACK_OPT_LVL -contigstack -noras" "contig-noras"
     ./run-test.sh "$HACK_OPT_LVL -segstack -noras" "segstack-noras"
     ./run-test.sh "$HACK_OPT_LVL -resizestack -noras" "resizestack-noras"
-    # ./run-test.sh "$HACK_OPT_LVL -hybridstack -noras" "hybridstack-noras"
+    ./run-test.sh "$HACK_OPT_LVL -hybridstack -noras" "hybridstack-noras"
 
     ## sealing capture is incredibly slow... 14 sec ec-ack takes 700 sec with it on.
     # ./run-test.sh "$HACK_OPT_LVL -segstack -sealingcapture" "segstack-sealingcapture"

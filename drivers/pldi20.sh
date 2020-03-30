@@ -153,7 +153,7 @@ for versionDir in "${sub_versions[@]}"; do
         ./run-test.sh "$OPT_LVL -contigstack" "contig"
         ./run-test.sh "$OPT_LVL -segstack" "segstack"
         ./run-test.sh "$OPT_LVL -resizestack" "resizestack"
-        # ./run-test.sh "$OPT_LVL -hybridstack" "hybridstack"
+        ./run-test.sh "$OPT_LVL -hybridstack" "hybridstack"
 
       done
       popd
