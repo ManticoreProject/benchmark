@@ -36,6 +36,6 @@ structure Main = struct
 	    RunCML.doit (thd, NONE)
 	  end
 
-    fun main _ = (timeit 1000000; OS.Process.success)
+    fun main _ = (timeit Params.iters; OS.Process.success)
 
   end

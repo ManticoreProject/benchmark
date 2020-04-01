@@ -25,7 +25,7 @@ structure Spawn : sig
 
 structure Main = struct
 
-	val dfltN = 1000000
+	val dfltN = Params.iters
 
     fun timeit n = let
 	  val t0 = Time.now()

@@ -13,5 +13,5 @@ is
   $cml/basis.cm
   $cml/cml.cm
 
+  params.sml
   spawn.sml
-
