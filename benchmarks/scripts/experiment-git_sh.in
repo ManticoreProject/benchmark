@@ -20,7 +20,7 @@ PMLC_FLAGS="@PMLCFLAGS@"
 NUM_TRIALS="1"
 PRETTY_INPUT=""
 RUN_CACHEGRIND="false"  # to enable, use "true"
-RUN_PERF_REPS="4"  # positive integer of number of reps. 0 disables
+RUN_PERF_REPS="5"  # positive integer of number of reps. 0 disables
 
 usage="See the README file for instructions"
 
