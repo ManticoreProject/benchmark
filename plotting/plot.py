@@ -199,6 +199,32 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
     # plt.show()
     exportFig(g, dir, "code_size.pdf")
 
+def addOutsideLabels(plt, ax, x_max):
+    ha = 'right'
+    space = 0
+    x_pos = 0
+
+    rects = ax.patches
+    # For each bar: Place a label
+    for rect in rects:
+        # Get X and Y placement of label from rect.
+        x_value = rect.get_width()
+        y_value = rect.get_y() + rect.get_height() / 2
+
+        # Use X value as label and format number with one decimal place
+        label = float2lab(x_value)
+
+        # Create annotation for the number
+        plt.annotate(
+            label,                      # Use `label` as label
+            (x_pos, y_value),         # Place label at end of the bar
+            xytext=(space, 0),          # Horizontally shift label by `space`
+            textcoords="offset points", # Interpret `xytext` as offset in points
+            va='center',                # Vertically center label
+            ha=ha,                       # Horizontally align label differently for positive and negative values.
+            fontsize=8)
+
+
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
 def addLabels(plt, ax, x_max):
@@ -379,7 +405,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
 
     # https://stackoverflow.com/questions/45201514/edit-seaborn-legend
     ax = g.axes.flat[0]
-    addLabels(plt, ax, xMax)
+    addOutsideLabels(plt, ax, xMax)
     # leg = ax.get_legend()
     # new_title = "Stack Kind"
     # leg.set_title(new_title)
