@@ -6,6 +6,7 @@ import decimal
 
 import seaborn as sns
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy import stats
@@ -228,7 +229,8 @@ def addOutsideLabels(plt, ax, x_max):
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
 def addLabels(plt, ax, x_max):
-    label_max = x_max - 0.14
+    label_max = x_max - 0.015
+    dots_pos = x_max - 0.05
     # Number of points between bar and label. Change to your liking.
     space = 5
     # Vertical alignment for positive values
@@ -244,20 +246,25 @@ def addLabels(plt, ax, x_max):
 
         # Use X value as label and format number with one decimal place
         label = float2lab(x_value)
+        textColor = 'black'
 
-        if x_pos > label_max:
+        if x_pos > min(label_max, dots_pos):
             x_pos = label_max
             label = "{:.2f}".format(x_value) # pad it out fully so it doesn't look odd
+            textColor = 'black'
 
             if x_value > x_max:
-                 plt.annotate(
+                plt.annotate(
                      '···',                      # Use `label` as label
-                     (x_max, y_value),
+                     (dots_pos, y_value+0.01),
                      xytext=(2, 0),
                      textcoords="offset points",
                      va='center',
                      ha=ha,
-                     fontsize=16)
+                     fontsize=10,
+                     fontweight='semibold',
+                     color='white')
+
 
         # If value of bar is negative: Place label left of bar
         if x_pos < 0:
@@ -275,7 +282,9 @@ def addLabels(plt, ax, x_max):
             textcoords="offset points", # Interpret `xytext` as offset in points
             va='center',                # Vertically center label
             ha=ha,                       # Horizontally align label differently for positive and negative values.
-            fontsize=12)
+            color=textColor,
+            fontweight='semibold',
+            fontsize=8)
 
 
 
@@ -405,7 +414,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
 
     # https://stackoverflow.com/questions/45201514/edit-seaborn-legend
     ax = g.axes.flat[0]
-    addOutsideLabels(plt, ax, xMax)
+    addLabels(plt, ax, xMax)
     # leg = ax.get_legend()
     # new_title = "Stack Kind"
     # leg.set_title(new_title)
@@ -424,6 +433,18 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
     for ax in g.axes.flat:
         # add an "x" after the labels for speedup
         ax.xaxis.set_major_formatter(FuncFormatter(formatLabel))
+
+        yLabelTexts = ax.yaxis.get_ticklabels()
+        # Create offset transform to push the program labels to save space.
+        dx = 10/72.
+        dy = 0/72.
+        offset = matplotlib.transforms.ScaledTranslation(dx, dy, g.fig.dpi_scale_trans)
+        for label in yLabelTexts:
+            label.set_horizontalalignment('right')
+            label.set_fontsize(14)
+            label.set_transform(label.get_transform() + offset)
+            label.set_rotation(45)
+            print (str(label))
 
 
 
