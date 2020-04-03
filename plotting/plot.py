@@ -229,7 +229,7 @@ def addOutsideLabels(plt, ax, x_max):
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
 def addLabels(plt, ax, x_max):
-    label_max = x_max - 0.015
+    label_max = x_max - 0.017
     dots_pos = x_max - 0.05
     # Number of points between bar and label. Change to your liking.
     space = 5
