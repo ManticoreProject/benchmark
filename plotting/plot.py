@@ -347,7 +347,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
     df = df.append(gmeanRows, sort=False)
 
     # drop all data involving baseline, since we're now relative to that.
-    df = df[df["description"] != baseline]
+    # df = df[df["description"] != baseline]
 
     # cap the max
     xMin = 0.0
