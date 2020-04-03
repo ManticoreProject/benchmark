@@ -24,6 +24,8 @@ pushd ../plotting
 
 # colors: colorblind, cubehelix, Set2
 
+PALETTE="cubehelix"
+
 ############
 # generate main running time plots comparing manticore stacks
 # ./plot.py --fileprefix "same_" --dir "$RES_NORMAL" \
@@ -33,17 +35,17 @@ pushd ../plotting
 # compare with mlton and SML/NJ for Sequential progs
 ./plot.py --fileprefix "cross_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,hybridstack,mlton,smlnj" --baseline "cps" --progs 'seq-*' \
-          --plots "time" --palette "cubehelix"
+          --plots "time" --palette "$PALETTE"
 
 # compare with SML/NJ for cont progs
 CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | tr '/' ',' | xargs)
 ./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,hybridstack,smlnj" --baseline "cps" \
-          --progs "$CONTPROGS" --plots "time" --palette "YlGnBu" --baseline "contig" --xmax 3
+          --progs "$CONTPROGS" --plots "time" --palette "$PALETTE" --baseline "contig" --xmax 3
 
 # look at GC statistics data
 ./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,hybridstack,linkstack" \
-          --plots "time,gc" --progs "~ffi-*" --palette "PuRd"
+          --plots "time,gc" --progs "~ffi-*" --palette "$PALETTE"
 
 # GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
 # ./plot.py --fileprefix "paper_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
@@ -51,7 +53,7 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
 
 # look at perf data
 ./plot.py --dir "$RES_NORMAL" --kinds "cps,contig,linkstack,segstack,resizestack,hybridstack" --plots "perf" \
-          --progs "~ffi-*" --mean --palette "PuRd"
+          --progs "~ffi-*" --mean --palette "$PALETTE"
 
 
 
