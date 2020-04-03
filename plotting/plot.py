@@ -143,6 +143,18 @@ def sortStacks(cats):
 def float2lab(x):
     return str(decimal.Decimal("{:.2f}".format(x)).normalize())
 
+def compressYTickLabels(yLabelTexts):
+    # Create offset transform to push the program labels to save space.
+    dx = 10/72.
+    dy = 0/72.
+    offset = matplotlib.transforms.ScaledTranslation(dx, dy, g.fig.dpi_scale_trans)
+    for label in yLabelTexts:
+        label.set_horizontalalignment('right')
+        label.set_fontsize(14)
+        label.set_transform(label.get_transform() + offset)
+        label.set_rotation(45)
+        # print (str(label))
+
 # pattern-matching object to categorize files contributing to the compile unit.
 # NOTE: this is for manticore
 mantiCategorize = [
@@ -433,18 +445,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
     for ax in g.axes.flat:
         # add an "x" after the labels for speedup
         ax.xaxis.set_major_formatter(FuncFormatter(formatLabel))
-
-        yLabelTexts = ax.yaxis.get_ticklabels()
-        # Create offset transform to push the program labels to save space.
-        dx = 10/72.
-        dy = 0/72.
-        offset = matplotlib.transforms.ScaledTranslation(dx, dy, g.fig.dpi_scale_trans)
-        for label in yLabelTexts:
-            label.set_horizontalalignment('right')
-            label.set_fontsize(14)
-            label.set_transform(label.get_transform() + offset)
-            label.set_rotation(45)
-            # print (str(label))
+        compressYTickLabels(ax.yaxis.get_ticklabels())
 
 
 
@@ -549,6 +550,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
     for ax in g.axes.flat:
         # set x axis to use the percent formatter
         ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
+        compressYTickLabels(ax.yaxis.get_ticklabels())
 
     plt.xlim(xBounds)
 
@@ -655,6 +657,7 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
         for ax in g.axes.flat:
             # set x axis to use the percent formatter
             ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
+            compressYTickLabels(ax.yaxis.get_ticklabels())
 
     plt.xlim(xBounds)
 

@@ -41,7 +41,7 @@ PALETTE="cubehelix"
 CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | tr '/' ',' | xargs)
 ./plot.py --fileprefix "crossCont_" --dir "$RES_NORMAL" \
           --kinds "cps,contig,linkstack,segstack,resizestack,hybridstack,smlnj" --baseline "cps" \
-          --progs "$CONTPROGS" --plots "time" --palette "$PALETTE" --baseline "cps" --xmax 3
+          --progs "$CONTPROGS" --plots "time" --palette "$PALETTE" --baseline "cps" --xmax 2
 
 # look at GC statistics data
 ./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,hybridstack,linkstack" \
