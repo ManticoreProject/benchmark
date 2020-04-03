@@ -334,14 +334,13 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
 
 
     # compute an average among the different stack kinds.
-    # NOTE: we use geometric mean because speedup is unbounded and won't be zero
     average = {"problem_name": [], "description": [], "time_sec": []}
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["time_sec"]
-        gmean = stats.gmean(allTimes)
-        average["problem_name"].append("GMEAN")
-        average["description"].append(kind)
-        average["time_sec"].append(gmean)
+        for time in allTimes:
+            average["problem_name"].append("MEAN")
+            average["description"].append(kind)
+            average["time_sec"].append(time)
 
     gmeanRows = pd.DataFrame.from_dict(average)
     df = df.append(gmeanRows, sort=False)
