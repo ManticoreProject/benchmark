@@ -131,8 +131,8 @@ def sortStacks(cats):
     pushBack("hybridstack", new)
     pushBack("linkstack", new)
     pushBack("cps", new)
-    pushBack("mlton", new)
     pushBack("smlnj", new)
+    pushBack("mlton", new)
     # pushBack(base, new)  # if the baseline is included, it's dead last
 
     assert len(cats) == len(new), "we lost an element!"
@@ -444,7 +444,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
             label.set_fontsize(14)
             label.set_transform(label.get_transform() + offset)
             label.set_rotation(45)
-            print (str(label))
+            # print (str(label))
 
 
 
