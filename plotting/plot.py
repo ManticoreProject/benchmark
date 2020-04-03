@@ -419,7 +419,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
     # https://matplotlib.org/3.1.1/gallery/ticks_and_spines/tick-formatters.html
     # https://stackoverflow.com/a/11227743
     def formatLabel(x, pos):
-        return float2lab(x)
+        return float2lab(x) + "×"
 
     for ax in g.axes.flat:
         # add an "x" after the labels for speedup
