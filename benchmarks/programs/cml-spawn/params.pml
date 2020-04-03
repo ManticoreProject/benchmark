@@ -1,6 +1,6 @@
 
 structure Params = struct
 
-  val iters : int = 1048576
+  val iters : int = 4194304
 
 end
