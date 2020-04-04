@@ -18,11 +18,14 @@ import gather_data
 pfx = ""
 colors = ""
 base = ""
+plotGenerated = False
 
 # exports and closes the figure, with the correct global prefix requested
 def exportFig(g, dir, filename, extraArtists=[]):
+    global plotGenerated
     g.fig.savefig(os.path.join(dir, pfx + filename), bbox_extra_artists=extraArtists, bbox_inches='tight')
     plt.close(g.fig)
+    plotGenerated = True
 
 def prettyStackName(s):
     if s == "resizestack":
@@ -748,6 +751,9 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
 
 
 
+def footprint_plot(df, dir):
+    print (str(df))
+
 
 
 @click.command()
@@ -757,7 +763,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
                help="Comma-seperated list of programs to analyze. PREFIX* is specially recognized as a pattern. ~ in front inverts the match")
 @click.option("--kinds", default="", type=str,
                help="Comma-seperated list of kinds to analyze (cps, segstack, etc)")
-@click.option("--baseline", default="cps", type=str,
+@click.option("--baseline", default="", type=str,
                help="The baseline kind to compare with in relative plots.")
 @click.option("--cached", is_flag=True, default=False, type=bool,
                 help="Uses data from the CSV cache dumped by an earlier run.")
@@ -780,6 +786,11 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     base = baseline
     pfx = fileprefix
     colors=palette
+
+    baselineRequired = (plots == "" or "time" in plots)
+    assert not (baseline == "" and baselineRequired), \
+            "a baseline must be provided if a relative time plot is requested"
+
 
     dir = os.path.abspath(dir)
     print("looking in dir ", dir)
@@ -811,7 +822,8 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     if not cached:
         assert kinds != "", "must provide --kinds when not using a cached dataset"
         kinds = kinds.split(",")
-        assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
+        if baselineRequired:
+            assert baseline in kinds, "the baseline must be included in the list of stack kinds!"
 
     data = gather_data.load(dir, progs, kinds, cached, plots)
 
@@ -923,6 +935,13 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
                         'D' + level + 'mw', 'Dw', dir, fileCategory, subset, prefix + "L" + level + "Dw_miss.pdf")
 
 
+    # FOOTPRINT is special and not generated if 'all' are requested
+    if "footprint" in plots:
+        footprint_plot(data['obs'], dir)
+
+
+
+    assert plotGenerated, "did you request a plot? malformed plot command?"
     print("done.")
 
 if __name__ == '__main__':

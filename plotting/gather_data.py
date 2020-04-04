@@ -170,7 +170,8 @@ def load(dir, progs, kinds, cached, plots):
     cacheDataSet = None
     perfDataSet = None
 
-    wantTime = plots == [] or "time" in plots
+    wantFoot = "footprint" in plots
+    wantTime = plots == [] or "time" in plots or wantFoot
     wantSize = plots == [] or "size" in plots
     wantCG   = plots == [] or "cg" in plots
     wantPerf = plots == [] or "perf" in plots

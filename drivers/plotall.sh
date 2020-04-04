@@ -19,6 +19,7 @@ RES=$1   # e.g., /home/kavon/tmp
 
 RES_NORMAL="$RES/normal"
 RES_GC="$RES/gcstats"
+RES_FOOT="$RES/gcstats_footprint"
 
 pushd ../plotting
 
@@ -45,7 +46,11 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
 
 # look at GC statistics data
 ./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,hybridstack,linkstack" \
-          --plots "time,gc" --progs "~ffi-*" --palette "$PALETTE"
+          --plots "time,gc" --progs "~ffi-*" --baseline "cps" --palette "$PALETTE"
+
+# look at thread footprint statistics data
+./plot.py --fileprefix "foot_" --dir "$RES_FOOT" --kinds "contig,segstack,resizestack,hybridstack" \
+          --plots "footprint" --progs "cml-*" --palette "$PALETTE"
 
 # GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
 # ./plot.py --fileprefix "paper_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,linkstack" \
