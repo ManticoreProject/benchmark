@@ -23,8 +23,8 @@ plotGenerated = False
 # exports and closes the figure, with the correct global prefix requested
 def exportFig(g, dir, filename, extraArtists=[]):
     global plotGenerated
-    g.fig.savefig(os.path.join(dir, pfx + filename), bbox_extra_artists=extraArtists, bbox_inches='tight')
-    plt.close(g.fig)
+    g.get_figure().savefig(os.path.join(dir, pfx + filename), bbox_extra_artists=extraArtists, bbox_inches='tight')
+    plt.close(g.get_figure())
     plotGenerated = True
 
 def prettyStackName(s):
@@ -753,6 +753,39 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
 
 def footprint_plot(df, dir):
     print (str(df))
+
+    def rename(prog):
+        if prog == "cml-spawn":
+            return "2^22"
+        if prog == "cml-spawn-minus1":
+            return "2^20"
+        if prog == "cml-spawn-minus2":
+            return "2^18"
+        if prog == "cml-spawn-minus3":
+            return "2^16"
+        if prog == "cml-spawn-minus4":
+            return "2^14"
+        if prog == "cml-spawn-minus5":
+            return "2^12"
+
+        assert False, "program not known?"
+
+    df['problem_name'] = df['problem_name'].apply(rename)
+
+    sns.set_context("paper") # talk, paper   controls size
+    ax = sns.lineplot(x="problem_name", y="largeobj-alloc", hue="description", data=df)
+
+    ax.set(xlabel='Threads Spawned', ylabel='Total Stack Bytes Allocated', )
+
+    # remove the hue name from legend, and set the real title
+    # https://stackoverflow.com/questions/51579215/remove-seaborn-lineplot-legend-title
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles=handles[1:], labels=labels[1:], title="Stack Kind")
+
+    # add a real title
+
+
+    exportFig(ax, dir, "footprint.pdf")
 
 
 
