@@ -48,8 +48,8 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
 ./plot.py --fileprefix "analyze_" --dir "$RES_GC" --kinds "cps,contig,segstack,resizestack,hybridstack,linkstack" \
           --plots "time,gc" --progs "~ffi-*" --baseline "cps" --palette "$PALETTE"
 
-# look at thread footprint statistics data
-./plot.py --fileprefix "foot_" --dir "$RES_FOOT" --kinds "contig,segstack,resizestack,hybridstack" \
+# look at thread footprint statistics data.
+./plot.py --fileprefix "foot_" --dir "$RES_FOOT" --kinds "segstack,resizestack,hybridstack" \
           --plots "footprint" --progs "cml-*" --palette "$PALETTE"
 
 # GCTIME_PROGS="seq-ack,seq-divrec,seq-quicksort,seq-mazefun,seq-primes"
