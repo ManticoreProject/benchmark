@@ -416,13 +416,22 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
 
 
     # compute an average among the different stack kinds.
+    useGMEAN = True
     average = {"problem_name": [], "description": [], "time_sec": []}
     for kind in df["description"].unique():
         allTimes = df[df["description"] == kind]["time_sec"]
-        for time in allTimes:
-            average["problem_name"].append("MEAN")
+        if useGMEAN:
+            gmean = stats.gmean(allTimes)
+            average["problem_name"].append("GMEAN")
             average["description"].append(kind)
-            average["time_sec"].append(time)
+            average["time_sec"].append(gmean)
+        else:
+            # feed all observations into seaborn under the "mean" category
+            # and allow it to compute an arithmetic mean and error bars for that.
+            for time in allTimes:
+                average["problem_name"].append("MEAN")
+                average["description"].append(kind)
+                average["time_sec"].append(time)
 
     gmeanRows = pd.DataFrame.from_dict(average)
     df = df.append(gmeanRows, sort=False)
