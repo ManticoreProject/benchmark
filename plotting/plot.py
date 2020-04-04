@@ -23,8 +23,15 @@ plotGenerated = False
 # exports and closes the figure, with the correct global prefix requested
 def exportFig(g, dir, filename, extraArtists=[]):
     global plotGenerated
-    g.get_figure().savefig(os.path.join(dir, pfx + filename), bbox_extra_artists=extraArtists, bbox_inches='tight')
-    plt.close(g.get_figure())
+    g.fig.savefig(os.path.join(dir, pfx + filename), bbox_extra_artists=extraArtists, bbox_inches='tight')
+    plt.close(g.fig)
+    plotGenerated = True
+
+# who the hell knows. sometimes its a g, sometimes it's an ax. python's a disaster
+def exportLinePlot(ax, dir, filename, extraArtists=[]):
+    global plotGenerated
+    ax.get_figure().savefig(os.path.join(dir, pfx + filename), bbox_extra_artists=extraArtists, bbox_inches='tight')
+    plt.close(ax.get_figure())
     plotGenerated = True
 
 def prettyStackName(s):
@@ -752,8 +759,6 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
 
 
 def footprint_plot(df, dir):
-    print (str(df))
-
     def rename(prog):
         if prog == "cml-spawn":
             return "2^22"
@@ -782,10 +787,7 @@ def footprint_plot(df, dir):
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles=handles[1:], labels=labels[1:], title="Stack Kind")
 
-    # add a real title
-
-
-    exportFig(ax, dir, "footprint.pdf")
+    exportLinePlot(ax, dir, "footprint.pdf")
 
 
 
