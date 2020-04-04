@@ -276,10 +276,10 @@ def addOutsideLabels(plt, ax, x_max):
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
 def addLabels(plt, ax, x_max):
-    label_max = x_max - 0.017
-    dots_pos = x_max - 0.05
+    label_max = x_max - 0.016
+    dots_pos = x_max - 0.04
     # Number of points between bar and label. Change to your liking.
-    space = 5
+    space = 6
     # Vertical alignment for positive values
     ha = 'left'
 
@@ -303,13 +303,13 @@ def addLabels(plt, ax, x_max):
             if x_value > x_max:
                 plt.annotate(
                      '···',                      # Use `label` as label
-                     (dots_pos, y_value+0.01),
+                     (dots_pos, y_value+0.005),
                      xytext=(2, 0),
                      textcoords="offset points",
                      va='center',
                      ha=ha,
-                     fontsize=10,
-                     fontweight='semibold',
+                     fontsize=11,
+                     fontweight='bold',
                      color='white')
 
 
@@ -330,8 +330,8 @@ def addLabels(plt, ax, x_max):
             va='center',                # Vertically center label
             ha=ha,                       # Horizontally align label differently for positive and negative values.
             color=textColor,
-            fontweight='semibold',
-            fontsize=8)
+            fontweight='normal',
+            fontsize=9)
 
 
 
@@ -908,6 +908,12 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     # There are five preset seaborn themes: darkgrid, whitegrid, dark, white, and ticks
     # https://seaborn.pydata.org/tutorial/aesthetics.html
     sns.set_style("whitegrid")
+
+    # set font to Linux Biolinum, the sans serif version of Libertine.
+    # on my Linux machine it's called 'Linux Biolinum O', for OTF versino of the font.
+    currentStyle = sns.axes_style()
+    currentStyle['font.sans-serif'] = ['Linux Biolinum O']
+    sns.set_style(currentStyle)
 
     wantMean = not combined or mean
     if combined:
