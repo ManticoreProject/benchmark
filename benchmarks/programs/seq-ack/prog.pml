@@ -5,7 +5,7 @@
    strategies when converted to use callec.
 *)
 
-fun ack (m,n) =
+fun ack (m : int, n : int) =
     if m = 0 then
         n+1
     else if n = 0 then
@@ -35,5 +35,3 @@ fun doIt () = lp iterations
 structure Main = struct
   fun main _ = (RunSeq.run doIt; Process.success)
 end
-
-val _ = Main.main (CommandLine.name (), CommandLine.arguments ())

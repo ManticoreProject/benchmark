@@ -15,6 +15,7 @@ local
     vector2.sml
     gen-bodies.sml
     compat.sml
+    barnes-hut-seq.sml
 in
-  barnes-hut-seq.sml
+  ../../common/run-main.sml
 end
