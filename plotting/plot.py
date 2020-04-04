@@ -46,6 +46,30 @@ def prettyStackName(s):
 
     return s
 
+# returns a dictionary that maps a stack kind to a matplotlib colors
+def genColorMap(colorSchemeName):
+    allKinds = sortStacks(list(map(prettyStackName, [
+        "contig",
+        "resizestack",
+        "segstack",
+        "hybridstack",
+        "linkstack",
+        "cps",
+        "smlnj",
+        "mlton"
+    ])))
+
+    cmap = matplotlib.cm.get_cmap(colorSchemeName)
+
+    colors = {}
+    incr = 1.0 / float(len(allKinds))
+    position = 0.0
+    for name in allKinds:
+        colors[name] = cmap(position)
+        position += incr
+
+    return colors
+
 
 # Controls for calculating confidence interval
 #  - if "sd", uses standard deviation instead.
@@ -211,8 +235,9 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
     summed['description'] = summed['description'].apply(prettyStackName)
 
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    colorMap = genColorMap(colors)
     g = sns.catplot(x="vmsize", y="problem_name", hue="description", data=summed,
-                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 ci=None)
 
     g.set_xlabels("In-Memory Code Size (KiB)")
@@ -363,7 +388,7 @@ def print_rel_times(df, baseline, subset=None):
 
 
 ################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.pdf", height=1, aspect=8.5/9):
+def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.pdf", height=1, aspect=8.5/9, useColorMap=True):
     df = df.copy()
 
     if subset:
@@ -424,8 +449,9 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     # sns.set(font_scale=2)
+    colorScheme = genColorMap(colors) if useColorMap else colors
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=totHeight, aspect=aspect, palette=colors, orient="h",
+                kind="bar", height=totHeight, aspect=aspect, palette=colorScheme, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     # g.set_ylabels("Benchmark Program")
     g.set_ylabels("")
@@ -546,8 +572,9 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    colorMap = genColorMap(colors)
     g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot)
     g.set_ylabels("Benchmark Program")
     g.set_xlabels(event_name)
@@ -652,8 +679,9 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    colorMap = genColorMap(colors)
     g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=totHeight, aspect=aspect, palette=colors, orient="h",
+                kind="bar", height=totHeight, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     g.set_ylabels("")
     g.set_xlabels(event_name)
@@ -735,8 +763,9 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     ##############################
     # plot TPI
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    colorMap = genColorMap(colors)
     g = sns.catplot(x="tpi", y="problem_name", hue="description", hue_order=order, data=tpi_df,
-                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=None)
     g.set_ylabels("Benchmark Programs")
     g.set_xlabels("Nanoseconds per instruction (lower is better)")
@@ -747,8 +776,9 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     ##############################
     # plot INSTRS
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
+    colorMap = genColorMap(colors)
     g = sns.catplot(x="instructions", y="problem_name", hue="description", hue_order=order, data=instr_df,
-                kind="bar", height=height, aspect=aspect, palette=colors, orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=None)
     g.set_ylabels("Benchmark Programs")
     g.set_xlabels("Total instructions executed (lower is better)")
@@ -806,8 +836,8 @@ def footprint_plot(df, dir):
                help="Comma-seperated list of plots to output (time, cg, size). Empty string emits all of them.")
 @click.option("--fileprefix", default="", type=str,
                help="Prefix to add to all generated plot files.")
-@click.option("--palette", default="colorblind", type=str,
-               help="A Seaborn color pallete name\nSee: https://seaborn.pydata.org/tutorial/color_palettes.html")
+@click.option("--palette", default="", type=str,
+               help="A matplotlib color scheme")
 @click.option("--combined", is_flag=True, default=False, type=bool,
                 help="If true, will combine all known categories of programs into one plot.")
 @click.option("--mean", is_flag=True, default=False, type=bool,
@@ -821,6 +851,10 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     base = baseline
     pfx = fileprefix
     colors=palette
+
+    paletteNotSpecified = (palette == "")
+    if paletteNotSpecified:
+        colors = "colorblind"
 
     baselineRequired = (plots == "" or "time" in plots)
     assert not (baseline == "" and baselineRequired), \
@@ -901,7 +935,8 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     if plots == [] or "time" in plots:
         for prefix, subset in subsets:
             # print_rel_times(data['obs'], baseline)
-            relative_time(data['obs'], baseline, dir, xmax, subset, prefix + "times.pdf")
+            useMap = not paletteNotSpecified
+            relative_time(data['obs'], baseline, dir, xmax, subset, prefix + "times.pdf", useColorMap=useMap)
 
     if plots == [] or "time" in plots and "gc" in plots:
         prefix = ""
