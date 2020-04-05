@@ -125,7 +125,7 @@ ffi_seq = set(["ffi-fib", "ffi-trigfib"])
 # ALL SEQ PROGRAMS
 seq_programs = set([
                 "seq-ack",
-                "seq-barneshut",
+                "seq-barnes-hut",  # aka seq-barneshut
                 "seq-cpstak",
                 "seq-deriv",
                 "seq-divrec",
