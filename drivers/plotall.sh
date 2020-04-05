@@ -58,7 +58,7 @@ CONTPROGS=$(ls -F "$RES_NORMAL" | grep '/' | grep -v 'ffi-' | grep -v 'seq-' | t
 
 # look at perf data
 ./plot.py --dir "$RES_NORMAL" --kinds "cps,contig,linkstack,segstack,resizestack,hybridstack" --plots "perf" \
-          --progs "~ffi-*" --mean --palette "$PALETTE"
+          --progs "~ffi-*" --mean --palette "$PALETTE" --width 7.8
 
 
 
