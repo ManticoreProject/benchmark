@@ -42,7 +42,9 @@ def _loadRunningTimes(filePath, needGC=False):
     j["description"] = name
 
     program = j["problem_name"]
-    program = re.sub(r'seq-raytrace', 'seq-mcray', program) # clearer name for figures
+    # clearer names for figures
+    program = re.sub(r'seq-raytrace', 'seq-mcray', program)
+    program = re.sub(r'seq-barneshut', 'seq-barnes-hut', program)
     j["problem_name"] = program
 
     commonCol = ["problem_name", "compiler", "input", "machine", "description"]
