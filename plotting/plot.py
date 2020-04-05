@@ -312,11 +312,13 @@ def addLabels(plt, ax, x_max):
         # Use X value as label and format number with one decimal place
         label = float2lab(x_value)
         textColor = 'black'
+        numberFontSize = 11
 
         if x_pos > min(label_max, dots_pos):
             x_pos = label_max
             label = "{:.2f}".format(x_value) # pad it out fully so it doesn't look odd
             textColor = 'black'
+            numberFontSize -= 1
 
             if x_value > x_max:
                 plt.annotate(
@@ -349,7 +351,7 @@ def addLabels(plt, ax, x_max):
             ha=ha,                       # Horizontally align label differently for positive and negative values.
             color=textColor,
             fontweight='normal',
-            fontsize=11)
+            fontsize=numberFontSize)
 
 
 
