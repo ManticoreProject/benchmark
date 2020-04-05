@@ -419,7 +419,7 @@ def print_rel_times(df, baseline, subset=None):
 
 
 ################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, xmax, subset=None, filename, useColorMap=True):
+def relative_time(df, baseline, dir, xmax, subset, filename, useColorMap=True):
     df = df.copy()
 
     if subset:
@@ -537,7 +537,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename, useColorMap=Tr
 
 
 
-def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCategory=None, subset=None, filename, height=9, aspect=1.2941):
+def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCategory, subset, filename, height=9, aspect=1.2941):
     # simple ones for now
     assert type(numerator_s) == str
     assert type(denominator_s) == str
@@ -642,7 +642,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 # GC PLOTTING
 
 ###############################
-def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
+def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset, \
     filename, subtractAllocs="", wantMean=True, range=(0, 100), \
     isPct=True):
     # simple ones for now
