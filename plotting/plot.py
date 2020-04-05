@@ -48,7 +48,7 @@ def prettyStackName(s):
     return s
 
 # returns a dictionary that maps a stack kind to a matplotlib colors
-def genColorMap(colorSchemeName):
+def genColorMap(colorSchemeName=None):
     allKinds = sortStacks(list(map(prettyStackName, [
         "contig",
         "resizestack",
@@ -60,14 +60,24 @@ def genColorMap(colorSchemeName):
         "mlton"
     ])))
 
-    cmap = matplotlib.cm.get_cmap(colorSchemeName)
-
     colors = {}
-    incr = 1.0 / float(len(allKinds))
-    position = 0.0
-    for name in allKinds:
-        colors[name] = cmap(position)
-        position += incr
+    if colorSchemeName is not None:
+        # chose colors from that scheme
+        cmap = matplotlib.cm.get_cmap(colorSchemeName)
+
+        incr = 1.0 / float(len(allKinds))
+        position = 0.0
+        for name in allKinds:
+            colors[name] = cmap(position)
+            position += incr
+    else:
+        # use fixed colors from color brewer
+        palette = ['#8c510a','#bf812d','#dfc27d','#f6e8c3','#c7eae5','#80cdc1','#35978f','#01665e']
+        assert len(palette) >= len(allKinds), "not enough colors!"
+        for i in range(len(allKinds)):
+            kind = allKinds[i]
+            color = palette[i]
+            colors[kind] = color
 
     return colors
 
@@ -253,7 +263,7 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
     summed['description'] = summed['description'].apply(prettyStackName)
 
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
-    colorMap = genColorMap(colors)
+    colorMap = genColorMap()
     g = sns.catplot(x="vmsize", y="problem_name", hue="description", data=summed,
                 kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 ci=None)
@@ -480,7 +490,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     # sns.set(font_scale=2)
-    colorScheme = genColorMap(colors) if useColorMap else colors
+    colorScheme = genColorMap() if useColorMap else colors
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
                 kind="bar", height=height, aspect=aspect, palette=colorScheme, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
@@ -603,7 +613,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
-    colorMap = genColorMap(colors)
+    colorMap = genColorMap()
     g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
                 kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot)
@@ -712,7 +722,7 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
-    colorMap = genColorMap(colors)
+    colorMap = genColorMap()
     g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
                 kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
@@ -801,7 +811,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     ##############################
     # plot TPI
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
-    colorMap = genColorMap(colors)
+    colorMap = genColorMap()
     g = sns.catplot(x="tpi", y="problem_name", hue="description", hue_order=order, data=tpi_df,
                 kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=None)
@@ -814,7 +824,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     ##############################
     # plot INSTRS
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
-    colorMap = genColorMap(colors)
+    colorMap = genColorMap()
     g = sns.catplot(x="instructions", y="problem_name", hue="description", hue_order=order, data=instr_df,
                 kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=None)
