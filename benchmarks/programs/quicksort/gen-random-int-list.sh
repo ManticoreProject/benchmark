@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 LIST_LEN=$1
 if [ "$LIST_LEN" == "" ]; then
     LIST_LEN="2000000"

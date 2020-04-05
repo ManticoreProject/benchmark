@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 MANTI_BENCH_ROOT="@MANTI_BENCH_ROOT@"
 
 pushd $MANTI_BENCH_ROOT/programs/barnes-hut
