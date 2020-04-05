@@ -3,4 +3,5 @@ local
     ../../common/run-seq.sml
 in
     prog.sml
+    ../../common/run-main.sml
 end
