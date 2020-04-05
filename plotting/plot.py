@@ -78,7 +78,7 @@ def computeCatplotDims(numYTicks, barsPerTick):
     width = figWidth
 
     # estimates
-    barHeight = 0.2
+    barHeight = 0.16
     height = (numYTicks * barsPerTick * barHeight)
     print ("height = ", height, "yticks = ", numYTicks, " bars per tick = ", barsPerTick)
 
