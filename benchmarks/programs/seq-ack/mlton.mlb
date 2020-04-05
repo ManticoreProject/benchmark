@@ -4,5 +4,4 @@ local
     prog.sml
 in
     ../../common/run-main.sml
-    ../../common/run-main.sml
 end
