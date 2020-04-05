@@ -20,6 +20,7 @@ colors = ""
 base = ""
 figWidth = 0.0
 plotGenerated = False
+extension=".svg"
 
 # exports and closes the figure, with the correct global prefix requested
 def exportFig(g, dir, filename, extraArtists=[]):
@@ -273,7 +274,7 @@ def size_plot(sizeData, dir, height=9, aspect=1.2941):
     g._legend.set_title('Stack Kind')
 
     # plt.show()
-    exportFig(g, dir, "code_size.pdf")
+    exportFig(g, dir, "code_size" + extension)
 
 def addOutsideLabels(plt, ax, x_max):
     ha = 'right'
@@ -418,7 +419,7 @@ def print_rel_times(df, baseline, subset=None):
 
 
 ################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.pdf", useColorMap=True):
+def relative_time(df, baseline, dir, xmax, subset=None, filename, useColorMap=True):
     df = df.copy()
 
     if subset:
@@ -536,7 +537,7 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
 
 
 
-def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCategory=None, subset=None, filename="cg_event_rate.pdf", height=9, aspect=1.2941):
+def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCategory=None, subset=None, filename, height=9, aspect=1.2941):
     # simple ones for now
     assert type(numerator_s) == str
     assert type(denominator_s) == str
@@ -642,7 +643,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 
 ###############################
 def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
-    filename="gc_ratio.pdf", subtractAllocs="", wantMean=True, range=(0, 100), \
+    filename, subtractAllocs="", wantMean=True, range=(0, 100), \
     isPct=True):
     # simple ones for now
     assert type(numerator_s) == str
@@ -819,7 +820,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     g.set_xlabels("Nanoseconds per instruction (lower is better)")
     g._legend.set_title('Stack Kind')
 
-    exportFig(g, dir, "cg_tpi" + file_tag + ".pdf")
+    exportFig(g, dir, "cg_tpi" + file_tag + extension)
 
     ##############################
     # plot INSTRS
@@ -832,7 +833,7 @@ def cachegrind_tpi(cg_df, time_df, dir, progs=[], file_tag="", height=9, aspect=
     g.set_xlabels("Total instructions executed (lower is better)")
     g._legend.set_title('Stack Kind')
 
-    exportFig(g, dir, "cg_instrs" + file_tag + ".pdf")
+    exportFig(g, dir, "cg_instrs" + file_tag + extension)
 
 
 
@@ -865,7 +866,7 @@ def footprint_plot(df, dir):
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles=handles[1:], labels=labels[1:], title="Stack Kind")
 
-    exportLinePlot(ax, dir, "footprint.pdf")
+    exportLinePlot(ax, dir, "footprint" + extension)
 
 
 
@@ -994,27 +995,27 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
         for prefix, subset in subsets:
             # print_rel_times(data['obs'], baseline)
             useMap = not paletteNotSpecified
-            relative_time(data['obs'], baseline, dir, xmax, subset, prefix + "times.pdf", useColorMap=useMap)
+            relative_time(data['obs'], baseline, dir, xmax, subset, prefix + "times" + extension, useColorMap=useMap)
 
     if plots == [] or "time" in plots and "gc" in plots:
         prefix = ""
         generations = ["minor", "major", "global"]
         for prefix, subset in subsets:
             gc_plot(data['obs'], dir, "time-gc", "time-total", "Percent of run-time spent managing memory", \
-                        subset, prefix + "gc_time_total_pct.pdf", wantMean=wantMean)
+                        subset, prefix + "gc_time_total_pct" + extension, wantMean=wantMean)
 
             gc_plot(data['obs'], dir, "largeobj-time", "time-total", "Percent of run-time spent managing large objects", \
-                        subset, prefix + "gc_time_largeObj_pct.pdf", wantMean=wantMean)
+                        subset, prefix + "gc_time_largeObj_pct" + extension, wantMean=wantMean)
 
             # gc_plot(data['obs'], dir, "stackcache-misses", "stackcache-access", "Stack cache miss rate",\
-            #             subset, prefix + "gc_stackcache_miss.pdf")
+            #             subset, prefix + "gc_stackcache_miss" + extension)
 
             for gen in generations:
                 gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of data that is live during " + gen + " GC", \
-                            subset, prefix + "gc_" + gen + "_live_pct.pdf", wantMean=wantMean)
+                            subset, prefix + "gc_" + gen + "_live_pct" + extension, wantMean=wantMean)
 
                 # gc_plot(data['obs'], dir, gen + "gc-live", gen + "gc-alloc", "Percent of stack frame data that is live during " + gen + " GC",\
-                #             subset, prefix + "gc_" + gen + "_live_frames_pct.pdf", subtractAllocs="contig", wantMean=wantMean)
+                #             subset, prefix + "gc_" + gen + "_live_frames_pct" + extension, subtractAllocs="contig", wantMean=wantMean)
 
 
     # PERF
@@ -1030,7 +1031,7 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
         for prefix, subset in subsets:
             for numer, denom, title, range, isPct in rateMetrics:
                 gc_plot(data['perf'], dir, numer, denom, title, \
-                            subset, prefix + "perf_" + numer + ".pdf", \
+                            subset, prefix + "perf_" + numer + extension, \
                             wantMean=wantMean, range=range, isPct=isPct)
 
 
@@ -1047,18 +1048,18 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
                 cat = "+".join(fileCategory)
                 prefix = cat + "__" + prefix
 
-                cachegrind_event_pct(data['cache'], cat + " Conditional branch miss rate", 'Bcm', 'Bc', dir, fileCategory, subset, prefix + "CBR_miss.pdf")
-                cachegrind_event_pct(data['cache'], cat + " Indirect branch miss rate", 'Bim', 'Bi', dir, fileCategory, subset, prefix + "IBR_miss.pdf")
+                cachegrind_event_pct(data['cache'], cat + " Conditional branch miss rate", 'Bcm', 'Bc', dir, fileCategory, subset, prefix + "CBR_miss" + extension)
+                cachegrind_event_pct(data['cache'], cat + " Indirect branch miss rate", 'Bim', 'Bi', dir, fileCategory, subset, prefix + "IBR_miss" + extension)
 
                 for level in cacheLevels:
                     cachegrind_event_pct(data['cache'], cat + " L" + level + " I-cache read miss rate",\
-                        'I' + level + 'mr', 'Ir', dir, fileCategory, subset, prefix + "L" + level + "Ir_miss.pdf")
+                        'I' + level + 'mr', 'Ir', dir, fileCategory, subset, prefix + "L" + level + "Ir_miss" + extension)
 
                     cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache read miss rate",\
-                        'D' + level + 'mr', 'Dr', dir, fileCategory, subset, prefix + "L" + level + "Dr_miss.pdf")
+                        'D' + level + 'mr', 'Dr', dir, fileCategory, subset, prefix + "L" + level + "Dr_miss" + extension)
 
                     cachegrind_event_pct(data['cache'], cat + " L" + level + " D-cache write miss rate",\
-                        'D' + level + 'mw', 'Dw', dir, fileCategory, subset, prefix + "L" + level + "Dw_miss.pdf")
+                        'D' + level + 'mw', 'Dw', dir, fileCategory, subset, prefix + "L" + level + "Dw_miss" + extension)
 
 
     # FOOTPRINT is special and not generated if 'all' are requested
