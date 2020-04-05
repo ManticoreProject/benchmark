@@ -18,6 +18,7 @@ import gather_data
 pfx = ""
 colors = ""
 base = ""
+figWidth = 0.0
 plotGenerated = False
 
 # exports and closes the figure, with the correct global prefix requested
@@ -69,6 +70,23 @@ def genColorMap(colorSchemeName):
         position += incr
 
     return colors
+
+def floatEq(x, y):
+    return abs(x - y) <= 0.0001
+
+def computeCatplotDims(numYTicks, barsPerTick):
+    width = figWidth
+
+    # estimates
+    barHeight = 0.2
+    height = (numYTicks * barsPerTick * barHeight)
+    print ("height = ", height, "yticks = ", numYTicks, " bars per tick = ", barsPerTick)
+
+    aspect = width / height
+
+    # in the API, width = aspect * height
+    assert floatEq(figWidth, height * aspect), "bad calculation"
+    return (height, aspect)
 
 
 # Controls for calculating confidence interval
@@ -184,7 +202,7 @@ def compressYTickLabels(yLabelTexts, dpi_scale_trans):
     offset = matplotlib.transforms.ScaledTranslation(dx, dy, dpi_scale_trans)
     for label in yLabelTexts:
         label.set_horizontalalignment('right')
-        label.set_fontsize(14)
+        label.set_fontsize(16)
         label.set_transform(label.get_transform() + offset)
         label.set_rotation(45)
         # print (str(label))
@@ -276,8 +294,8 @@ def addOutsideLabels(plt, ax, x_max):
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
 def addLabels(plt, ax, x_max):
-    label_max = x_max - 0.016
-    dots_pos = x_max - 0.04
+    label_max = x_max - 0.035
+    dots_pos = x_max - 0.06
     # Number of points between bar and label. Change to your liking.
     space = 6
     # Vertical alignment for positive values
@@ -331,7 +349,7 @@ def addLabels(plt, ax, x_max):
             ha=ha,                       # Horizontally align label differently for positive and negative values.
             color=textColor,
             fontweight='normal',
-            fontsize=9)
+            fontsize=11)
 
 
 
@@ -388,7 +406,7 @@ def print_rel_times(df, baseline, subset=None):
 
 
 ################### RELATIVE TIME PLOT
-def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.pdf", height=1, aspect=8.5/9, useColorMap=True):
+def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.pdf", useColorMap=True):
     df = df.copy()
 
     if subset:
@@ -453,14 +471,16 @@ def relative_time(df, baseline, dir, xmax, subset=None, filename="running_time.p
     order = list(df['description'].unique())
     order = sortStacks(order)
 
-    totHeight = max(8.5, len(df['problem_name'].unique()) * height)
+    numYTicks = len(df['problem_name'].unique())
+    barsPerTick = len(df['description'].unique())
+    height, aspect = computeCatplotDims(numYTicks, barsPerTick)
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     # sns.set(font_scale=2)
     colorScheme = genColorMap(colors) if useColorMap else colors
     g = sns.catplot(x="time_sec", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=totHeight, aspect=aspect, palette=colorScheme, orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colorScheme, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     # g.set_ylabels("Benchmark Program")
     g.set_ylabels("")
@@ -611,7 +631,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 ###############################
 def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
     filename="gc_ratio.pdf", subtractAllocs="", wantMean=True, range=(0, 100), \
-    height=1, aspect=8.5/9, isPct=True):
+    isPct=True):
     # simple ones for now
     assert type(numerator_s) == str
     assert type(denominator_s) == str
@@ -684,13 +704,15 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
     order = list(df['description'].unique())
     order = sortStacks(order)
 
-    totHeight = max(8.5, len(df['problem_name'].unique()) * height)
+    numYTicks = len(df['problem_name'].unique())
+    barsPerTick = len(df['description'].unique())
+    height, aspect = computeCatplotDims(numYTicks, barsPerTick)
 
     # plot
     sns.set_context("talk") ## size of labels, scaled for: paper, notebook, talk, poster in smallest -> largest
     colorMap = genColorMap(colors)
     g = sns.catplot(x="rate", y="problem_name", hue="description", hue_order=order, data=df,
-                kind="bar", height=totHeight, aspect=aspect, palette=colorMap, orient="h",
+                kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     g.set_ylabels("")
     g.set_xlabels(event_name)
@@ -700,10 +722,15 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset=None, \
     numTicks = 11
     g.set(xticks=np.linspace(xMin,xMax, numTicks))
 
+    def formatPct(x, pos):
+        if int(x) == round(x, 4): # get rid of 30.000000001 situations.
+            return str(int(x)) + "%"
+        return float2lab(x) + "%"
+
     if isPct:
         for ax in g.axes.flat:
             # set x axis to use the percent formatter
-            ax.xaxis.set_major_formatter(PercentFormatter(xmax=100))
+            ax.xaxis.set_major_formatter(FuncFormatter(formatPct))
             compressYTickLabels(ax.yaxis.get_ticklabels(), g.fig.dpi_scale_trans)
 
     plt.xlim(xBounds)
@@ -853,13 +880,17 @@ def footprint_plot(df, dir):
                 help="If true, always include mean when possible.")
 @click.option("--xmax", default=2.0, type=float,
                help="Max on X scale for speedup.")
-def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combined, mean, xmax):
+@click.option("--width", default=7.0, type=float, help="desired width of figure (in inches)")
+def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combined, mean, xmax, width):
     global pfx
     global colors
     global base
+    global figWidth
     base = baseline
     pfx = fileprefix
-    colors=palette
+    colors = palette
+    figWidth = width
+
 
     paletteNotSpecified = (palette == "")
     if paletteNotSpecified:
@@ -978,19 +1009,17 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     if plots == [] or "perf" in plots:
         rateMetrics = [
             ("branch-misses", "branches", "Branch predictor miss rate", (0, 10), True),
-            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 50), True),
+            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 40), True),
             ("instructions", "cycles", "Instructions per cycle", (0, 6), False),
             # ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False),
             ("page-faults", "task-clock", "Page-faults per msec", (0, 225), False)
         ]
 
-        aspect = 8.5/11 if not combined else 10/len(progs)
         for prefix, subset in subsets:
             for numer, denom, title, range, isPct in rateMetrics:
                 gc_plot(data['perf'], dir, numer, denom, title, \
                             subset, prefix + "perf_" + numer + ".pdf", \
-                            wantMean=wantMean, range=range, isPct=isPct, \
-                            aspect=aspect)
+                            wantMean=wantMean, range=range, isPct=isPct)
 
 
     # CACHEGRIND
