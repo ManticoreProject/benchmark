@@ -4,9 +4,10 @@
  * All rights reserved.
  *)
 
-structure RunSeq (* sig
-  val run : (unit -> 'a) -> 'a
-  end *) = struct
+structure RunSeq : sig
+    val run : (unit -> 'a) -> 'a
+    val runSilent : (unit -> 'a) -> 'a
+  end = struct
 
     fun run f =
 	let
