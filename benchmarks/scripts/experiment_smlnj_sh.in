@@ -140,10 +140,9 @@ RUN_COMMAND="$SMLNJ @SMLload=./$BENCHMARK_EXE"
 # time to execute the `sml` shell script, and doesn't track the process
 # after that script performs an `exec`, since the output of the cache info
 # comes out well before the running time of the program, and is too low.
-
 # run the executable with cachegrind once
 # echo "running cachegrind..."
-valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $RUN_COMMAND $INPUT
+# valgrind --tool=cachegrind --branch-sim=yes --cachegrind-out-file="$GRIND_FILE" $RUN_COMMAND $INPUT
 
 if [ $RUN_PERF_REPS != "0" ]; then
   # run the executable under perf to collect aggregate stats
