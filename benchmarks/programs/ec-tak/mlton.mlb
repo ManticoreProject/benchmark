@@ -5,4 +5,5 @@ local
     ../../common/mlton-callec.sml
 in
     prog.sml
+    ../../common/run-main.sml
 end

@@ -1,7 +1,8 @@
 local
     $(SML_LIB)/basis/basis.mlb
     ../../common/run-seq.sml
-    double.sml
 in
+    double.sml
     prog.sml
+    ../../common/run-main.sml
 end

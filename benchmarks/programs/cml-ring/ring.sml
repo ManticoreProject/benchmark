@@ -6,13 +6,14 @@
  * Carl Ritson's ring benchmark using CML's synchronous channels.
  *)
 
-structure Ring (* : sig
+structure Ring : sig
 
     val numElements : int
+    val ncycles : int
 
     val doit : int -> unit
 
-  end *) = struct
+  end = struct
 
     (* controls workload *)
     val numElements = 128

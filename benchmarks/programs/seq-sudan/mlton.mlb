@@ -4,4 +4,5 @@ local
 in
     params.sml
     prog.sml
+    ../../common/run-main.sml
 end

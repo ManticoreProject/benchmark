@@ -1,10 +1,10 @@
 (* barnes-hut.pml
- * 
+ *
  * usage: ./barnes-hut <args>
  *   where <args> can include
  *       -size <int>            number of bodies
  *       -iters <int>           number of iterations
- *) 
+ *)
 
 structure Rope = RopeImplFn (
 		   structure Seq = VectorSeq
@@ -47,9 +47,9 @@ val dt = 0.025
 fun circle_plus ((mx0,my0,m0), (mx1,my1,m1)) = (mx0 + mx1, my0 + my1, m0 + m1)
 
 fun calc_centroid parts = let
-  fun f (P (x, y, m, _, _)) = (m * x, m * y, m) 
-  val (sum_mx, sum_my, sum_m) = 
-    reduce circle_plus (0.0, 0.0, 0.0) (map f parts) 
+  fun f (P (x, y, m, _, _)) = (m * x, m * y, m)
+  val (sum_mx, sum_my, sum_m) =
+    reduce circle_plus (0.0, 0.0, 0.0) (map f parts)
   in
     (sum_mx / sum_m, sum_my / sum_m, sum_m)
   end
@@ -58,17 +58,17 @@ fun in_box (llx, lly, rux, ruy) (P (px, py, _, _, _)) =
   (px > llx) andalso (px <= rux) andalso (py > lly) andalso (py <= ruy)
 
 fun build_bht (box:scalar*scalar*scalar*scalar) (particles:particle seq) = let
-  val max_depth = log4 (size particles) - 1 
+  val max_depth = log4 (size particles) - 1
   fun build (depth, (llx, lly, rux, ruy), particles) =
     if size particles <= 1 orelse depth >= max_depth then
       BHTLeaf (calc_centroid particles)
     else let
-      val (midx, midy) = ((llx + rux) / 2.0, (lly + ruy) / 2.0) 
-      val b1 = (llx,  lly,  midx,  midy) 
-      val b2 = (llx,  midy, midx,  ruy) 
+      val (midx, midy) = ((llx + rux) / 2.0, (lly + ruy) / 2.0)
+      val b1 = (llx,  lly,  midx,  midy)
+      val b2 = (llx,  midy, midx,  ruy)
       val b3 = (midx, midy, rux,   ruy)
       val b4 = (midx, lly,  rux,   midy)
-      val (pb1, pb2, pb3, pb4) = 
+      val (pb1, pb2, pb3, pb4) =
 	(filter (in_box b1) particles,
 	 filter (in_box b2) particles,
 	 filter (in_box b3) particles,
@@ -91,16 +91,16 @@ fun accel (x1, y1, _) x2 y2 m = let
   val dx   = x1 - x2
   val dy   = y1 - y2
   val rsqr = sq dx + sq dy
-  val r    = sqrt rsqr 
+  val r    = sqrt rsqr
   in
     if r < epsilon then
       (0.0, 0.0)
     else let
-      val aabs = m / rsqr 
+      val aabs = m / rsqr
       in (aabs * dx / r , aabs * dy / r) end
   end
 
-fun is_close (x1, y1, m) x2 y2 =  
+fun is_close (x1, y1, m) x2 y2 =
   sq (x1 - x2) + sq (y1 - y2) < eClose
 
 fun calc_accel (P (x, y, m, _, _)) bht = let
@@ -177,7 +177,7 @@ structure Main =
     fun bumpParticle (BarnesHut.P (xp, yp, mass, xv, yv)) =
 	BarnesHut.P (xp+epsilon, yp+epsilon, mass+epsilon, xv+epsilon, yv+epsilon)
 
-    fun tokenize line = String.tokens (fn c => c = #" ") line
+    fun tokenize line = String.tokens Char.isSpace line
 
     fun readFromFile () =
 	let
@@ -187,7 +187,7 @@ structure Main =
 	    fun lp acc =
 		(case TextIO.inputLine f
 		  of NONE => List.rev acc
-		   | SOME line => 
+		   | SOME line =>
 		     let
 			 val xp::yp::mass::xv::yv::nil = List.map rd (tokenize line)
 		     in
@@ -196,7 +196,7 @@ structure Main =
 	in
 	    lp nil
 	end
-	
+
     fun main (_, args) =
 	let
 	    val bodiesList = (case getSizeArg args of NONE => readFromFile() | SOME n => genBodies n)
@@ -205,7 +205,7 @@ structure Main =
 	     * distributing subsequent GC load
 	     *)
 	    val bodiesArray = Rope.map bumpParticle (Rope.fromList bodiesList)
-	    fun doit () = 
+	    fun doit () =
 		let
 		    fun iter (ps, i) =
 			if i < nIters then
@@ -216,7 +216,7 @@ structure Main =
 		in
 		    iter (bodiesArray, 0)
 		end
-		
+
 	in
 	    RunSeq.run doit
 	end

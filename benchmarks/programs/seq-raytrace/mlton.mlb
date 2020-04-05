@@ -10,4 +10,5 @@ ann "sequenceNonUnit error" in
   ../../common/run-seq.sml
   compat.sml
   prog.sml
+  ../../common/run-main.sml
 end

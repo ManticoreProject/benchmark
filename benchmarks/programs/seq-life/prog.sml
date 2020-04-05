@@ -14,7 +14,6 @@ structure LifeSeq : sig
 
   end = struct
 
-
     val concat = String.concat
     val app = List.app
     fun cons a x = a::x
@@ -199,8 +198,7 @@ structure Main =
     val dfltSteps = 25000
     val iters = 2
 
-    fun main (_, args) =
-  let
+    fun main (_, args) = let
       val steps = (case args
           of arg :: _ => Option.getOpt (Int.fromString arg, dfltSteps)
            | _ => dfltSteps)
@@ -210,8 +208,8 @@ structure Main =
         (LifeSeq.test LifeSeq.goGun iters steps ;
          LifeSeq.test LifeSeq.goShuttle iters steps)
 
-  in
-      (RunSeq.run doIt; Process.success)
-  end
+      in
+	RunSeq.run doIt; Process.success
+      end
 
   end

@@ -5,8 +5,7 @@ Library
 
 is
 
-  $cml/basis.cm
-  $cml/cml.cm
+  $/basis.cm
 
   ../../common/run-seq.sml
 

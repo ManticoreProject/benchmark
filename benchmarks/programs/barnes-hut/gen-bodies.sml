@@ -1,5 +1,8 @@
-structure GenBodies =
-  struct
+structure GenBodies : sig
+
+    val testdata : int -> (real * Vector2.double_vec * Vector2.double_vec) list
+
+  end = struct
 
     structure V = Vector2
 
@@ -35,8 +38,7 @@ structure GenBodies =
      * to units such that M = -4E = G = 1 (Henon, Hegge, etc).
      * See Aarseth, SJ, Henon, M, & Wielen, R (1974) Astr & Ap, 37, 183.
      *)
-    fun testdata n =
-	let
+    fun testdata n = let
 	    val mfrac = 0.999 (* mass cut off at mfrac of total *)
 	    val rn = Real.fromInt n
 	    val rsc = (3.0 * pi) / 16.0

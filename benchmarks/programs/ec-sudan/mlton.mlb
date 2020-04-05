@@ -1,7 +1,10 @@
 local
     $(SML_LIB)/basis/basis.mlb
+    $(SML_LIB)/basis/mlton.mlb
     ../../common/run-seq.sml
+    ../../common/mlton-callec.sml
 in
     params.sml
     prog.sml
+    ../../common/run-main.sml
 end

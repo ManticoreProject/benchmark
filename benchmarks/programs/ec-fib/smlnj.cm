@@ -4,8 +4,7 @@ Library
 
 is
 
-  $cml/basis.cm
-  $cml/cml.cm
+  $/basis.cm
   $/smlnj-lib.cm
 
   ../../common/run-seq.sml

@@ -1,7 +1,7 @@
 Library
 
 	structure Main
-
+structure BarnesHut
 is
 
 	$/basis.cm
