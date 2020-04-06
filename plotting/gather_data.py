@@ -24,6 +24,12 @@ def _getFile(dataDir, pat):
             matches.append(os.path.join(dataDir, filename))
     return matches
 
+def renameForPaper(program):
+    # clearer names for figures
+    program = re.sub(r'seq-raytrace', 'seq-mcray', program)
+    program = re.sub(r'seq-barneshut', 'seq-barnes-hut', program)
+    return program
+
 
 def _loadRunningTimes(filePath, needGC=False):
     ''' loads the JSON formatted running times into a dataframe '''
@@ -39,13 +45,9 @@ def _loadRunningTimes(filePath, needGC=False):
     # remove the mc-seq / mc-par etc from the description, but preserving -shim and -noshim
     name = re.sub(r'-mc-seq', '', name)
     name = re.sub(r'-mc-par', '', name)
+    
     j["description"] = name
-
-    program = j["problem_name"]
-    # clearer names for figures
-    program = re.sub(r'seq-raytrace', 'seq-mcray', program)
-    program = re.sub(r'seq-barneshut', 'seq-barnes-hut', program)
-    j["problem_name"] = program
+    j["problem_name"] = renameForPaper(j["problem_name"])
 
     commonCol = ["problem_name", "compiler", "input", "machine", "description"]
     commonRow = [ j[x] for x in commonCol ]
@@ -128,6 +130,8 @@ def _collectCacheData(prog, kind, attr, dataDir):
     df["problem_name"] = prog
     df["description"] = kind
 
+    df["problem_name"] = renameForPaper(df["problem_name"])
+
     return df
 
 
@@ -144,6 +148,8 @@ def _collectPerfData(prog, kind, attr, dataDir):
     # tag the info
     df["problem_name"] = prog
     df["description"] = kind
+
+    df["problem_name"] = renameForPaper(df["problem_name"])
 
     return df
 
