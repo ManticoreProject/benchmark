@@ -22,6 +22,7 @@ figWidth = 0.0
 plotGenerated = False
 extension=".pdf"
 fontName="Arial" # 'Linux Biolinum O', 'Arial'
+axisTitle=False
 
 # exports and closes the figure, with the correct global prefix requested
 def exportFig(g, dir, filename, extraArtists=[]):
@@ -498,8 +499,11 @@ def relative_time(df, baseline, dir, xmax, subset, filename, useColorMap=True):
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     # g.set_ylabels("Benchmark Program")
     g.set_ylabels("")
-    g.set_xlabels("Speedup relative to \"" + baseline + "\" (longer is better)".format(baseline))
-
+    if axisTitle:
+        g.set_xlabels("Speedup relative to \"" + baseline + "\" (longer is better)".format(baseline))
+    else:
+        g.set_xlabels("")
+        
     plt.xlim(xBounds)
     plt.axvline(x=1, color='gray')
 
@@ -729,7 +733,10 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset, \
                 kind="bar", height=height, aspect=aspect, palette=colorMap, orient="h",
                 errwidth=1.125, capsize=0.0625, ci=confidence, n_boot=nboot, legend_out=False)
     g.set_ylabels("")
-    g.set_xlabels(event_name)
+    if axisTitle:
+        g.set_xlabels(event_name)
+    else:
+        g.set_xlabels("")
     # g._legend.set_title('Stack Kind')
 
     xMin, xMax = xBounds
