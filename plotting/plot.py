@@ -21,6 +21,7 @@ base = ""
 figWidth = 0.0
 plotGenerated = False
 extension=".pdf"
+fontName="Arial" # 'Linux Biolinum O', 'Arial'
 
 # exports and closes the figure, with the correct global prefix requested
 def exportFig(g, dir, filename, extraArtists=[]):
@@ -962,11 +963,10 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     # https://seaborn.pydata.org/tutorial/aesthetics.html
     sns.set_style("whitegrid")
 
-    # set font to Linux Biolinum, the sans serif version of Libertine.
-    # on my Linux machine it's called 'Linux Biolinum O', for OTF versino of the font.
-    # currentStyle = sns.axes_style()
-    # currentStyle['font.sans-serif'] = ['Linux Biolinum O']
-    # sns.set_style(currentStyle)
+    # set font for all text
+    currentStyle = sns.axes_style()
+    currentStyle['font.sans-serif'] = [fontName]
+    sns.set_style(currentStyle)
 
     wantMean = not combined or mean
     if combined:

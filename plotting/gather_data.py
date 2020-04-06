@@ -45,7 +45,7 @@ def _loadRunningTimes(filePath, needGC=False):
     # remove the mc-seq / mc-par etc from the description, but preserving -shim and -noshim
     name = re.sub(r'-mc-seq', '', name)
     name = re.sub(r'-mc-par', '', name)
-    
+
     j["description"] = name
     j["problem_name"] = renameForPaper(j["problem_name"])
 
@@ -110,7 +110,7 @@ def _collectSizeData(prog, kind, attr, dataDir):
     df = pd.read_csv(bloatyFile)
 
     # tag the info
-    df["problem_name"] = prog
+    df["problem_name"] = renameForPaper(prog)
     df["description"] = kind
 
     return df
@@ -127,10 +127,8 @@ def _collectCacheData(prog, kind, attr, dataDir):
     df = parse_cachegrind.to_dataframe(cgFile)
 
     # tag the info
-    df["problem_name"] = prog
+    df["problem_name"] = renameForPaper(prog)
     df["description"] = kind
-
-    df["problem_name"] = renameForPaper(df["problem_name"])
 
     return df
 
@@ -146,10 +144,8 @@ def _collectPerfData(prog, kind, attr, dataDir):
     df = parse_perfstat.to_dataframe(perfStatFile)
 
     # tag the info
-    df["problem_name"] = prog
+    df["problem_name"] = renameForPaper(prog)
     df["description"] = kind
-
-    df["problem_name"] = renameForPaper(df["problem_name"])
 
     return df
 
