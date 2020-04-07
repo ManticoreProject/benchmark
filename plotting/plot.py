@@ -308,7 +308,7 @@ def addOutsideLabels(plt, ax, x_max):
 # for horizontal bars
 def addLabels(plt, ax, x_max):
     label_max = x_max - 0.035
-    dots_pos = x_max - 0.06
+    dots_pos = x_max - 0.07
     # Number of points between bar and label. Change to your liking.
     space = 6
     # Vertical alignment for positive values
@@ -331,7 +331,7 @@ def addLabels(plt, ax, x_max):
             x_pos = label_max
             label = "{:.2f}".format(x_value) # pad it out fully so it doesn't look odd
             textColor = 'black'
-            numberFontSize -= 1
+            numberFontSize -= 2
 
             if x_value > x_max:
                 plt.annotate(
@@ -503,7 +503,7 @@ def relative_time(df, baseline, dir, xmax, subset, filename, useColorMap=True):
         g.set_xlabels("Speedup relative to \"" + baseline + "\" (longer is better)".format(baseline))
     else:
         g.set_xlabels("")
-        
+
     plt.xlim(xBounds)
     plt.axvline(x=1, color='gray')
 
@@ -649,7 +649,7 @@ def cachegrind_event_pct(df, event_name, numerator_s, denominator_s, dir, codeCa
 ###############################
 def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset, \
     filename, subtractAllocs="", wantMean=True, range=(0, 100), \
-    isPct=True):
+    isPct=True, useGMean=False):
     # simple ones for now
     assert type(numerator_s) == str
     assert type(denominator_s) == str
@@ -700,11 +700,12 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset, \
     if wantMean:
         # compute an average among the different stack kinds
         # NOTE: we use an arithmetic mean because the miss rate is bounded [0, 100]
+        meanType = "GMEAN" if useGMean else "MEAN"
         average = {"problem_name": [], "description": [], "rate": []}
         for kind in df["description"].unique():
             allTimes = df[df["description"] == kind]["rate"]
-            gmean = allTimes.mean()
-            average["problem_name"].append("MEAN")
+            gmean = stats.gmean(allTimes) if useGMean else allTimes.mean()
+            average["problem_name"].append(meanType)
             average["description"].append(kind)
             average["rate"].append(gmean)
 
@@ -1028,18 +1029,18 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     # PERF
     if plots == [] or "perf" in plots:
         rateMetrics = [
-            ("branch-misses", "branches", "Branch predictor miss rate", (0, 10), True),
-            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 40), True),
-            ("instructions", "cycles", "Instructions per cycle", (0, 6), False),
-            # ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False),
-            ("page-faults", "task-clock", "Page-faults per msec", (0, 225), False)
+            ("branch-misses", "branches", "Branch predictor miss rate", (0, 10), True, False),
+            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 40), True, True),
+            ("instructions", "cycles", "Instructions per cycle", (0, 6), False, False),
+            # ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False, False),
+            ("page-faults", "task-clock", "Page-faults per msec", (0, 225), False, False)
         ]
 
         for prefix, subset in subsets:
-            for numer, denom, title, range, isPct in rateMetrics:
+            for numer, denom, title, range, isPct, useGMean in rateMetrics:
                 gc_plot(data['perf'], dir, numer, denom, title, \
                             subset, prefix + "perf_" + numer + extension, \
-                            wantMean=wantMean, range=range, isPct=isPct)
+                            wantMean=wantMean, range=range, isPct=isPct, useGMean=useGMean)
 
 
     # CACHEGRIND
