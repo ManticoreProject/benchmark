@@ -699,7 +699,7 @@ def gc_plot(df, dir, numerator_s, denominator_s, event_name, subset, \
 
     if wantMean:
         # compute an average among the different stack kinds
-        # NOTE: we use an arithmetic mean because the miss rate is bounded [0, 100]
+        # NOTE: you should use an arithmetic mean because the miss rate is bounded [0, 100]
         meanType = "GMEAN" if useGMean else "MEAN"
         average = {"problem_name": [], "description": [], "rate": []}
         for kind in df["description"].unique():
@@ -1029,18 +1029,18 @@ def main(dir, progs, kinds, baseline, cached, plots, fileprefix, palette, combin
     # PERF
     if plots == [] or "perf" in plots:
         rateMetrics = [
-            ("branch-misses", "branches", "Branch predictor miss rate", (0, 10), True, False),
-            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 40), True, True),
-            ("instructions", "cycles", "Instructions per cycle", (0, 6), False, False),
-            # ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False, False),
-            ("page-faults", "task-clock", "Page-faults per msec", (0, 225), False, False)
+            ("branch-misses", "branches", "Branch predictor miss rate", (0, 10), True),
+            ("L1-dcache-load-misses", "L1-dcache-loads", "L1 data-cache read miss rate", (0, 40), True),
+            ("instructions", "cycles", "Instructions per cycle", (0, 6), False),
+            # ("L1-dcache-loads", "instructions", "L1 data-cache reads per instruction", (0, 0.5), False),
+            ("page-faults", "task-clock", "Page-faults per msec", (0, 225), False)
         ]
 
         for prefix, subset in subsets:
-            for numer, denom, title, range, isPct, useGMean in rateMetrics:
+            for numer, denom, title, range, isPct in rateMetrics:
                 gc_plot(data['perf'], dir, numer, denom, title, \
                             subset, prefix + "perf_" + numer + extension, \
-                            wantMean=wantMean, range=range, isPct=isPct, useGMean=useGMean)
+                            wantMean=wantMean, range=range, isPct=isPct)
 
 
     # CACHEGRIND
