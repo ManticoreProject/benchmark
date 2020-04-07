@@ -307,7 +307,7 @@ def addOutsideLabels(plt, ax, x_max):
 # source: https://stackoverflow.com/questions/28931224/adding-value-labels-on-a-matplotlib-bar-chart
 # for horizontal bars
 def addLabels(plt, ax, x_max):
-    label_max = x_max - 0.035
+    label_max = x_max - 0.03
     dots_pos = x_max - 0.07
     # Number of points between bar and label. Change to your liking.
     space = 6
@@ -322,16 +322,16 @@ def addLabels(plt, ax, x_max):
         x_pos = x_value
         y_value = rect.get_y() + rect.get_height() / 2
 
-        # Use X value as label and format number with one decimal place
+        # Use X value as label and format number with at most 2 decimal places
         label = float2lab(x_value)
         textColor = 'black'
         numberFontSize = 11
 
         if x_pos > min(label_max, dots_pos):
             x_pos = label_max
-            label = "{:.2f}".format(x_value) # pad it out fully so it doesn't look odd
+            label = "{:.1f}".format(x_value) # round to 1 decimal place to save text space!
             textColor = 'black'
-            numberFontSize -= 2
+            numberFontSize -= 1
 
             if x_value > x_max:
                 plt.annotate(
