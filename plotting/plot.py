@@ -15,6 +15,11 @@ from  matplotlib.ticker import FuncFormatter
 
 import gather_data
 
+# request TrueType fonts and not Type 3.
+# src: http://phyletica.org/matplotlib-fonts/
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 pfx = ""
 colors = ""
 base = ""
