@@ -75,7 +75,12 @@ def genColorMap(colorSchemeName=None):
             position += incr
     else:
         # use fixed colors from color brewer
-        palette = ['#8c510a','#bf812d','#dfc27d','#f6e8c3','#c7eae5','#80cdc1','#35978f','#01665e']
+        # palette = ['#8c510a','#bf812d','#dfc27d','#f6e8c3','#c7eae5','#80cdc1','#35978f','#01665e']
+
+        # a color brewer palette, plus two contrasting hue colors (print friendly) for SML/NJ and MLton
+        palette = ['#8c510a','#d8b365','#f6e8c3','#c7eae5','#5ab4ac','#01665e'] + ['#b2abd2', '#5e3c99']
+
+
         assert len(palette) >= len(allKinds), "not enough colors!"
         for i in range(len(allKinds)):
             kind = allKinds[i]
